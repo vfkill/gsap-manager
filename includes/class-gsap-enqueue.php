@@ -32,6 +32,41 @@ class GSAP_Enqueue {
     public function __construct() {
         $this->settings = gsap_manager_get_settings();
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue' ] );
+
+        // Injeta smooth-wrapper/smooth-content automaticamente quando ScrollSmoother está ativo.
+        // Hello Elementor (e a maioria dos temas modernos) chama wp_body_open() logo após <body>.
+        if ( ! empty( $this->settings['plugins']['ScrollSmoother'] ) ) {
+            add_action( 'wp_body_open', [ $this, 'smoother_wrapper_open'  ] );
+            add_action( 'wp_footer',    [ $this, 'smoother_wrapper_close' ], 999 );
+        }
+    }
+
+    public function smoother_wrapper_open(): void {
+        if ( ! $this->should_load() ) {
+            return;
+        }
+        $wrapper = $this->smoother_id( $this->settings['smoother_wrapper'] ?? '#smooth-wrapper', 'smooth-wrapper' );
+        $content = $this->smoother_id( $this->settings['smoother_content'] ?? '#smooth-content', 'smooth-content' );
+        printf( '<div id="%s"><div id="%s">', esc_attr( $wrapper ), esc_attr( $content ) );
+    }
+
+    public function smoother_wrapper_close(): void {
+        if ( ! $this->should_load() ) {
+            return;
+        }
+        echo '</div></div>';
+    }
+
+    /**
+     * Extrai o ID de um seletor CSS (#meu-id → meu-id).
+     * Se o seletor não começar com #, retorna o fallback.
+     */
+    private function smoother_id( string $selector, string $fallback ): string {
+        $selector = trim( $selector );
+        if ( str_starts_with( $selector, '#' ) ) {
+            return substr( $selector, 1 );
+        }
+        return $fallback;
     }
 
     public function enqueue(): void {

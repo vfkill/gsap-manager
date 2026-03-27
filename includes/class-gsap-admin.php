@@ -311,14 +311,10 @@ ScrollTrigger.defaults({
                 <div class="gsap-card <?php echo empty( $s['plugins']['ScrollSmoother'] ) ? 'gsap-field--hidden' : ''; ?>" id="gsap-smoother-settings">
                     <h2 class="gsap-card__title">Configurações do ScrollSmoother</h2>
                     <p class="gsap-card__desc">
-                        O ScrollSmoother precisa de dois elementos envolvendo todo o conteúdo da página.
-                        Adicione no seu tema (ou via PHP customizado):
+                        Os elementos <code>smooth-wrapper</code> e <code>smooth-content</code> são injetados
+                        <strong>automaticamente</strong> pelo plugin via <code>wp_body_open</code> — compatível
+                        com Hello Elementor e demais temas modernos. Nenhuma alteração no tema é necessária.
                     </p>
-                    <pre class="gsap-code" style="margin-bottom:1.2rem"><code>&lt;div id="smooth-wrapper"&gt;
-  &lt;div id="smooth-content"&gt;
-    &lt;!-- todo o conteúdo do site aqui --&gt;
-  &lt;/div&gt;
-&lt;/div&gt;</code></pre>
 
                     <div class="gsap-field">
                         <label class="gsap-label" for="smoother_smooth">Suavidade do scroll</label>
