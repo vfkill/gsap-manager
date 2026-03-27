@@ -90,19 +90,30 @@
      * PADRÃO: todas as animações aguardam o scroll — sem necessidade de
      * adicionar nenhuma classe de gatilho.
      *
-     * gsap-on-load  → força execução imediata (ignora scroll)
+     * gsap-on-load  → executa imediatamente (sem esconder, sem scroll)
      * gsap-on-scroll → comportamento idêntico ao padrão (mantido por compatibilidade)
      *
      * Prioridade de motor:
      *   1. ScrollTrigger (GSAP)   — se estiver carregado
      *   2. IntersectionObserver   — fallback nativo
      *   3. Execução imediata      — último recurso
+     *
+     * visibility: hidden → preserva o espaço no layout sem mostrar o conteúdo.
+     * Removido no momento exato em que a animação começa — sem flash.
      */
     function playOnScroll(el, fn) {
-        // Força execução imediata
+        // gsap-on-load: executa imediatamente sem esconder
         if (el.classList.contains('gsap-on-load')) {
             fn();
             return;
+        }
+
+        // Esconde até a animação começar — preserva espaço (sem layout shift)
+        el.style.visibility = 'hidden';
+
+        function reveal() {
+            el.style.visibility = 'visible';
+            fn();
         }
 
         // Motor 1: ScrollTrigger
@@ -111,7 +122,7 @@
                 trigger: el,
                 start:   str(el, 'start', 'top 88%'),
                 once:    true,
-                onEnter: fn,
+                onEnter: reveal,
             });
             return;
         }
@@ -122,7 +133,7 @@
                 entries.forEach(function (entry) {
                     if (entry.isIntersecting) {
                         obs.unobserve(entry.target);
-                        fn();
+                        reveal();
                     }
                 });
             }, { rootMargin: '0px 0px -12% 0px', threshold: 0 });
@@ -130,7 +141,8 @@
             return;
         }
 
-        // Motor 3: fallback — anima imediatamente
+        // Motor 3: fallback — exibe e anima imediatamente
+        el.style.visibility = 'visible';
         fn();
     }
 
