@@ -3,7 +3,7 @@
  * Plugin Name: GSAP Manager
  * Plugin URI:  https://github.com/
  * Description: Carrega o GSAP e seus plugins no WordPress com configurações flexíveis via painel administrativo.
- * Version:     2.4.0
+ * Version:     2.5.0
  * Author:      Victor Kill
  * License:     GPL-2.0-or-later
  * Text Domain: gsap-manager
@@ -11,7 +11,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'GSAP_MANAGER_VERSION', '2.4.0' );
+define( 'GSAP_MANAGER_VERSION', '2.5.0' );
 define( 'GSAP_MANAGER_PATH', plugin_dir_path( __FILE__ ) );
 define( 'GSAP_MANAGER_URL', plugin_dir_url( __FILE__ ) );
 define( 'GSAP_MANAGER_OPTION', 'gsap_manager_settings' );
@@ -44,15 +44,32 @@ function gsap_manager_defaults(): array {
         'load_on'          => 'all',          // all | front | selected
         'selected_ids'     => '',
         'plugins'          => [
-            'ScrollTrigger'    => true,
-            'ScrollSmoother'   => false,
-            'ScrollToPlugin'   => false,
-            'Draggable'        => false,
-            'Flip'             => false,
-            'MotionPathPlugin' => false,
-            'TextPlugin'       => false,
-            'Observer'         => false,
-            'CustomEase'       => false,
+            // Plugins públicos (cdnjs)
+            'ScrollTrigger'      => true,
+            'ScrollToPlugin'     => false,
+            'Draggable'          => false,
+            'Flip'               => false,
+            'MotionPathPlugin'   => false,
+            'TextPlugin'         => false,
+            'Observer'           => false,
+            'CustomEase'         => false,
+            'EasePack'           => false,
+            'CSSRulePlugin'      => false,
+            // Plugins bonus (local — assets/js/vendor/)
+            'ScrollSmoother'     => false,
+            'SplitText'          => false,
+            'MorphSVGPlugin'     => false,
+            'DrawSVGPlugin'      => false,
+            'InertiaPlugin'      => false,
+            'ScrambleTextPlugin' => false,
+            'CustomBounce'       => false,
+            'CustomWiggle'       => false,
+            'Physics2DPlugin'    => false,
+            'PhysicsPropsPlugin' => false,
+            'MotionPathHelper'   => false,
+            'GSDevTools'         => false,
+            'EaselPlugin'        => false,
+            'PixiPlugin'         => false,
         ],
         'smoother_smooth'    => 1.5,
         'smoother_effects'   => false,

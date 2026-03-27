@@ -88,16 +88,35 @@ class GSAP_Admin {
         $tab      = sanitize_key( $_GET['tab'] ?? 'settings' );
         $saved    = isset( $_GET['settings-updated'] );
 
+        $bonus_label = ' <span class="gsap-badge gsap-badge--bonus">Bonus</span>';
+
         $plugins_info = [
+            // ── Públicos (CDN ou local) ──────────────────────────────────────
             'ScrollTrigger'    => [ 'desc' => 'Animações ativadas por scroll. Essencial para a maioria dos projetos.', 'popular' => true ],
-            'ScrollSmoother'   => [ 'desc' => 'Scroll suavizado com inércia. Habilita efeitos parallax via data-speed e data-lag. Requer ScrollTrigger ativo. ⚠ Download manual necessário — veja as configurações abaixo.', 'popular' => true ],
-            'ScrollToPlugin'   => [ 'desc' => 'Scroll suave para elementos ou posições da página.' ],
+            'ScrollToPlugin'   => [ 'desc' => 'Scroll suave até elementos ou posições da página.' ],
             'Draggable'        => [ 'desc' => 'Torna elementos arrastáveis com física realista.' ],
             'Flip'             => [ 'desc' => 'Animações de layout FLIP (First Last Invert Play).' ],
             'MotionPathPlugin' => [ 'desc' => 'Anima elementos ao longo de caminhos SVG.' ],
-            'TextPlugin'       => [ 'desc' => 'Anima texto caractere por caractere.' ],
+            'TextPlugin'       => [ 'desc' => 'Anima texto caractere por caractere com GSAP.' ],
             'Observer'         => [ 'desc' => 'Detecta gestos, scroll e interações de forma unificada.' ],
-            'CustomEase'       => [ 'desc' => 'Cria curvas de easing customizadas.' ],
+            'CustomEase'       => [ 'desc' => 'Cria curvas de easing 100% customizadas.' ],
+            'EasePack'         => [ 'desc' => 'Pacote com easings extras: SlowMo, ExpoScale, RoughEase e mais.' ],
+            'CSSRulePlugin'    => [ 'desc' => 'Anima regras CSS diretamente em stylesheets (pseudo-elementos, hover, etc).' ],
+            // ── Bonus (local — assets/js/vendor/) ───────────────────────────
+            'ScrollSmoother'     => [ 'desc' => 'Scroll suavizado com inércia e parallax (data-speed / data-lag). Requer ScrollTrigger.', 'popular' => true, 'bonus' => true ],
+            'SplitText'          => [ 'desc' => 'Divide texto em linhas, palavras e caracteres para animação granular.', 'popular' => true, 'bonus' => true ],
+            'MorphSVGPlugin'     => [ 'desc' => 'Transição suave entre qualquer forma SVG.', 'popular' => true, 'bonus' => true ],
+            'DrawSVGPlugin'      => [ 'desc' => 'Anima o traçado de paths SVG como se estivesse sendo desenhado.', 'popular' => true, 'bonus' => true ],
+            'InertiaPlugin'      => [ 'desc' => 'Adiciona momentum/inércia ao Draggable para movimentos físicos.', 'bonus' => true ],
+            'ScrambleTextPlugin' => [ 'desc' => 'Embaralha texto com caracteres aleatórios enquanto revela o conteúdo final.', 'bonus' => true ],
+            'CustomBounce'       => [ 'desc' => 'Gera easings de bounce customizados para uso com CustomEase.', 'bonus' => true ],
+            'CustomWiggle'       => [ 'desc' => 'Gera easings de vibração (wiggle) customizados para uso com CustomEase.', 'bonus' => true ],
+            'Physics2DPlugin'    => [ 'desc' => 'Física 2D real: gravidade, velocidade e fricção em animações.', 'bonus' => true ],
+            'PhysicsPropsPlugin' => [ 'desc' => 'Aplica física (velocidade/aceleração) a qualquer propriedade numérica.', 'bonus' => true ],
+            'MotionPathHelper'   => [ 'desc' => 'Interface visual para editar motion paths diretamente no browser (dev).', 'bonus' => true ],
+            'GSDevTools'         => [ 'desc' => 'Player interativo para inspecionar e depurar timelines GSAP (dev).', 'bonus' => true ],
+            'EaselPlugin'        => [ 'desc' => 'Integração com EaselJS/CreateJS para animar elementos canvas.', 'bonus' => true ],
+            'PixiPlugin'         => [ 'desc' => 'Integração com Pixi.js para animar propriedades de display objects.', 'bonus' => true ],
         ];
         ?>
         <div class="gsap-wrap">
@@ -285,8 +304,9 @@ ScrollTrigger.defaults({
                 <div class="gsap-card">
                     <h2 class="gsap-card__title">Plugins GSAP</h2>
                     <p class="gsap-card__desc">Ative apenas os plugins que você utiliza para manter o carregamento enxuto.</p>
+                    <h3 class="gsap-plugins-section-title">Plugins públicos <span>carregados via CDN ou local</span></h3>
                     <div class="gsap-plugins-grid">
-                        <?php foreach ( $plugins_info as $name => $info ) : ?>
+                        <?php foreach ( $plugins_info as $name => $info ) : if ( ! empty( $info['bonus'] ) ) continue; ?>
                         <label class="gsap-plugin-card <?php echo ! empty( $s['plugins'][ $name ] ) ? 'is-active' : ''; ?>">
                             <input type="checkbox"
                                    name="<?php echo GSAP_MANAGER_OPTION; ?>[plugins][<?php echo esc_attr( $name ); ?>]"
@@ -297,6 +317,29 @@ ScrollTrigger.defaults({
                                 <?php if ( ! empty( $info['popular'] ) ) : ?>
                                 <span class="gsap-badge">Popular</span>
                                 <?php endif; ?>
+                                <span class="gsap-plugin-card__check">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+                                </span>
+                            </div>
+                            <p class="gsap-plugin-card__desc"><?php echo esc_html( $info['desc'] ); ?></p>
+                        </label>
+                        <?php endforeach; ?>
+                    </div>
+
+                    <h3 class="gsap-plugins-section-title" style="margin-top:1.5rem">Plugins bonus <span>carregados do servidor local (assets/js/vendor/)</span></h3>
+                    <div class="gsap-plugins-grid">
+                        <?php foreach ( $plugins_info as $name => $info ) : if ( empty( $info['bonus'] ) ) continue; ?>
+                        <label class="gsap-plugin-card gsap-plugin-card--bonus <?php echo ! empty( $s['plugins'][ $name ] ) ? 'is-active' : ''; ?>">
+                            <input type="checkbox"
+                                   name="<?php echo GSAP_MANAGER_OPTION; ?>[plugins][<?php echo esc_attr( $name ); ?>]"
+                                   value="1"
+                                   <?php checked( ! empty( $s['plugins'][ $name ] ) ); ?>>
+                            <div class="gsap-plugin-card__header">
+                                <span class="gsap-plugin-card__name"><?php echo esc_html( $name ); ?></span>
+                                <?php if ( ! empty( $info['popular'] ) ) : ?>
+                                <span class="gsap-badge">Popular</span>
+                                <?php endif; ?>
+                                <span class="gsap-badge gsap-badge--bonus">Bonus</span>
                                 <span class="gsap-plugin-card__check">
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
                                 </span>
@@ -602,7 +645,6 @@ add_action('wp_enqueue_scripts', function() {
                             <tbody>
                                 <tr><td>GSAP Core</td><td><code>gsap</code></td></tr>
                                 <tr><td>ScrollTrigger</td><td><code>gsap-scrolltrigger</code></td></tr>
-                                <tr><td>ScrollSmoother</td><td><code>gsap-scrollsmoother</code></td></tr>
                                 <tr><td>ScrollToPlugin</td><td><code>gsap-scrolltoplugin</code></td></tr>
                                 <tr><td>Draggable</td><td><code>gsap-draggable</code></td></tr>
                                 <tr><td>Flip</td><td><code>gsap-flip</code></td></tr>
@@ -610,6 +652,19 @@ add_action('wp_enqueue_scripts', function() {
                                 <tr><td>TextPlugin</td><td><code>gsap-textplugin</code></td></tr>
                                 <tr><td>Observer</td><td><code>gsap-observer</code></td></tr>
                                 <tr><td>CustomEase</td><td><code>gsap-customease</code></td></tr>
+                                <tr><td>EasePack</td><td><code>gsap-easepack</code></td></tr>
+                                <tr><td>CSSRulePlugin</td><td><code>gsap-cssruleplugin</code></td></tr>
+                                <tr><td colspan="2" style="padding-top:.75rem;font-size:11px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Bonus (local)</td></tr>
+                                <tr><td>ScrollSmoother</td><td><code>gsap-scrollsmoother</code></td></tr>
+                                <tr><td>SplitText</td><td><code>gsap-splittext</code></td></tr>
+                                <tr><td>MorphSVGPlugin</td><td><code>gsap-morphsvgplugin</code></td></tr>
+                                <tr><td>DrawSVGPlugin</td><td><code>gsap-drawsvgplugin</code></td></tr>
+                                <tr><td>InertiaPlugin</td><td><code>gsap-inertiaplugin</code></td></tr>
+                                <tr><td>ScrambleTextPlugin</td><td><code>gsap-scrambletextplugin</code></td></tr>
+                                <tr><td>CustomBounce</td><td><code>gsap-custombounce</code></td></tr>
+                                <tr><td>CustomWiggle</td><td><code>gsap-customwiggle</code></td></tr>
+                                <tr><td>Physics2DPlugin</td><td><code>gsap-physics2dplugin</code></td></tr>
+                                <tr><td>GSDevTools</td><td><code>gsap-gsdevtools</code></td></tr>
                             </tbody>
                         </table>
                     </div>

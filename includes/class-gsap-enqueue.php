@@ -12,7 +12,7 @@ class GSAP_Enqueue {
     // Espelha o npm — inclui todos os plugins desde que o GSAP virou gratuito
     const UNPKG_BASE = 'https://unpkg.com/gsap@';
 
-    // Mapeamento plugin → arquivo CDN (cdnjs)
+    // Plugins disponíveis no cdnjs (carregam via CDN ou local conforme configuração)
     const PLUGIN_FILES = [
         'ScrollTrigger'    => 'ScrollTrigger.min.js',
         'ScrollToPlugin'   => 'ScrollToPlugin.min.js',
@@ -22,11 +22,26 @@ class GSAP_Enqueue {
         'TextPlugin'       => 'TextPlugin.min.js',
         'Observer'         => 'Observer.min.js',
         'CustomEase'       => 'CustomEase.min.js',
+        'EasePack'         => 'EasePack.min.js',
+        'CSSRulePlugin'    => 'CSSRulePlugin.min.js',
     ];
 
-    // Plugins que usam o CDN unpkg em vez do cdnjs
-    const UNPKG_PLUGIN_FILES = [
-        'ScrollSmoother' => 'dist/ScrollSmoother.min.js',
+    // Plugins bonus — sempre carregados do local (assets/js/vendor/)
+    const BONUS_PLUGIN_FILES = [
+        'ScrollSmoother'     => 'ScrollSmoother.min.js',
+        'SplitText'          => 'SplitText.min.js',
+        'MorphSVGPlugin'     => 'MorphSVGPlugin.min.js',
+        'DrawSVGPlugin'      => 'DrawSVGPlugin.min.js',
+        'InertiaPlugin'      => 'InertiaPlugin.min.js',
+        'ScrambleTextPlugin' => 'ScrambleTextPlugin.min.js',
+        'CustomBounce'       => 'CustomBounce.min.js',
+        'CustomWiggle'       => 'CustomWiggle.min.js',
+        'Physics2DPlugin'    => 'Physics2DPlugin.min.js',
+        'PhysicsPropsPlugin' => 'PhysicsPropsPlugin.min.js',
+        'MotionPathHelper'   => 'MotionPathHelper.min.js',
+        'GSDevTools'         => 'GSDevTools.min.js',
+        'EaselPlugin'        => 'EaselPlugin.min.js',
+        'PixiPlugin'         => 'PixiPlugin.min.js',
     ];
 
     public function __construct() {
@@ -114,31 +129,32 @@ class GSAP_Enqueue {
             );
         }
 
-        // ── Plugins (local-only — bonus plugins não disponíveis no cdnjs) ──────
-        // ScrollSmoother e outros bonus plugins devem ser colocados manualmente
-        // em assets/js/vendor/. Independente da fonte configurada, esses plugins
-        // sempre carregam do servidor local.
-        foreach ( self::UNPKG_PLUGIN_FILES as $name => $file ) {
+        // ── Plugins bonus (local — assets/js/vendor/) ───────────────────────────
+        foreach ( self::BONUS_PLUGIN_FILES as $name => $file ) {
             if ( empty( $s['plugins'][ $name ] ) ) {
                 continue;
             }
 
-            $local_file = GSAP_MANAGER_PATH . 'assets/js/vendor/' . basename( $file );
+            $local_file = GSAP_MANAGER_PATH . 'assets/js/vendor/' . $file;
             if ( ! file_exists( $local_file ) ) {
-                continue; // arquivo não encontrado — não tenta carregar
+                continue; // arquivo não encontrado — ignora silenciosamente
             }
 
-            // ScrollSmoother requer ScrollTrigger
             $deps = [ 'gsap' ];
-            if ( $name === 'ScrollSmoother' && ! empty( $s['plugins']['ScrollTrigger'] ) ) {
-                $deps[] = 'gsap-scrolltrigger';
+            if ( ! empty( $s['plugins']['ScrollTrigger'] ) ) {
+                // ScrollSmoother, InertiaPlugin e MotionPathHelper beneficiam do ScrollTrigger
+                if ( in_array( $name, [ 'ScrollSmoother', 'InertiaPlugin', 'MotionPathHelper' ], true ) ) {
+                    $deps[] = 'gsap-scrolltrigger';
+                }
             }
-
-            $url = GSAP_MANAGER_URL . 'assets/js/vendor/' . basename( $file );
+            // CustomBounce e CustomWiggle dependem do CustomEase
+            if ( in_array( $name, [ 'CustomBounce', 'CustomWiggle' ], true ) && ! empty( $s['plugins']['CustomEase'] ) ) {
+                $deps[] = 'gsap-customease';
+            }
 
             wp_enqueue_script(
                 'gsap-' . strtolower( $name ),
-                $url,
+                GSAP_MANAGER_URL . 'assets/js/vendor/' . $file,
                 $deps,
                 $version,
                 $footer

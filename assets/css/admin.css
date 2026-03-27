@@ -349,6 +349,28 @@
     text-transform: uppercase;
     letter-spacing: .4px;
 }
+.gsap-badge--bonus {
+    background: rgba(139,92,246,.15);
+    color: #8b5cf6;
+}
+
+/* ── Separador de seção de plugins ── */
+.gsap-plugins-section-title {
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    color: var(--gsap-muted);
+    margin: 0 0 .75rem;
+}
+.gsap-plugins-section-title span {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+}
+.gsap-plugin-card--bonus { border-color: rgba(139,92,246,.2); }
+.gsap-plugin-card--bonus.is-active { border-color: #8b5cf6; background: rgba(139,92,246,.06); }
+.gsap-plugin-card--bonus.is-active .gsap-plugin-card__check { background: #8b5cf6; }
 
 /* ── Actions ── */
 .gsap-actions { padding: 8px 0 0; }
