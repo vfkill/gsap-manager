@@ -1,5 +1,5 @@
 /**
- * GSAP Manager — Animações por Classe  v1.7.0
+ * GSAP Manager — Animações por Classe  v2.1.0
  *
  * Atributos de controle (opcionais em qualquer elemento):
  *   data-gsap-duration  — duração em segundos    (ex: 1.2)
@@ -22,6 +22,8 @@
  *   (nenhuma)        → aguarda o elemento entrar na viewport (padrão)
  *   gsap-on-scroll   → igual ao padrão (mantido por compatibilidade)
  *   gsap-on-load     → anima imediatamente quando a página carrega
+ *   gsap-char-scrub  → modifica gsap-char-reveal: progresso vinculado ao scroll (requer ScrollTrigger)
+ *   gsap-word-scrub  → modifica gsap-word-reveal: progresso vinculado ao scroll (requer ScrollTrigger)
  */
 
 (function () {
@@ -333,95 +335,84 @@
 
     function initTextAnimations() {
 
+        // gsap-char-reveal [+ gsap-char-scrub]
+        // Sem gsap-char-scrub → dispara uma vez ao entrar na viewport.
+        // Com gsap-char-scrub → progresso vinculado à posição do scroll (requer ScrollTrigger).
         document.querySelectorAll('.gsap-char-reveal').forEach(function (el) {
-            playOnScroll(el, function () {
+            if (el.classList.contains('gsap-char-scrub')) {
+                if (typeof ScrollTrigger === 'undefined') {
+                    console.warn('[GSAP Manager] gsap-char-scrub requer ScrollTrigger ativo nas configurações do plugin.');
+                    return;
+                }
                 var r = splitChars(el);
-                gsap.from(r.spans, {
-                    clipPath:   'inset(0 0 110% 0)',
-                    y:          '30%',
-                    duration:   resolveDuration(el, 0.65),
-                    delay:      resolveDelay(el),
-                    stagger:    num(el, 'stagger', 0.028),
-                    ease:       str(el, 'ease', 'power4.out'),
-                    onComplete: r.revert,
+                gsap.timeline({
+                    scrollTrigger: {
+                        trigger: el,
+                        start:   str(el, 'start',  'top 85%'),
+                        end:     str(el, 'end',    'center 30%'),
+                        scrub:   num(el, 'scrub',  1),
+                    }
+                }).from(r.spans, {
+                    clipPath: 'inset(0 0 110% 0)',
+                    y:        '25%',
+                    opacity:  0,
+                    stagger:  { each: num(el, 'stagger', 0.04), from: 'start' },
+                    ease:     str(el, 'ease', 'none'),
                 });
-            });
+            } else {
+                playOnScroll(el, function () {
+                    var r = splitChars(el);
+                    gsap.from(r.spans, {
+                        clipPath:   'inset(0 0 110% 0)',
+                        y:          '30%',
+                        duration:   resolveDuration(el, 0.65),
+                        delay:      resolveDelay(el),
+                        stagger:    num(el, 'stagger', 0.028),
+                        ease:       str(el, 'ease', 'power4.out'),
+                        onComplete: r.revert,
+                    });
+                });
+            }
         });
 
+        // gsap-word-reveal [+ gsap-word-scrub]
+        // Sem gsap-word-scrub → dispara uma vez ao entrar na viewport.
+        // Com gsap-word-scrub → progresso vinculado à posição do scroll (requer ScrollTrigger).
         document.querySelectorAll('.gsap-word-reveal').forEach(function (el) {
-            playOnScroll(el, function () {
+            if (el.classList.contains('gsap-word-scrub')) {
+                if (typeof ScrollTrigger === 'undefined') {
+                    console.warn('[GSAP Manager] gsap-word-scrub requer ScrollTrigger ativo nas configurações do plugin.');
+                    return;
+                }
                 var r = splitWords(el);
-                gsap.from(r.spans, {
-                    clipPath:   'inset(0 0 110% 0)',
-                    y:          '30%',
-                    duration:   resolveDuration(el, 0.6),
-                    delay:      resolveDelay(el),
-                    stagger:    num(el, 'stagger', 0.07),
-                    ease:       str(el, 'ease', 'power4.out'),
-                    onComplete: r.revert,
+                gsap.timeline({
+                    scrollTrigger: {
+                        trigger: el,
+                        start:   str(el, 'start',  'top 85%'),
+                        end:     str(el, 'end',    'center 30%'),
+                        scrub:   num(el, 'scrub',  1),
+                    }
+                }).from(r.spans, {
+                    clipPath: 'inset(0 0 110% 0)',
+                    y:        '25%',
+                    opacity:  0,
+                    stagger:  { each: num(el, 'stagger', 0.1), from: 'start' },
+                    ease:     str(el, 'ease', 'none'),
                 });
-            });
-        });
-
-        /* gsap-char-scrub — cada caractere revela/esconde com o scroll ─── */
-        // Requer ScrollTrigger ativo nas configurações do plugin.
-        // O progresso da animação é vinculado à posição do scroll:
-        // scroll down → revela caractere a caractere / scroll up → desfaz.
-        // data-gsap-start  (padrão: "top 85%")   — onde a animação começa
-        // data-gsap-end    (padrão: "center 30%") — onde a animação termina
-        // data-gsap-scrub  (padrão: 1)            — suavização (0 = imediato)
-        // data-gsap-stagger (padrão: 0.04)        — intervalo entre chars
-        document.querySelectorAll('.gsap-char-scrub').forEach(function (el) {
-            if (typeof ScrollTrigger === 'undefined') {
-                console.warn('[GSAP Manager] gsap-char-scrub requer ScrollTrigger ativo nas configurações do plugin.');
-                return;
+            } else {
+                playOnScroll(el, function () {
+                    var r = splitWords(el);
+                    gsap.from(r.spans, {
+                        clipPath:   'inset(0 0 110% 0)',
+                        y:          '30%',
+                        duration:   resolveDuration(el, 0.6),
+                        delay:      resolveDelay(el),
+                        stagger:    num(el, 'stagger', 0.07),
+                        ease:       str(el, 'ease', 'power4.out'),
+                        onComplete: r.revert,
+                    });
+                });
             }
-
-            // Split acontece no init (estilos já resolvidos pelo window.load + fonts.ready)
-            // GSAP aplica o estado "from" imediatamente → chars ficam clipped desde o início
-            var r = splitChars(el);
-
-            gsap.timeline({
-                scrollTrigger: {
-                    trigger:       el,
-                    start:         str(el, 'start',  'top 85%'),
-                    end:           str(el, 'end',    'center 30%'),
-                    scrub:         num(el, 'scrub',  1),
-                }
-            }).from(r.spans, {
-                clipPath: 'inset(0 0 110% 0)',
-                y:        '25%',
-                opacity:  0,
-                stagger:  { each: num(el, 'stagger', 0.04), from: 'start' },
-                ease:     str(el, 'ease', 'none'),
-            });
-        });
-
-        /* gsap-word-scrub — cada palavra revela/esconde com o scroll ───── */
-        // Mesma lógica do gsap-char-scrub mas em granularidade de palavra.
-        // data-gsap-stagger (padrão: 0.1) — intervalo entre palavras
-        document.querySelectorAll('.gsap-word-scrub').forEach(function (el) {
-            if (typeof ScrollTrigger === 'undefined') {
-                console.warn('[GSAP Manager] gsap-word-scrub requer ScrollTrigger ativo nas configurações do plugin.');
-                return;
-            }
-
-            var r = splitWords(el);
-
-            gsap.timeline({
-                scrollTrigger: {
-                    trigger:       el,
-                    start:         str(el, 'start',  'top 85%'),
-                    end:           str(el, 'end',    'center 30%'),
-                    scrub:         num(el, 'scrub',  1),
-                }
-            }).from(r.spans, {
-                clipPath: 'inset(0 0 110% 0)',
-                y:        '25%',
-                opacity:  0,
-                stagger:  { each: num(el, 'stagger', 0.1), from: 'start' },
-                ease:     str(el, 'ease', 'none'),
-            });
         });
 
         document.querySelectorAll('.gsap-text-fade').forEach(function (el) {
