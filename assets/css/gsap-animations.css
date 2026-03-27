@@ -1,0 +1,122 @@
+/* ============================================================
+   GSAP Manager — Frontend Utility Styles
+   Estilos base necessários para as animações por classe.
+   ============================================================ */
+
+/* ── gsap-text-highlight ── */
+.gsap-text-highlight {
+    background-image: linear-gradient(
+        120deg,
+        var(--gsap-highlight-color, #0AE448) 0%,
+        var(--gsap-highlight-color, #0AE448) 100%
+    );
+    background-repeat: no-repeat;
+    background-position: 0 90%;
+    background-size: 0% 35%;
+    display: inline;
+    padding-bottom: 2px;
+}
+
+/*
+ * gsap-char-reveal / gsap-word-reveal
+ * Os spans gerados pelo JS herdam TUDO do pai (font, color, spacing).
+ * Não adicionamos nenhum estilo aqui para não interferir com o WordPress.
+ * O will-change já é definido inline pelo JS para ativar somente quando necessário.
+ */
+
+/* ── gsap-img-reveal / gsap-clip-* ─── clip-path precisa de will-change ── */
+.gsap-img-reveal,
+.gsap-clip-left,
+.gsap-clip-right,
+.gsap-clip-top,
+.gsap-clip-bottom {
+    will-change: clip-path;
+}
+
+/* ── gsap-img-zoom / gsap-scale-* ── */
+.gsap-img-zoom,
+.gsap-scale-in,
+.gsap-scale-out {
+    will-change: transform, opacity;
+}
+
+/* ── gsap-img-parallax ─── evita overflow ───────────────────────────────── */
+.gsap-img-parallax {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    will-change: transform;
+}
+
+/* ── gsap-tilt ─── preserva 3D ──────────────────────────────────────────── */
+.gsap-tilt {
+    transform-style: preserve-3d;
+}
+
+/* ── gsap-marquee ─── container ─────────────────────────────────────────── */
+.gsap-marquee {
+    overflow: hidden;
+    display: flex;
+    white-space: nowrap;
+    gap: 0;
+}
+.gsap-marquee > * {
+    flex-shrink: 0;
+    will-change: transform;
+}
+
+/* ── gsap-magnetic ──────────────────────────────────────────────────────── */
+.gsap-magnetic {
+    display: inline-block;
+    will-change: transform;
+}
+
+/* ── gsap-hover-lift ────────────────────────────────────────────────────── */
+.gsap-hover-lift {
+    display: inline-block;
+    will-change: transform;
+}
+
+/* ── gsap-progress ─── barra de progresso ───────────────────────────────── */
+.gsap-progress {
+    display: block;
+    height: var(--gsap-progress-height, 6px);
+    border-radius: 999px;
+    background: var(--gsap-progress-color, #0AE448);
+    will-change: width;
+}
+
+/* ── Acessibilidade: respeita preferência de menos movimento ────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .gsap-char-reveal span,
+    .gsap-word-reveal span,
+    .gsap-text-fade,
+    .gsap-text-blur,
+    .gsap-fade-up,
+    .gsap-fade-down,
+    .gsap-fade-left,
+    .gsap-fade-right,
+    .gsap-fade-in,
+    .gsap-scale-in,
+    .gsap-scale-out,
+    .gsap-rotate-in,
+    .gsap-flip-in,
+    .gsap-img-reveal,
+    .gsap-img-zoom,
+    .gsap-img-fade,
+    .gsap-clip-left,
+    .gsap-clip-right,
+    .gsap-clip-top,
+    .gsap-clip-bottom {
+        animation: none !important;
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+        clip-path: none !important;
+        filter: none !important;
+    }
+    .gsap-text-highlight {
+        background-size: 100% 35% !important;
+    }
+}

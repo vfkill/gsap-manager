@@ -1,0 +1,6 @@
+# WordPress
+*.log
+.DS_Store
+
+# Vendor (local GSAP files, se usar source: local)
+assets/js/vendor/
