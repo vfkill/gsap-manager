@@ -259,22 +259,44 @@
     }
 
     function splitChars(el) {
-        var savedHTML = el.innerHTML;           // salva o container inteiro
-        var target    = findTextTarget(el);     // encontra onde o texto e estilos realmente estão
-        var styles    = captureStyles(target);  // captura estilos do elemento correto
+        var savedHTML = el.innerHTML;
+        var target    = findTextTarget(el);
+        var styles    = captureStyles(target);
         var text      = target.textContent;
 
-        target.innerHTML = '';                  // limpa apenas o elemento de texto
+        target.innerHTML = '';
         target.setAttribute('aria-label', text);
 
-        var spans = Array.from(text).map(function (ch) {
-            var span = document.createElement('span');
-            span.style.display    = 'inline-block';
-            span.style.willChange = 'clip-path, transform, opacity';
-            applyStyles(span, styles);
-            span.textContent = ch === ' ' ? '\u00A0' : ch;
-            target.appendChild(span);
-            return span;
+        var spans = [];
+
+        // Divide em palavras e espaços. Cada palavra recebe um wrapper
+        // com white-space: nowrap para impedir que o browser quebre
+        // a linha no meio de uma palavra (entre caracteres individuais).
+        // Os espaços entre palavras ficam como nós de texto normais,
+        // permitindo que a quebra de linha ocorra entre palavras — como
+        // no texto original.
+        text.split(/(\s+)/).forEach(function (token) {
+            if (/^\s+$/.test(token)) {
+                // Espaço entre palavras: nó de texto simples → quebra de linha natural
+                target.appendChild(document.createTextNode(' '));
+            } else if (token.length > 0) {
+                // Wrapper da palavra — inline-block + nowrap evita break dentro da palavra
+                var wordWrap = document.createElement('span');
+                wordWrap.style.display    = 'inline-block';
+                wordWrap.style.whiteSpace = 'nowrap';
+
+                Array.from(token).forEach(function (ch) {
+                    var span = document.createElement('span');
+                    span.style.display    = 'inline-block';
+                    span.style.willChange = 'clip-path, transform, opacity';
+                    applyStyles(span, styles);
+                    span.textContent = ch;
+                    wordWrap.appendChild(span);
+                    spans.push(span);
+                });
+
+                target.appendChild(wordWrap);
+            }
         });
 
         return { spans: spans, revert: function () { el.innerHTML = savedHTML; } };
