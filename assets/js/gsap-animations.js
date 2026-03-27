@@ -8,7 +8,8 @@
  *   data-gsap-distance  — distância em px         (ex: 80)
  *   data-gsap-stagger   — stagger em segundos     (ex: 0.15)
  *   data-gsap-start     — ScrollTrigger start     (ex: "top 70%")
- *   data-gsap-scrub     — scrub no parallax       (ex: 1)
+ *   data-gsap-end       — ScrollTrigger end       (ex: "bottom 20%")  ← scrub
+ *   data-gsap-scrub     — suavização do scrub     (ex: 1)
  *   data-gsap-dir       — direção (img-reveal)    (ex: "right")
  *   data-gsap-strength  — força do efeito         (ex: 0.5)
  *   data-gsap-from      — valor inicial (counter) (ex: 0)
@@ -359,6 +360,67 @@
                     ease:       str(el, 'ease', 'power4.out'),
                     onComplete: r.revert,
                 });
+            });
+        });
+
+        /* gsap-char-scrub — cada caractere revela/esconde com o scroll ─── */
+        // Requer ScrollTrigger ativo nas configurações do plugin.
+        // O progresso da animação é vinculado à posição do scroll:
+        // scroll down → revela caractere a caractere / scroll up → desfaz.
+        // data-gsap-start  (padrão: "top 85%")   — onde a animação começa
+        // data-gsap-end    (padrão: "center 30%") — onde a animação termina
+        // data-gsap-scrub  (padrão: 1)            — suavização (0 = imediato)
+        // data-gsap-stagger (padrão: 0.04)        — intervalo entre chars
+        document.querySelectorAll('.gsap-char-scrub').forEach(function (el) {
+            if (typeof ScrollTrigger === 'undefined') {
+                console.warn('[GSAP Manager] gsap-char-scrub requer ScrollTrigger ativo nas configurações do plugin.');
+                return;
+            }
+
+            // Split acontece no init (estilos já resolvidos pelo window.load + fonts.ready)
+            // GSAP aplica o estado "from" imediatamente → chars ficam clipped desde o início
+            var r = splitChars(el);
+
+            gsap.timeline({
+                scrollTrigger: {
+                    trigger:       el,
+                    start:         str(el, 'start',  'top 85%'),
+                    end:           str(el, 'end',    'center 30%'),
+                    scrub:         num(el, 'scrub',  1),
+                }
+            }).from(r.spans, {
+                clipPath: 'inset(0 0 110% 0)',
+                y:        '25%',
+                opacity:  0,
+                stagger:  { each: num(el, 'stagger', 0.04), from: 'start' },
+                ease:     str(el, 'ease', 'none'),
+            });
+        });
+
+        /* gsap-word-scrub — cada palavra revela/esconde com o scroll ───── */
+        // Mesma lógica do gsap-char-scrub mas em granularidade de palavra.
+        // data-gsap-stagger (padrão: 0.1) — intervalo entre palavras
+        document.querySelectorAll('.gsap-word-scrub').forEach(function (el) {
+            if (typeof ScrollTrigger === 'undefined') {
+                console.warn('[GSAP Manager] gsap-word-scrub requer ScrollTrigger ativo nas configurações do plugin.');
+                return;
+            }
+
+            var r = splitWords(el);
+
+            gsap.timeline({
+                scrollTrigger: {
+                    trigger:       el,
+                    start:         str(el, 'start',  'top 85%'),
+                    end:           str(el, 'end',    'center 30%'),
+                    scrub:         num(el, 'scrub',  1),
+                }
+            }).from(r.spans, {
+                clipPath: 'inset(0 0 110% 0)',
+                y:        '25%',
+                opacity:  0,
+                stagger:  { each: num(el, 'stagger', 0.1), from: 'start' },
+                ease:     str(el, 'ease', 'none'),
             });
         });
 
