@@ -372,18 +372,31 @@ ScrollTrigger.defaults({
                 <div class="gsap-attrs-box gsap-attrs-box--trigger">
                     <h3>Classes de gatilho — <em>quando</em> a animação dispara</h3>
                     <div class="gsap-trigger-grid">
-                        <div class="gsap-trigger-item">
-                            <code>gsap-on-scroll</code>
-                            <span>Anima quando o elemento entra na tela (scroll). Requer ScrollTrigger ativo.</span>
-                        </div>
                         <div class="gsap-trigger-item gsap-trigger-item--muted">
                             <code>(nenhuma)</code>
-                            <span>Anima imediatamente ao carregar a página. Ideal para elementos da hero.</span>
+                            <span>Comportamento padrão: aguarda o elemento entrar na viewport para animar.</span>
+                        </div>
+                        <div class="gsap-trigger-item">
+                            <code>gsap-on-scroll</code>
+                            <span>Idêntico ao padrão — mantido por compatibilidade.</span>
+                        </div>
+                        <div class="gsap-trigger-item">
+                            <code>gsap-on-load</code>
+                            <span>Anima imediatamente ao carregar a página, sem aguardar o scroll. Ideal para elementos da hero.</span>
+                        </div>
+                        <div class="gsap-trigger-item">
+                            <code>gsap-char-scrub</code>
+                            <span>Modifica <code>gsap-char-reveal</code>: o progresso da animação é vinculado à posição do scroll (revelar/esconder com scroll up/down). Requer ScrollTrigger.</span>
+                        </div>
+                        <div class="gsap-trigger-item">
+                            <code>gsap-word-scrub</code>
+                            <span>Modifica <code>gsap-word-reveal</code>: mesma lógica do gsap-char-scrub, mas em granularidade de palavra. Requer ScrollTrigger.</span>
                         </div>
                     </div>
                     <p class="gsap-trigger-example">
-                        Exemplo: <code>gsap-char-reveal</code> → anima ao carregar &nbsp;|&nbsp;
-                        <code>gsap-char-reveal gsap-on-scroll</code> → anima ao scrollar
+                        Exemplo: <code>gsap-char-reveal</code> → anima ao entrar na viewport &nbsp;|&nbsp;
+                        <code>gsap-char-reveal gsap-on-load</code> → anima ao carregar &nbsp;|&nbsp;
+                        <code>gsap-char-reveal gsap-char-scrub</code> → scrub com o scroll
                     </p>
                 </div>
 
