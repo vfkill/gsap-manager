@@ -502,18 +502,23 @@ ScrollTrigger.defaults({
                             <span>Anima imediatamente ao carregar a página, sem aguardar o scroll. Ideal para elementos da hero.</span>
                         </div>
                         <div class="gsap-trigger-item">
+                            <code>gsap-scrub</code>
+                            <span>Modifica <code>gsap-text-fade</code>, <code>gsap-text-blur</code> e <code>gsap-text-highlight</code>: progresso vinculado ao scroll. Requer ScrollTrigger.</span>
+                        </div>
+                        <div class="gsap-trigger-item">
                             <code>gsap-char-scrub</code>
-                            <span>Modifica <code>gsap-char-reveal</code>: o progresso da animação é vinculado à posição do scroll (revelar/esconder com scroll up/down). Requer ScrollTrigger.</span>
+                            <span>Modifica <code>gsap-char-reveal</code>: revela/esconde caractere a caractere com o scroll. Requer ScrollTrigger.</span>
                         </div>
                         <div class="gsap-trigger-item">
                             <code>gsap-word-scrub</code>
-                            <span>Modifica <code>gsap-word-reveal</code>: mesma lógica do gsap-char-scrub, mas em granularidade de palavra. Requer ScrollTrigger.</span>
+                            <span>Modifica <code>gsap-word-reveal</code>: revela/esconde palavra a palavra com o scroll. Requer ScrollTrigger.</span>
                         </div>
                     </div>
                     <p class="gsap-trigger-example">
                         Exemplo: <code>gsap-char-reveal</code> → anima ao entrar na viewport &nbsp;|&nbsp;
                         <code>gsap-char-reveal gsap-on-load</code> → anima ao carregar &nbsp;|&nbsp;
-                        <code>gsap-char-reveal gsap-char-scrub</code> → scrub com o scroll
+                        <code>gsap-text-fade gsap-scrub</code> → fade vinculado ao scroll &nbsp;|&nbsp;
+                        <code>gsap-char-reveal gsap-char-scrub</code> → chars vinculados ao scroll
                     </p>
                 </div>
 
@@ -552,7 +557,10 @@ ScrollTrigger.defaults({
                         <?php foreach ( $items as $item ) : ?>
                         <div class="gsap-ref-item">
                             <div class="gsap-ref-item__header">
-                                <code class="gsap-ref-class">.<?php echo esc_html( $item['class'] ); ?></code>
+                                <button class="gsap-copy-btn" data-copy="<?php echo esc_attr( $item['class'] ); ?>" title="Copiar classe">
+                                    <code class="gsap-ref-class">.<?php echo esc_html( $item['class'] ); ?></code>
+                                    <svg class="gsap-copy-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                </button>
                                 <?php if ( $item['req'] ) : ?>
                                 <span class="gsap-ref-req" title="Requer este plugin ativo">
                                     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
@@ -561,13 +569,6 @@ ScrollTrigger.defaults({
                                 <?php endif; ?>
                             </div>
                             <p class="gsap-ref-item__desc"><?php echo wp_kses( $item['desc'], [ 'code' => [] ] ); ?></p>
-                            <div class="gsap-ref-item__code">
-                                <button class="gsap-copy-btn" data-copy="<?php echo esc_attr( $item['ex'] ); ?>">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                                    Copiar
-                                </button>
-                                <pre><code><?php echo esc_html( $item['ex'] ); ?></code></pre>
-                            </div>
                         </div>
                         <?php endforeach; ?>
                     </div>

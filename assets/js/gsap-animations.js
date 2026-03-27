@@ -24,6 +24,7 @@
  *   gsap-on-load     → anima imediatamente quando a página carrega
  *   gsap-char-scrub  → modifica gsap-char-reveal: progresso vinculado ao scroll (requer ScrollTrigger)
  *   gsap-word-scrub  → modifica gsap-word-reveal: progresso vinculado ao scroll (requer ScrollTrigger)
+ *   gsap-scrub       → modifica gsap-text-fade / gsap-text-blur / gsap-text-highlight: scrub genérico
  */
 
 (function () {
@@ -416,15 +417,31 @@
         });
 
         document.querySelectorAll('.gsap-text-fade').forEach(function (el) {
-            playOnScroll(el, function () {
-                gsap.from(el, {
-                    y:        num(el, 'distance', 24),
-                    opacity:  0,
-                    duration: resolveDuration(el, 0.9),
-                    delay:    resolveDelay(el),
-                    ease:     str(el, 'ease', 'power3.out'),
+            if (el.classList.contains('gsap-scrub')) {
+                if (typeof ScrollTrigger === 'undefined') { return; }
+                gsap.timeline({
+                    scrollTrigger: {
+                        trigger: el,
+                        start:   str(el, 'start', 'top 85%'),
+                        end:     str(el, 'end',   'center 30%'),
+                        scrub:   num(el, 'scrub', 1),
+                    }
+                }).from(el, {
+                    y:       num(el, 'distance', 24),
+                    opacity: 0,
+                    ease:    str(el, 'ease', 'none'),
                 });
-            });
+            } else {
+                playOnScroll(el, function () {
+                    gsap.from(el, {
+                        y:        num(el, 'distance', 24),
+                        opacity:  0,
+                        duration: resolveDuration(el, 0.9),
+                        delay:    resolveDelay(el),
+                        ease:     str(el, 'ease', 'power3.out'),
+                    });
+                });
+            }
         });
 
         document.querySelectorAll('.gsap-typewriter').forEach(function (el) {
@@ -453,28 +470,60 @@
         });
 
         document.querySelectorAll('.gsap-text-blur').forEach(function (el) {
-            playOnScroll(el, function () {
-                gsap.from(el, {
-                    filter:   'blur(14px)',
-                    opacity:  0,
-                    y:        num(el, 'distance', 10),
-                    duration: resolveDuration(el, 1.1),
-                    delay:    resolveDelay(el),
-                    ease:     str(el, 'ease', 'power2.out'),
+            if (el.classList.contains('gsap-scrub')) {
+                if (typeof ScrollTrigger === 'undefined') { return; }
+                gsap.timeline({
+                    scrollTrigger: {
+                        trigger: el,
+                        start:   str(el, 'start', 'top 85%'),
+                        end:     str(el, 'end',   'center 30%'),
+                        scrub:   num(el, 'scrub', 1),
+                    }
+                }).from(el, {
+                    filter:  'blur(14px)',
+                    opacity: 0,
+                    y:       num(el, 'distance', 10),
+                    ease:    str(el, 'ease', 'none'),
                 });
-            });
+            } else {
+                playOnScroll(el, function () {
+                    gsap.from(el, {
+                        filter:   'blur(14px)',
+                        opacity:  0,
+                        y:        num(el, 'distance', 10),
+                        duration: resolveDuration(el, 1.1),
+                        delay:    resolveDelay(el),
+                        ease:     str(el, 'ease', 'power2.out'),
+                    });
+                });
+            }
         });
 
         document.querySelectorAll('.gsap-text-highlight').forEach(function (el) {
             gsap.set(el, { backgroundSize: '0% 40%' });
-            playOnScroll(el, function () {
-                gsap.to(el, {
+            if (el.classList.contains('gsap-scrub')) {
+                if (typeof ScrollTrigger === 'undefined') { return; }
+                gsap.timeline({
+                    scrollTrigger: {
+                        trigger: el,
+                        start:   str(el, 'start', 'top 85%'),
+                        end:     str(el, 'end',   'center 30%'),
+                        scrub:   num(el, 'scrub', 1),
+                    }
+                }).to(el, {
                     backgroundSize: '100% 40%',
-                    duration: resolveDuration(el, 0.75),
-                    delay:    resolveDelay(el),
-                    ease:     str(el, 'ease', 'power2.inOut'),
+                    ease: str(el, 'ease', 'none'),
                 });
-            });
+            } else {
+                playOnScroll(el, function () {
+                    gsap.to(el, {
+                        backgroundSize: '100% 40%',
+                        duration: resolveDuration(el, 0.75),
+                        delay:    resolveDelay(el),
+                        ease:     str(el, 'ease', 'power2.inOut'),
+                    });
+                });
+            }
         });
 
         document.querySelectorAll('.gsap-scramble').forEach(function (el) {
