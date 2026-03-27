@@ -114,10 +114,18 @@ class GSAP_Enqueue {
             );
         }
 
-        // ── Plugins (unpkg — bonus plugins) ─────────────────────────────────
+        // ── Plugins (local-only — bonus plugins não disponíveis no cdnjs) ──────
+        // ScrollSmoother e outros bonus plugins devem ser colocados manualmente
+        // em assets/js/vendor/. Independente da fonte configurada, esses plugins
+        // sempre carregam do servidor local.
         foreach ( self::UNPKG_PLUGIN_FILES as $name => $file ) {
             if ( empty( $s['plugins'][ $name ] ) ) {
                 continue;
+            }
+
+            $local_file = GSAP_MANAGER_PATH . 'assets/js/vendor/' . basename( $file );
+            if ( ! file_exists( $local_file ) ) {
+                continue; // arquivo não encontrado — não tenta carregar
             }
 
             // ScrollSmoother requer ScrollTrigger
@@ -126,11 +134,7 @@ class GSAP_Enqueue {
                 $deps[] = 'gsap-scrolltrigger';
             }
 
-            if ( $s['source'] === 'cdn' ) {
-                $url = self::UNPKG_BASE . $version . '/' . $file;
-            } else {
-                $url = GSAP_MANAGER_URL . 'assets/js/vendor/' . basename( $file );
-            }
+            $url = GSAP_MANAGER_URL . 'assets/js/vendor/' . basename( $file );
 
             wp_enqueue_script(
                 'gsap-' . strtolower( $name ),

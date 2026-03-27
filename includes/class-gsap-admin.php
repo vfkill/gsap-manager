@@ -90,7 +90,7 @@ class GSAP_Admin {
 
         $plugins_info = [
             'ScrollTrigger'    => [ 'desc' => 'Animações ativadas por scroll. Essencial para a maioria dos projetos.', 'popular' => true ],
-            'ScrollSmoother'   => [ 'desc' => 'Scroll suavizado com inércia. Habilita efeitos parallax via data-speed e data-lag. Requer ScrollTrigger ativo.', 'popular' => true ],
+            'ScrollSmoother'   => [ 'desc' => 'Scroll suavizado com inércia. Habilita efeitos parallax via data-speed e data-lag. Requer ScrollTrigger ativo. ⚠ Download manual necessário — veja as configurações abaixo.', 'popular' => true ],
             'ScrollToPlugin'   => [ 'desc' => 'Scroll suave para elementos ou posições da página.' ],
             'Draggable'        => [ 'desc' => 'Torna elementos arrastáveis com física realista.' ],
             'Flip'             => [ 'desc' => 'Animações de layout FLIP (First Last Invert Play).' ],
@@ -310,6 +310,10 @@ ScrollTrigger.defaults({
                 <!-- ScrollSmoother: configurações avançadas -->
                 <div class="gsap-card <?php echo empty( $s['plugins']['ScrollSmoother'] ) ? 'gsap-field--hidden' : ''; ?>" id="gsap-smoother-settings">
                     <h2 class="gsap-card__title">Configurações do ScrollSmoother</h2>
+                    <div class="gsap-notice gsap-notice--warn" style="margin-bottom:1rem">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                        <span><strong>Download manual necessário.</strong> ScrollSmoother não está disponível via CDN público — baixe o arquivo <code>ScrollSmoother.min.js</code> em <a href="https://gsap.com/docs/v3/Plugins/ScrollSmoother/" target="_blank" rel="noopener">gsap.com</a> e coloque em <code>assets/js/vendor/</code> do plugin. A fonte "CDN" nas configurações gerais não afeta este plugin.</span>
+                    </div>
                     <p class="gsap-card__desc">
                         Os elementos <code>smooth-wrapper</code> e <code>smooth-content</code> são injetados
                         <strong>automaticamente</strong> pelo plugin via <code>wp_body_open</code> — compatível
