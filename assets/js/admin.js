@@ -15,6 +15,15 @@ jQuery(function ($) {
         $(this).closest('.gsap-plugin-card').toggleClass('is-active', this.checked);
     });
 
+    // ── Mostrar/ocultar configurações do ScrollSmoother ─────────────────────
+    $('input[name="gsap_manager_settings[plugins][ScrollSmoother]"]').on('change', function () {
+        if (this.checked) {
+            $('#gsap-smoother-settings').removeClass('gsap-field--hidden');
+        } else {
+            $('#gsap-smoother-settings').addClass('gsap-field--hidden');
+        }
+    });
+
     // ── Botão copiar código da aba de animações ─────────────────────────────
     $(document).on('click', '.gsap-copy-btn', function () {
         const btn  = $(this);

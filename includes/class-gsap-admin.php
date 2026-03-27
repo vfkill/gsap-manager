@@ -69,6 +69,12 @@ class GSAP_Admin {
             $out['plugins'][ $plugin ] = ! empty( $input['plugins'][ $plugin ] );
         }
 
+        $out['smoother_smooth']    = min( 10, max( 0, floatval( $input['smoother_smooth'] ?? 1.5 ) ) );
+        $out['smoother_effects']   = ! empty( $input['smoother_effects'] );
+        $out['smoother_normalize'] = ! empty( $input['smoother_normalize'] );
+        $out['smoother_wrapper']   = sanitize_text_field( $input['smoother_wrapper'] ?? '#smooth-wrapper' ) ?: '#smooth-wrapper';
+        $out['smoother_content']   = sanitize_text_field( $input['smoother_content'] ?? '#smooth-content' ) ?: '#smooth-content';
+
         return $out;
     }
 
@@ -84,6 +90,7 @@ class GSAP_Admin {
 
         $plugins_info = [
             'ScrollTrigger'    => [ 'desc' => 'Animações ativadas por scroll. Essencial para a maioria dos projetos.', 'popular' => true ],
+            'ScrollSmoother'   => [ 'desc' => 'Scroll suavizado com inércia. Habilita efeitos parallax via data-speed e data-lag. Requer ScrollTrigger ativo.', 'popular' => true ],
             'ScrollToPlugin'   => [ 'desc' => 'Scroll suave para elementos ou posições da página.' ],
             'Draggable'        => [ 'desc' => 'Torna elementos arrastáveis com física realista.' ],
             'Flip'             => [ 'desc' => 'Animações de layout FLIP (First Last Invert Play).' ],
@@ -299,6 +306,73 @@ ScrollTrigger.defaults({
                         <?php endforeach; ?>
                     </div>
                 </div>
+
+                <!-- ScrollSmoother: configurações avançadas -->
+                <div class="gsap-card <?php echo empty( $s['plugins']['ScrollSmoother'] ) ? 'gsap-field--hidden' : ''; ?>" id="gsap-smoother-settings">
+                    <h2 class="gsap-card__title">Configurações do ScrollSmoother</h2>
+                    <p class="gsap-card__desc">
+                        O ScrollSmoother precisa de dois elementos envolvendo todo o conteúdo da página.
+                        Adicione no seu tema (ou via PHP customizado):
+                    </p>
+                    <pre class="gsap-code" style="margin-bottom:1.2rem"><code>&lt;div id="smooth-wrapper"&gt;
+  &lt;div id="smooth-content"&gt;
+    &lt;!-- todo o conteúdo do site aqui --&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+                    <div class="gsap-field">
+                        <label class="gsap-label" for="smoother_smooth">Suavidade do scroll</label>
+                        <input type="number" id="smoother_smooth"
+                               name="<?php echo GSAP_MANAGER_OPTION; ?>[smoother_smooth]"
+                               value="<?php echo esc_attr( $s['smoother_smooth'] ?? 1.5 ); ?>"
+                               class="gsap-input gsap-input--small"
+                               min="0" max="10" step="0.1">
+                        <span class="gsap-field__desc"><strong>0</strong> = sem suavidade (scroll nativo) · <strong>1</strong> = leve · <strong>2+</strong> = muito suave. Padrão: 1.5</span>
+                    </div>
+
+                    <div class="gsap-field gsap-field--toggle">
+                        <div class="gsap-field__label">
+                            <label>Habilitar Effects (<code>data-speed</code> / <code>data-lag</code>)</label>
+                            <span class="gsap-field__desc">Permite parallax e lag em elementos usando atributos <code>data-speed="0.5"</code> e <code>data-lag="0.3"</code> diretamente no HTML.</span>
+                        </div>
+                        <label class="gsap-toggle">
+                            <input type="checkbox" name="<?php echo GSAP_MANAGER_OPTION; ?>[smoother_effects]" value="1" <?php checked( ! empty( $s['smoother_effects'] ) ); ?>>
+                            <span class="gsap-toggle__slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="gsap-field gsap-field--toggle">
+                        <div class="gsap-field__label">
+                            <label>Normalize Scroll</label>
+                            <span class="gsap-field__desc">Normaliza o comportamento do scroll entre dispositivos (mouse, touch, trackpad). Recomendado para experiências altamente customizadas.</span>
+                        </div>
+                        <label class="gsap-toggle">
+                            <input type="checkbox" name="<?php echo GSAP_MANAGER_OPTION; ?>[smoother_normalize]" value="1" <?php checked( ! empty( $s['smoother_normalize'] ) ); ?>>
+                            <span class="gsap-toggle__slider"></span>
+                        </label>
+                    </div>
+
+                    <div class="gsap-field">
+                        <label class="gsap-label" for="smoother_wrapper">Seletor do Wrapper</label>
+                        <input type="text" id="smoother_wrapper"
+                               name="<?php echo GSAP_MANAGER_OPTION; ?>[smoother_wrapper]"
+                               value="<?php echo esc_attr( $s['smoother_wrapper'] ?? '#smooth-wrapper' ); ?>"
+                               class="gsap-input"
+                               placeholder="#smooth-wrapper">
+                        <span class="gsap-field__desc">CSS selector do elemento externo. Padrão: <code>#smooth-wrapper</code></span>
+                    </div>
+
+                    <div class="gsap-field">
+                        <label class="gsap-label" for="smoother_content">Seletor do Content</label>
+                        <input type="text" id="smoother_content"
+                               name="<?php echo GSAP_MANAGER_OPTION; ?>[smoother_content]"
+                               value="<?php echo esc_attr( $s['smoother_content'] ?? '#smooth-content' ); ?>"
+                               class="gsap-input"
+                               placeholder="#smooth-content">
+                        <span class="gsap-field__desc">CSS selector do elemento interno. Padrão: <code>#smooth-content</code></span>
+                    </div>
+                </div>
+
                 </div><!-- /gsap-tab-panel plugins -->
 
                 <!-- Botão salvar — sempre no DOM; oculto via CSS nas abas sem formulário -->
@@ -528,6 +602,7 @@ add_action('wp_enqueue_scripts', function() {
                             <tbody>
                                 <tr><td>GSAP Core</td><td><code>gsap</code></td></tr>
                                 <tr><td>ScrollTrigger</td><td><code>gsap-scrolltrigger</code></td></tr>
+                                <tr><td>ScrollSmoother</td><td><code>gsap-scrollsmoother</code></td></tr>
                                 <tr><td>ScrollToPlugin</td><td><code>gsap-scrolltoplugin</code></td></tr>
                                 <tr><td>Draggable</td><td><code>gsap-draggable</code></td></tr>
                                 <tr><td>Flip</td><td><code>gsap-flip</code></td></tr>
