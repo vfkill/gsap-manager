@@ -61,7 +61,7 @@
     }
 
     // ─── ScrollSmoother: efeitos de parallax por classe ─────────────────────
-    // gsap-speed-slow  → speed 0.6, lag 0.1 (fundo/profundidade — parada suave)
+    // gsap-speed-slow  → speed 0.6, lag 0.3 (fundo/profundidade — parada suave)
     // gsap-speed-fast  → speed 1.5, lag 0   (primeiro plano)
     // data-gsap-speed  → velocidade customizada   (ex: data-gsap-speed="0.3")
     // data-gsap-lag    → atraso temporal customizado (ex: data-gsap-lag="0.2")
@@ -77,7 +77,7 @@
         document.querySelectorAll('.gsap-speed-slow, .gsap-speed-fast').forEach(function (el) {
             var isSlow       = el.classList.contains('gsap-speed-slow');
             var defaultSpeed = isSlow ? 0.6  : 1.5;
-            var defaultLag   = isSlow ? 0.1  : 0;
+            var defaultLag   = isSlow ? 0.3  : 0;
             var speed        = num(el, 'speed', defaultSpeed);
             var lag          = num(el, 'lag',   defaultLag);
             smoother.effects(el, { speed: speed, lag: lag });
