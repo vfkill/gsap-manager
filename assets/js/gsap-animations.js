@@ -61,13 +61,14 @@
     }
 
     // ─── ScrollSmoother: efeitos de parallax por classe ─────────────────────
-    // gsap-speed-slow  → speed 0.6, lag 0.3 (fundo/profundidade — parada suave)
-    // gsap-speed-fast  → speed 1.5, lag 0   (primeiro plano)
-    // data-gsap-speed  → velocidade customizada   (ex: data-gsap-speed="0.3")
-    // data-gsap-lag    → atraso temporal customizado (ex: data-gsap-lag="0.2")
+    // gsap-speed-slow  → speed 0.6 (fundo/profundidade)
+    // gsap-speed-fast  → speed 1.5 (primeiro plano)
+    // data-gsap-speed  → velocidade customizada  (ex: data-gsap-speed="0.3")
+    // data-gsap-lag    → atraso opcional          (ex: data-gsap-lag="0.2")
     //
-    // O lag suaviza o momento de parada do elemento, evitando a leve
-    // acelerada causada pela inércia do scroll suavizado (smooth).
+    // Nota: lag NÃO é aplicado por padrão — com smooth ativo no ScrollSmoother,
+    // o lag cria um momentum próprio que conflita com a inércia do scroll,
+    // causando aceleração artificial no final do movimento.
     // Requer ScrollSmoother ativo com Effects habilitado nas configurações.
     function initScrollSmootherEffects() {
         if (typeof ScrollSmoother === 'undefined') { return; }
@@ -75,12 +76,12 @@
         if (!smoother) { return; }
 
         document.querySelectorAll('.gsap-speed-slow, .gsap-speed-fast').forEach(function (el) {
-            var isSlow       = el.classList.contains('gsap-speed-slow');
-            var defaultSpeed = isSlow ? 0.6  : 1.5;
-            var defaultLag   = isSlow ? 0.3  : 0;
+            var defaultSpeed = el.classList.contains('gsap-speed-fast') ? 1.5 : 0.6;
             var speed        = num(el, 'speed', defaultSpeed);
-            var lag          = num(el, 'lag',   defaultLag);
-            smoother.effects(el, { speed: speed, lag: lag });
+            var config       = { speed: speed };
+            var lag          = num(el, 'lag', -1); // -1 = não definido
+            if (lag >= 0) { config.lag = lag; }
+            smoother.effects(el, config);
         });
     }
 
