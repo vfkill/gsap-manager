@@ -3,7 +3,7 @@
  * Plugin Name: GSAP Manager
  * Plugin URI:  https://github.com/
  * Description: Carrega o GSAP e seus plugins no WordPress com configurações flexíveis via painel administrativo.
- * Version:     2.8.5
+ * Version:     2.8.6
  * Author:      Victor Kill
  * License:     GPL-2.0-or-later
  * Text Domain: gsap-manager
@@ -11,7 +11,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'GSAP_MANAGER_VERSION', '2.8.5' );
+define( 'GSAP_MANAGER_VERSION', '2.8.6' );
 define( 'GSAP_MANAGER_PATH', plugin_dir_path( __FILE__ ) );
 define( 'GSAP_MANAGER_URL', plugin_dir_url( __FILE__ ) );
 define( 'GSAP_MANAGER_OPTION', 'gsap_manager_settings' );
@@ -71,7 +71,7 @@ function gsap_manager_defaults(): array {
             'EaselPlugin'        => false,
             'PixiPlugin'         => false,
         ],
-        'smoother_smooth'    => 1.2,
+        'smoother_smooth'    => 0,
         'smoother_effects'   => false,
         'smoother_normalize' => false,
         'smoother_wrapper'   => '#smooth-wrapper',
