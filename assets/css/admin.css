@@ -340,6 +340,27 @@
     color: #000;
 }
 .gsap-plugin-card__desc { font-size: 12.5px; color: var(--gsap-muted); margin: 0; line-height: 1.5; }
+.gsap-plugin-card__note {
+    margin: 6px 0 0;
+    font-size: 11px;
+    color: #6b7280;
+    font-style: italic;
+}
+.gsap-plugin-card__note--classes {
+    font-style: normal;
+    color: var(--gsap-green);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+.gsap-plugin-card__note--classes code {
+    background: rgba(10,228,72,.1);
+    color: var(--gsap-green);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 10.5px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+}
 
 /* ── Badge ── */
 .gsap-badge {

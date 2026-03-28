@@ -103,20 +103,20 @@ class GSAP_Admin {
             'EasePack'         => [ 'desc' => 'Pacote com easings extras: SlowMo, ExpoScale, RoughEase e mais.' ],
             'CSSRulePlugin'    => [ 'desc' => 'Anima regras CSS diretamente em stylesheets (pseudo-elementos, hover, etc).' ],
             // ── Bonus (local — assets/js/vendor/) ───────────────────────────
-            'ScrollSmoother'     => [ 'desc' => 'Scroll suavizado com inércia e parallax (data-speed / data-lag). Requer ScrollTrigger.', 'popular' => true, 'bonus' => true ],
-            'SplitText'          => [ 'desc' => 'Divide texto em linhas, palavras e caracteres para animação granular.', 'popular' => true, 'bonus' => true ],
-            'MorphSVGPlugin'     => [ 'desc' => 'Transição suave entre qualquer forma SVG.', 'popular' => true, 'bonus' => true ],
-            'DrawSVGPlugin'      => [ 'desc' => 'Anima o traçado de paths SVG como se estivesse sendo desenhado.', 'popular' => true, 'bonus' => true ],
-            'InertiaPlugin'      => [ 'desc' => 'Adiciona momentum/inércia ao Draggable para movimentos físicos.', 'bonus' => true ],
-            'ScrambleTextPlugin' => [ 'desc' => 'Embaralha texto com caracteres aleatórios enquanto revela o conteúdo final.', 'bonus' => true ],
-            'CustomBounce'       => [ 'desc' => 'Gera easings de bounce customizados para uso com CustomEase.', 'bonus' => true ],
-            'CustomWiggle'       => [ 'desc' => 'Gera easings de vibração (wiggle) customizados para uso com CustomEase.', 'bonus' => true ],
-            'Physics2DPlugin'    => [ 'desc' => 'Física 2D real: gravidade, velocidade e fricção em animações.', 'bonus' => true ],
-            'PhysicsPropsPlugin' => [ 'desc' => 'Aplica física (velocidade/aceleração) a qualquer propriedade numérica.', 'bonus' => true ],
-            'MotionPathHelper'   => [ 'desc' => 'Interface visual para editar motion paths diretamente no browser (dev).', 'bonus' => true ],
-            'GSDevTools'         => [ 'desc' => 'Player interativo para inspecionar e depurar timelines GSAP (dev).', 'bonus' => true ],
-            'EaselPlugin'        => [ 'desc' => 'Integração com EaselJS/CreateJS para animar elementos canvas.', 'bonus' => true ],
-            'PixiPlugin'         => [ 'desc' => 'Integração com Pixi.js para animar propriedades de display objects.', 'bonus' => true ],
+            'ScrollSmoother'     => [ 'desc' => 'Scroll suavizado com inércia e parallax. Requer ScrollTrigger.', 'popular' => true, 'bonus' => true, 'classes' => [ 'gsap-speed-slow', 'gsap-speed-fast' ] ],
+            'SplitText'          => [ 'desc' => 'Divide texto em linhas, palavras e caracteres para animação granular.', 'popular' => true, 'bonus' => true, 'custom_js' => true ],
+            'MorphSVGPlugin'     => [ 'desc' => 'Transição suave entre qualquer forma SVG.', 'popular' => true, 'bonus' => true, 'classes' => [ 'gsap-morph-svg' ] ],
+            'DrawSVGPlugin'      => [ 'desc' => 'Anima o traçado de paths SVG como se estivesse sendo desenhado.', 'popular' => true, 'bonus' => true, 'classes' => [ 'gsap-draw-svg' ] ],
+            'InertiaPlugin'      => [ 'desc' => 'Adiciona momentum/inércia ao Draggable para movimentos físicos.', 'bonus' => true, 'custom_js' => true ],
+            'ScrambleTextPlugin' => [ 'desc' => 'Embaralha texto com caracteres aleatórios enquanto revela o conteúdo final.', 'bonus' => true, 'classes' => [ 'gsap-scramble' ] ],
+            'CustomBounce'       => [ 'desc' => 'Gera easings de bounce customizados para uso com CustomEase.', 'bonus' => true, 'custom_js' => true ],
+            'CustomWiggle'       => [ 'desc' => 'Gera easings de vibração (wiggle) customizados para uso com CustomEase.', 'bonus' => true, 'custom_js' => true ],
+            'Physics2DPlugin'    => [ 'desc' => 'Física 2D real: gravidade, velocidade e fricção em animações.', 'bonus' => true, 'custom_js' => true ],
+            'PhysicsPropsPlugin' => [ 'desc' => 'Aplica física (velocidade/aceleração) a qualquer propriedade numérica.', 'bonus' => true, 'custom_js' => true ],
+            'MotionPathHelper'   => [ 'desc' => 'Interface visual para editar motion paths diretamente no browser (dev).', 'bonus' => true, 'custom_js' => true ],
+            'GSDevTools'         => [ 'desc' => 'Player interativo para inspecionar e depurar timelines GSAP (dev).', 'bonus' => true, 'custom_js' => true ],
+            'EaselPlugin'        => [ 'desc' => 'Integração com EaselJS/CreateJS para animar elementos canvas.', 'bonus' => true, 'custom_js' => true ],
+            'PixiPlugin'         => [ 'desc' => 'Integração com Pixi.js para animar propriedades de display objects.', 'bonus' => true, 'custom_js' => true ],
         ];
         ?>
         <div class="gsap-wrap">
@@ -345,6 +345,15 @@ ScrollTrigger.defaults({
                                 </span>
                             </div>
                             <p class="gsap-plugin-card__desc"><?php echo esc_html( $info['desc'] ); ?></p>
+                            <?php if ( ! empty( $info['classes'] ) ) : ?>
+                            <p class="gsap-plugin-card__note gsap-plugin-card__note--classes">
+                                <?php foreach ( $info['classes'] as $cls ) : ?>
+                                <code><?php echo esc_html( $cls ); ?></code>
+                                <?php endforeach; ?>
+                            </p>
+                            <?php elseif ( ! empty( $info['custom_js'] ) ) : ?>
+                            <p class="gsap-plugin-card__note">JS customizado necessário</p>
+                            <?php endif; ?>
                         </label>
                         <?php endforeach; ?>
                     </div>
@@ -375,8 +384,8 @@ ScrollTrigger.defaults({
 
                     <div class="gsap-field gsap-field--toggle">
                         <div class="gsap-field__label">
-                            <label>Habilitar Effects (<code>data-speed</code> / <code>data-lag</code>)</label>
-                            <span class="gsap-field__desc">Permite parallax e lag em elementos usando atributos <code>data-speed="0.5"</code> e <code>data-lag="0.3"</code> diretamente no HTML.</span>
+                            <label>Habilitar Effects nativos (<code>data-speed</code> / <code>data-lag</code>)</label>
+                            <span class="gsap-field__desc">Faz o ScrollSmoother escanear automaticamente o HTML em busca dos atributos <code>data-speed="0.5"</code> e <code>data-lag="0.3"</code> em qualquer elemento. <strong>Independente das classes <code>gsap-speed-slow</code> / <code>gsap-speed-fast</code></strong>, que funcionam sem esta opção.</span>
                         </div>
                         <label class="gsap-toggle">
                             <input type="checkbox" name="<?php echo GSAP_MANAGER_OPTION; ?>[smoother_effects]" value="1" <?php checked( ! empty( $s['smoother_effects'] ) ); ?>>
@@ -436,7 +445,7 @@ ScrollTrigger.defaults({
                     [ 'class' => 'gsap-typewriter',      'desc' => 'Digita o conteúdo do elemento como uma máquina de escrever.','req' => '',             'ex' => '<span class="gsap-typewriter">Texto digitado...</span>' ],
                     [ 'class' => 'gsap-text-blur',       'desc' => 'Começa borrado e vai nitidificando.',                      'req' => 'ScrollTrigger', 'ex' => '<h2 class="gsap-text-blur">Título desfocado</h2>' ],
                     [ 'class' => 'gsap-text-highlight',  'desc' => 'Sublinhado colorido varre o texto (use em &lt;span&gt;).',  'req' => 'ScrollTrigger', 'ex' => '<h2>Nosso <span class="gsap-text-highlight">diferencial</span></h2>' ],
-                    [ 'class' => 'gsap-scramble',        'desc' => 'Texto embaralha com caracteres aleatórios até revelar.',   'req' => '',              'ex' => '<span class="gsap-scramble">Texto secreto</span>' ],
+                    [ 'class' => 'gsap-scramble',        'desc' => 'Texto embaralha com caracteres aleatórios até revelar. <code>data-gsap-chars="01"</code> para charset customizado.', 'req' => 'ScrambleTextPlugin', 'ex' => '<span class="gsap-scramble">Texto secreto</span>' ],
                 ],
                 'Imagens' => [
                     [ 'class' => 'gsap-img-reveal',      'desc' => 'Clip-path abre a imagem (padrão: da esquerda). <code>data-gsap-dir="right|top|bottom"</code>', 'req' => 'ScrollTrigger', 'ex' => '<img class="gsap-img-reveal" src="foto.jpg">' ],
@@ -473,6 +482,10 @@ ScrollTrigger.defaults({
                     [ 'class' => 'gsap-parallax',        'desc' => 'Parallax genérico (não-imagem). O pai deve ter overflow:hidden.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-parallax">Elemento flutuante</div>' ],
                     [ 'class' => 'gsap-reveal-line',     'desc' => 'Linha cresce de largura zero. Perfeito para divisores.   <code>data-gsap-axis="height"</code> para vertical.', 'req' => 'ScrollTrigger', 'ex' => '<hr class="gsap-reveal-line">' ],
                     [ 'class' => 'gsap-progress',        'desc' => 'Barra de progresso animada. Define a largura alvo no estilo.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-progress" style="width:80%"></div>' ],
+                ],
+                'SVG' => [
+                    [ 'class' => 'gsap-draw-svg',  'desc' => 'Anima o stroke de um path/shape SVG de 0% a 100%, como se estivesse sendo desenhado. Suporta <code>gsap-scrub</code> para vincular ao scroll.', 'req' => 'DrawSVGPlugin', 'ex' => '<path class="gsap-draw-svg" d="M10 80 Q 95 10 180 80">' ],
+                    [ 'class' => 'gsap-morph-svg', 'desc' => 'Transição suave de uma forma SVG para outra ao entrar na viewport. Requer <code>data-gsap-target="#seletor"</code> apontando para o shape alvo.', 'req' => 'MorphSVGPlugin', 'ex' => '<path class="gsap-morph-svg" data-gsap-target="#shape-b" d="...">' ],
                 ],
                 'ScrollSmoother — Parallax' => [
                     [ 'class' => 'gsap-speed-slow', 'desc' => 'Parallax lento: move a 0.5× do scroll — efeito de fundo/profundidade. Use <code>data-gsap-speed="0.3"</code> para valor customizado.', 'req' => 'ScrollSmoother', 'ex' => '' ],
@@ -551,6 +564,8 @@ ScrollTrigger.defaults({
                         <div><code>data-gsap-distance</code> — distância em px <span>ex: <em>80</em></span></div>
                         <div><code>data-gsap-stagger</code> — intervalo entre filhos <span>ex: <em>0.15</em></span></div>
                         <div><code>data-gsap-start</code> — posição do gatilho scroll <span>ex: <em>"top 70%"</em></span></div>
+                        <div><code>data-gsap-chars</code> — charset do scramble <span>ex: <em>"01"</em>, <em>"upperCase"</em></span></div>
+                        <div><code>data-gsap-target</code> — seletor do shape SVG alvo <span>ex: <em>"#shape-b"</em></span></div>
                     </div>
                 </div>
 

@@ -17,6 +17,8 @@
  *   data-gsap-suffix    — sufixo (counter)        (ex: "%")
  *   data-gsap-speed     — velocidade (marquee)    (ex: 60)
  *   data-gsap-axis      — eixo (reveal-line)      (ex: "height")
+ *   data-gsap-chars     — chars do scramble       (ex: "01", "!@#", "lowerCase")
+ *   data-gsap-target    — seletor SVG alvo        (ex: "#shape-final")  ← morph
  *
  * Classes de gatilho:
  *   (nenhuma)        → aguarda o elemento entrar na viewport (padrão)
@@ -48,15 +50,17 @@
             console.warn('[GSAP Manager] GSAP não encontrado.');
             return;
         }
-        if (typeof ScrollTrigger !== 'undefined') {
-            gsap.registerPlugin(ScrollTrigger);
-        }
+        if (typeof ScrollTrigger       !== 'undefined') { gsap.registerPlugin(ScrollTrigger); }
+        if (typeof ScrambleTextPlugin  !== 'undefined') { gsap.registerPlugin(ScrambleTextPlugin); }
+        if (typeof DrawSVGPlugin       !== 'undefined') { gsap.registerPlugin(DrawSVGPlugin); }
+        if (typeof MorphSVGPlugin      !== 'undefined') { gsap.registerPlugin(MorphSVGPlugin); }
         initScrollSmootherEffects();
         initTextAnimations();
         initImageAnimations();
         initElementAnimations();
         initStaggerAnimations();
         initSpecialAnimations();
+        initBonusAnimations();
         initHoverAnimations();
     }
 
@@ -770,6 +774,102 @@
                 gsap.from(el, {
                     width: '0%', duration: resolveDuration(el, 1.2),
                     delay: resolveDelay(el), ease: str(el, 'ease', 'power3.out'),
+                });
+            });
+        });
+    }
+
+    // ─── Animações com Plugins Bonus ────────────────────────────────────────
+
+    function initBonusAnimations() {
+
+        // gsap-scramble — ScrambleTextPlugin
+        // Embaralha com caracteres aleatórios enquanto revela o texto original.
+        // data-gsap-chars → conjunto de chars (padrão: "upperCase"). Ex: "01", "!@#$%", "lowerCase"
+        document.querySelectorAll('.gsap-scramble').forEach(function (el) {
+            if (typeof ScrambleTextPlugin === 'undefined') {
+                console.warn('[GSAP Manager] gsap-scramble requer ScrambleTextPlugin ativo nas configurações do plugin.');
+                return;
+            }
+            var originalText = el.textContent.trim();
+            var chars        = el.getAttribute('data-gsap-chars') || 'upperCase';
+            playOnScroll(el, function () {
+                gsap.to(el, {
+                    duration:     resolveDuration(el, 1.5),
+                    delay:        resolveDelay(el),
+                    scrambleText: {
+                        text:        originalText,
+                        chars:       chars,
+                        revealDelay: 0.3,
+                        speed:       0.7,
+                    },
+                });
+            });
+        });
+
+        // gsap-draw-svg — DrawSVGPlugin
+        // Anima o stroke de um path/shape SVG de 0% a 100%, como se estivesse sendo desenhado.
+        // Suporta modificador gsap-scrub para vincular o progresso ao scroll.
+        // data-gsap-start  → início do ScrollTrigger (ex: "top 80%")
+        // data-gsap-end    → fim do ScrollTrigger    (ex: "bottom 30%")
+        document.querySelectorAll('.gsap-draw-svg').forEach(function (el) {
+            if (typeof DrawSVGPlugin === 'undefined') {
+                console.warn('[GSAP Manager] gsap-draw-svg requer DrawSVGPlugin ativo nas configurações do plugin.');
+                return;
+            }
+            if (el.classList.contains('gsap-scrub')) {
+                if (typeof ScrollTrigger === 'undefined') {
+                    console.warn('[GSAP Manager] gsap-draw-svg + gsap-scrub requer ScrollTrigger ativo.');
+                    return;
+                }
+                gsap.timeline({
+                    scrollTrigger: {
+                        trigger: el,
+                        start:   str(el, 'start', 'top 85%'),
+                        end:     str(el, 'end',   'bottom 30%'),
+                        scrub:   num(el, 'scrub', 1),
+                    }
+                }).fromTo(el, { drawSVG: '0%' }, { drawSVG: '100%', ease: str(el, 'ease', 'none') });
+            } else {
+                playOnScroll(el, function () {
+                    gsap.fromTo(el,
+                        { drawSVG: '0%' },
+                        {
+                            drawSVG:  '100%',
+                            duration: resolveDuration(el, 2),
+                            delay:    resolveDelay(el),
+                            ease:     str(el, 'ease', 'power2.out'),
+                        }
+                    );
+                });
+            }
+        });
+
+        // gsap-morph-svg — MorphSVGPlugin
+        // Faz a transição suave de uma forma SVG para outra ao entrar na viewport.
+        // data-gsap-target → seletor CSS do elemento SVG de destino (obrigatório)
+        // Exemplo: <path class="gsap-morph-svg" data-gsap-target="#shape-final" d="...">
+        document.querySelectorAll('.gsap-morph-svg').forEach(function (el) {
+            if (typeof MorphSVGPlugin === 'undefined') {
+                console.warn('[GSAP Manager] gsap-morph-svg requer MorphSVGPlugin ativo nas configurações do plugin.');
+                return;
+            }
+            var targetSel = el.getAttribute('data-gsap-target');
+            if (!targetSel) {
+                console.warn('[GSAP Manager] gsap-morph-svg requer o atributo data-gsap-target com o seletor da forma alvo.');
+                return;
+            }
+            var target = document.querySelector(targetSel);
+            if (!target) {
+                console.warn('[GSAP Manager] gsap-morph-svg: elemento "' + targetSel + '" não encontrado no DOM.');
+                return;
+            }
+            playOnScroll(el, function () {
+                gsap.to(el, {
+                    morphSVG: target,
+                    duration: resolveDuration(el, 1.5),
+                    delay:    resolveDelay(el),
+                    ease:     str(el, 'ease', 'power2.inOut'),
                 });
             });
         });
