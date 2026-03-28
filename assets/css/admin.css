@@ -586,6 +586,45 @@
 .gsap-copy-btn.copied .gsap-ref-class { background: rgba(10,228,72,.2); }
 .gsap-copy-btn.copied .gsap-copy-icon { color: var(--gsap-green); }
 
+/* ── Tooltip "Copiado!" ── */
+.gsap-copy-btn { position: relative; }
+.gsap-copied-tip {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translateX(-50%) translateY(0);
+    background: #1a2332;
+    color: var(--gsap-green);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+    white-space: nowrap;
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid rgba(10,228,72,.35);
+    pointer-events: none;
+    animation: gsap-tip-in .18s ease forwards;
+    z-index: 99;
+}
+.gsap-copied-tip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-top-color: rgba(10,228,72,.35);
+}
+.gsap-copied-tip--out { animation: gsap-tip-out .3s ease forwards; }
+@keyframes gsap-tip-in {
+    from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+    to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+@keyframes gsap-tip-out {
+    from { opacity: 1; transform: translateX(-50%) translateY(0); }
+    to   { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+}
+
 /* ── WP overrides ── */
 .gsap-wrap .wp-heading-inline { display: none; }
 #wpadminbar { background: #0d1117 !important; }

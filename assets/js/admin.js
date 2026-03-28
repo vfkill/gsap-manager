@@ -31,7 +31,18 @@ jQuery(function ($) {
         if (!navigator.clipboard) return;
         navigator.clipboard.writeText(text).then(function () {
             btn.addClass('copied');
-            setTimeout(function () { btn.removeClass('copied'); }, 1800);
+
+            // Tooltip "Copiado!" acima do botão
+            if (btn.find('.gsap-copied-tip').length) return;
+            const tip = $('<span class="gsap-copied-tip">Copiado!</span>');
+            btn.append(tip);
+            setTimeout(function () {
+                tip.addClass('gsap-copied-tip--out');
+                setTimeout(function () {
+                    tip.remove();
+                    btn.removeClass('copied');
+                }, 300);
+            }, 1200);
         });
     });
 
