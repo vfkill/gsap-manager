@@ -474,6 +474,10 @@ ScrollTrigger.defaults({
                     [ 'class' => 'gsap-reveal-line',     'desc' => 'Linha cresce de largura zero. Perfeito para divisores.   <code>data-gsap-axis="height"</code> para vertical.', 'req' => 'ScrollTrigger', 'ex' => '<hr class="gsap-reveal-line">' ],
                     [ 'class' => 'gsap-progress',        'desc' => 'Barra de progresso animada. Define a largura alvo no estilo.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-progress" style="width:80%"></div>' ],
                 ],
+                'ScrollSmoother — Parallax' => [
+                    [ 'class' => 'gsap-speed-slow', 'desc' => 'Parallax lento: move a 0.5× do scroll — efeito de fundo/profundidade. Use <code>data-gsap-speed="0.3"</code> para valor customizado.', 'req' => 'ScrollSmoother', 'ex' => '' ],
+                    [ 'class' => 'gsap-speed-fast', 'desc' => 'Parallax rápido: move a 1.5× do scroll — efeito de primeiro plano. Use <code>data-gsap-speed="2"</code> para valor customizado.', 'req' => 'ScrollSmoother', 'ex' => '' ],
+                ],
                 'Hover' => [
                     [ 'class' => 'gsap-magnetic',        'desc' => 'O elemento atrai o cursor como um ímã. Ideal para botões.  <code>data-gsap-strength="0.4"</code>', 'req' => '', 'ex' => '<button class="gsap-magnetic">Clique aqui</button>' ],
                     [ 'class' => 'gsap-tilt',            'desc' => 'Inclinação 3D ao passar o mouse. <code>data-gsap-strength="14"</code>', 'req' => '', 'ex' => '<div class="gsap-tilt">Card 3D</div>' ],

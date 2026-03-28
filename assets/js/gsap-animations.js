@@ -51,12 +51,30 @@
         if (typeof ScrollTrigger !== 'undefined') {
             gsap.registerPlugin(ScrollTrigger);
         }
+        initScrollSmootherEffects();
         initTextAnimations();
         initImageAnimations();
         initElementAnimations();
         initStaggerAnimations();
         initSpecialAnimations();
         initHoverAnimations();
+    }
+
+    // ─── ScrollSmoother: efeitos de parallax por classe ─────────────────────
+    // gsap-speed-slow  → data-speed 0.5 (elemento move mais devagar — efeito profundidade)
+    // gsap-speed-fast  → data-speed 1.5 (elemento move mais rápido — efeito primeiro plano)
+    // data-gsap-speed  → valor customizado (ex: data-gsap-speed="0.3")
+    // Requer ScrollSmoother ativo com Effects habilitado nas configurações.
+    function initScrollSmootherEffects() {
+        if (typeof ScrollSmoother === 'undefined') { return; }
+        var smoother = ScrollSmoother.get();
+        if (!smoother) { return; }
+
+        document.querySelectorAll('.gsap-speed-slow, .gsap-speed-fast').forEach(function (el) {
+            var defaultSpeed = el.classList.contains('gsap-speed-fast') ? 1.5 : 0.5;
+            var speed = num(el, 'speed', defaultSpeed);
+            smoother.effects(el, { speed: speed });
+        });
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────
