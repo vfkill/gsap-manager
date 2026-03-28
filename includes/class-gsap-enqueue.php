@@ -8,10 +8,6 @@ class GSAP_Enqueue {
     // CDN base — GSAP v3 no cdnjs
     const CDN_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/';
 
-    // CDN para plugins "bonus" (ex: ScrollSmoother) não disponíveis no cdnjs
-    // Espelha o npm — inclui todos os plugins desde que o GSAP virou gratuito
-    const UNPKG_BASE = 'https://unpkg.com/gsap@';
-
     // Plugins disponíveis no cdnjs (carregam via CDN ou local conforme configuração)
     const PLUGIN_FILES = [
         'ScrollTrigger'    => 'ScrollTrigger.min.js',
@@ -172,6 +168,24 @@ class GSAP_Enqueue {
             $init = "(function(){
     if(typeof ScrollSmoother==='undefined'||!document.querySelector('{$wrapper}')){return;}
     gsap.registerPlugin(ScrollTrigger,ScrollSmoother);
+
+    // ── Reposiciona o header fora do smooth-content ──────────────────────────
+    // O ScrollSmoother aplica transform:translateY no #smooth-content inteiro.
+    // Se o header estiver dentro, ele sai do viewport ao navegar para seções
+    // mais abaixo — causando o desaparecimento do header e do conteúdo acima.
+    // Solução oficial GSAP: header deve ser filho de smooth-wrapper mas
+    // irmão de smooth-content (não dentro dele).
+    (function(){
+        var w=document.querySelector('{$wrapper}');
+        var c=document.querySelector('{$content}');
+        if(!w||!c){return;}
+        var h=c.querySelector('header,[data-elementor-type=\"header\"],.elementor-location-header,#masthead');
+        if(!h){return;}
+        w.insertBefore(h,c); // move para fora do smooth-content
+        // Compensa o espaço do header no topo do conteúdo
+        c.style.paddingTop=h.offsetHeight+'px';
+    })();
+
     window.smoother=ScrollSmoother.create({
         wrapper:'{$wrapper}',
         content:'{$content}',
@@ -208,6 +222,21 @@ class GSAP_Enqueue {
                 GSAP_MANAGER_VERSION,
                 true // sempre no rodapé
             );
+
+            // Injeta variáveis CSS de personalização visual
+            $css_vars = [];
+            if ( ! empty( $s['highlight_color'] ) ) {
+                $css_vars[] = '--gsap-highlight-color:' . sanitize_hex_color( $s['highlight_color'] ) . ';';
+            }
+            if ( ! empty( $s['progress_color'] ) ) {
+                $css_vars[] = '--gsap-progress-color:' . sanitize_hex_color( $s['progress_color'] ) . ';';
+            }
+            if ( ! empty( $css_vars ) ) {
+                wp_add_inline_style(
+                    'gsap-animations',
+                    ':root{' . implode( '', $css_vars ) . '}'
+                );
+            }
         }
 
         // ── Init customizado ────────────────────────────────────────────────

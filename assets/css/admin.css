@@ -128,6 +128,11 @@
     border: 1px solid rgba(10,228,72,.3);
     color: var(--gsap-green);
 }
+.gsap-notice--info {
+    background: rgba(59,130,246,.08);
+    border: 1px solid rgba(59,130,246,.25);
+    color: #93c5fd;
+}
 
 /* ── Tab panels — todos renderizados, apenas o ativo visível ── */
 .gsap-tab-panel { display: none; }
@@ -794,6 +799,92 @@
 @keyframes gsap-tip-out {
     from { opacity: 1; transform: translateX(-50%) translateY(0); }
     to   { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+}
+
+/* ── U6: Sticky tabs ── */
+.gsap-tabs {
+    position: sticky;
+    top: 32px; /* altura da WP admin bar */
+    z-index: 100;
+    background: #0d1117;
+    padding-top: 4px;
+}
+
+/* ── U1: Plugin card — arquivo faltando ── */
+.gsap-plugin-card--missing {
+    border-color: rgba(245,158,11,.35) !important;
+}
+.gsap-plugin-card__note--warn {
+    font-style: normal;
+    color: #f59e0b;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.gsap-plugin-card__note--warn code {
+    color: #fbbf24;
+    font-size: 10.5px;
+}
+
+/* ── C3: Badge "legado" ── */
+.gsap-badge--deprecated {
+    background: rgba(107,114,128,.15);
+    color: #6b7280;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+.gsap-trigger-item--deprecated { opacity: .65; }
+.gsap-trigger-item--deprecated code { color: var(--gsap-muted); }
+
+/* ── U5: Color row ── */
+.gsap-color-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.gsap-color-row input[type="color"] {
+    width: 40px;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid var(--gsap-border);
+    border-radius: 6px;
+    background: var(--gsap-input);
+    cursor: pointer;
+    flex-shrink: 0;
+}
+.gsap-input--color-text {
+    max-width: 110px;
+}
+
+/* ── gsap-trigger-row--green ── */
+.gsap-trigger-row__badge--green {
+    background: rgba(10,228,72,.15);
+    color: var(--gsap-green);
+}
+
+/* ── U2: Responsive ── */
+@media (max-width: 1024px) {
+    .gsap-wrap { max-width: 100%; padding: 16px 16px 40px; }
+    .gsap-where-grid { grid-template-columns: 1fr 1fr; }
+    .gsap-anatomy { flex-wrap: wrap; gap: 10px; }
+}
+
+@media (max-width: 782px) {
+    .gsap-tabs { flex-wrap: wrap; top: 46px; } /* WP admin bar mobile: 46px */
+    .gsap-tab { padding: 8px 12px; font-size: 13px; }
+    .gsap-header__inner { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .gsap-plugins-grid { grid-template-columns: 1fr 1fr; }
+    .gsap-plugins-grid--bonus { grid-template-columns: 1fr 1fr; }
+    .gsap-where-grid { grid-template-columns: 1fr; }
+    .gsap-modifier-grid { grid-template-columns: 1fr; }
+    .gsap-steps { grid-template-columns: 1fr; }
+    .gsap-steps--two { grid-template-columns: 1fr; }
+    .gsap-anatomy { gap: 6px; }
+    .gsap-anatomy__badge { font-size: 11px; padding: 6px 10px; }
+    .gsap-table { font-size: 11px; }
+    .gsap-color-row { flex-wrap: wrap; }
+    .gsap-trigger-row { flex-direction: column; gap: 6px; }
+    .gsap-trigger-row__badge { align-self: flex-start; }
 }
 
 /* ── WP overrides ── */

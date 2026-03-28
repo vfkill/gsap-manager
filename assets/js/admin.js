@@ -24,6 +24,25 @@ jQuery(function ($) {
         }
     });
 
+    // ── Sincronizar color picker ↔ campo de texto ───────────────────────────
+    function syncColorPair(pickerId, textId) {
+        var $pick = $('#' + pickerId);
+        var $text = $('#' + textId);
+        if (!$pick.length || !$text.length) return;
+
+        $pick.on('input change', function () {
+            $text.val(this.value);
+        });
+        $text.on('input', function () {
+            var val = this.value.trim();
+            if (/^#[0-9A-Fa-f]{6}$/.test(val)) {
+                $pick.val(val);
+            }
+        });
+    }
+    syncColorPair('highlight_color', 'highlight_color_text');
+    syncColorPair('progress_color', 'progress_color_text');
+
     // ── Botão copiar classe da aba de animações ─────────────────────────────
     $(document).on('click', '.gsap-copy-btn', function () {
         const btn  = $(this);

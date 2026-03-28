@@ -19,11 +19,13 @@
  *   data-gsap-axis      — eixo (reveal-line)      (ex: "height")
  *   data-gsap-chars     — chars do scramble       (ex: "01", "!@#", "lowerCase")
  *   data-gsap-target    — seletor SVG alvo        (ex: "#shape-final")  ← morph
+ *   data-gsap-separator — separador de milhar     (ex: ".", ",")        ← counter
  *
  * Classes de gatilho:
  *   (nenhuma)        → aguarda o elemento entrar na viewport (padrão)
- *   gsap-on-scroll   → igual ao padrão (mantido por compatibilidade)
+ *   gsap-on-scroll   → igual ao padrão (mantido por compatibilidade — legado)
  *   gsap-on-load     → anima imediatamente quando a página carrega
+ *   gsap-repeat      → re-anima toda vez que o elemento entra/sai da viewport
  *   gsap-char-scrub  → modifica gsap-char-reveal: progresso vinculado ao scroll (requer ScrollTrigger)
  *   gsap-word-scrub  → modifica gsap-word-reveal: progresso vinculado ao scroll (requer ScrollTrigger)
  *   gsap-scrub       → modifica gsap-text-fade / gsap-text-blur / gsap-text-highlight: scrub genérico
@@ -48,6 +50,12 @@
     function init() {
         if (typeof gsap === 'undefined') {
             console.warn('[GSAP Manager] GSAP não encontrado.');
+            return;
+        }
+        // Respeita a preferência do usuário por menos movimento (acessibilidade).
+        // Com essa verificação, o GSAP não executa nenhuma animação quando
+        // prefers-reduced-motion: reduce está ativo no sistema operacional.
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
             return;
         }
         if (typeof ScrollTrigger       !== 'undefined') { gsap.registerPlugin(ScrollTrigger); }
@@ -87,6 +95,46 @@
             if (lag >= 0) { config.lag = lag; }
             smoother.effects(el, config);
         });
+
+        // ── Âncoras: delega cliques em <a href="#..."> para o ScrollSmoother ──
+        // O ScrollSmoother move o conteúdo via translateY, não via scroll nativo.
+        // Usa CAPTURE PHASE (true) para interceptar antes de qualquer handler do
+        // Elementor/tema que possa chamar stopPropagation() e bloquear o evento.
+        document.addEventListener('click', function (e) {
+            var link = e.target.closest('a[href]');
+            if (!link) { return; }
+            var href = link.getAttribute('href');
+            if (!href) { return; }
+            var hashIndex = href.indexOf('#');
+            if (hashIndex === -1) { return; }
+            var id = href.slice(hashIndex);
+            if (id.length < 2) { return; } // só "#" sem id
+            // Garante que é navegação na mesma página
+            var pagePart = href.slice(0, hashIndex);
+            if (pagePart && pagePart !== window.location.pathname && pagePart !== window.location.href.split('#')[0]) { return; }
+            var target = document.querySelector(id);
+            if (!target) { return; }
+            e.preventDefault();
+            smoother.scrollTo(target, true);
+            // Atualiza o hash na URL sem causar outro scroll nativo
+            if (history.pushState) {
+                history.pushState(null, null, id);
+            }
+        }, true); // capture phase — intercepta antes do stopPropagation do Elementor
+
+        // ── Hash inicial na URL ao carregar a página ──────────────────────────
+        // Se a URL já contém #hash no carregamento (ex: link externo ou refresh),
+        // o browser tenta um scroll nativo antes do ScrollSmoother estar pronto.
+        // Deixamos o ScrollSmoother corrigir a posição após a inicialização.
+        if (window.location.hash) {
+            var initTarget = document.querySelector(window.location.hash);
+            if (initTarget) {
+                // Pequeno delay para garantir que ScrollTrigger calculou as posições
+                setTimeout(function () {
+                    smoother.scrollTo(initTarget, true);
+                }, 100);
+            }
+        }
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────
@@ -135,12 +183,24 @@
      * visibility: hidden → preserva o espaço no layout sem mostrar o conteúdo.
      * Removido no momento exato em que a animação começa — sem flash.
      */
+    /**
+     * playOnScroll(el, fn)
+     *
+     * Executa fn() quando o elemento entra na viewport.
+     *
+     * Gatilhos:
+     *   (padrão)     → aguarda a viewport — anima uma vez
+     *   gsap-on-load → executa imediatamente ao carregar
+     *   gsap-repeat  → re-anima toda vez que o elemento entra/sai da viewport
+     */
     function playOnScroll(el, fn) {
         // gsap-on-load: executa imediatamente sem esconder
         if (el.classList.contains('gsap-on-load')) {
             fn();
             return;
         }
+
+        var repeat = el.classList.contains('gsap-repeat');
 
         // Esconde até a animação começar — preserva espaço (sem layout shift)
         el.style.visibility = 'hidden';
@@ -150,13 +210,21 @@
             fn();
         }
 
+        function reset() {
+            // Re-esconde o elemento para que re-entre com animação na próxima vez
+            el.style.visibility = 'hidden';
+        }
+
         // Motor 1: ScrollTrigger
         if (typeof ScrollTrigger !== 'undefined') {
             ScrollTrigger.create({
-                trigger: el,
-                start:   str(el, 'start', 'top 88%'),
-                once:    true,
-                onEnter: reveal,
+                trigger:     el,
+                start:       str(el, 'start', 'top 88%'),
+                once:        !repeat,
+                onEnter:     reveal,
+                onLeave:     repeat ? reset  : undefined,
+                onLeaveBack: repeat ? reset  : undefined,
+                onEnterBack: repeat ? reveal : undefined,
             });
             return;
         }
@@ -166,8 +234,10 @@
             var io = new IntersectionObserver(function (entries, obs) {
                 entries.forEach(function (entry) {
                     if (entry.isIntersecting) {
-                        obs.unobserve(entry.target);
+                        if (!repeat) { obs.unobserve(entry.target); }
                         reveal();
+                    } else if (repeat) {
+                        reset();
                     }
                 });
             }, { rootMargin: '0px 0px -12% 0px', threshold: 0 });
@@ -556,29 +626,6 @@
             }
         });
 
-        document.querySelectorAll('.gsap-scramble').forEach(function (el) {
-            var final    = el.textContent;
-            var chars    = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-            var duration = resolveDuration(el, 1.2);
-            var delay    = resolveDelay(el);
-            function play() {
-                var start = null;
-                function step(ts) {
-                    if (!start) start = ts;
-                    var prog  = Math.min((ts - start) / (duration * 1000), 1);
-                    var fixed = Math.floor(prog * final.length);
-                    el.textContent = final.split('').map(function (ch, i) {
-                        if (ch === ' ') return ' ';
-                        if (i < fixed) return ch;
-                        return chars[Math.floor(Math.random() * chars.length)];
-                    }).join('');
-                    if (prog < 1) requestAnimationFrame(step);
-                    else el.textContent = final;
-                }
-                setTimeout(function () { requestAnimationFrame(step); }, delay * 1000);
-            }
-            playOnScroll(el, play);
-        });
     }
 
     // ─── Animações de Imagem ────────────────────────────────────────────────
@@ -680,17 +727,23 @@
             { cls: 'gsap-stagger-scale',  from: function () { return { scale: 0.8, opacity: 0 }; },                                  stagger: 0.12 },
             { cls: 'gsap-stagger-fade',   from: function () { return { opacity: 0 }; },                                              stagger: 0.1  },
             { cls: 'gsap-stagger-rotate', from: function () { return { rotation: 12, opacity: 0, transformOrigin: 'left bottom' }; }, stagger: 0.1  },
+            { cls: 'gsap-stagger-center', init: function () { return { y: 44, opacity: 0 }; }, stagger: 0.1, staggerFrom: 'center' },
         ];
 
         map.forEach(function (item) {
+            // Suporte retrocompatível: entradas antigas usam 'from', novas usam 'init'
+            var fromFn = item.init || item.from;
             document.querySelectorAll('.' + item.cls).forEach(function (el) {
                 var children = Array.from(el.children);
                 if (!children.length) return;
+                var staggerVal = item.staggerFrom
+                    ? { each: num(el, 'stagger', item.stagger), from: item.staggerFrom }
+                    : num(el, 'stagger', item.stagger);
                 playOnScroll(el, function () {
-                    gsap.from(children, Object.assign({}, item.from(), {
+                    gsap.from(children, Object.assign({}, fromFn(), {
                         duration: resolveDuration(el, 0.7),
                         delay:    resolveDelay(el),
-                        stagger:  num(el, 'stagger', item.stagger),
+                        stagger:  staggerVal,
                         ease:     str(el, 'ease', 'power3.out'),
                     }));
                 });
@@ -703,19 +756,31 @@
     function initSpecialAnimations() {
 
         document.querySelectorAll('.gsap-counter').forEach(function (el) {
-            var raw      = el.textContent.trim();
-            var endVal   = parseFloat(raw.replace(/[^0-9.-]/g, '')) || num(el, 'to', 100);
-            var startVal = num(el, 'from', 0);
-            var decimals = raw.includes('.') ? (raw.split('.')[1] || '').length : 0;
-            var prefix   = el.getAttribute('data-gsap-prefix') || '';
-            var suffix   = el.getAttribute('data-gsap-suffix') || '';
-            var obj      = { val: startVal };
-            el.textContent = prefix + startVal.toFixed(decimals) + suffix;
+            var raw       = el.textContent.trim();
+            var endVal    = parseFloat(raw.replace(/[^0-9.-]/g, '')) || num(el, 'to', 100);
+            var startVal  = num(el, 'from', 0);
+            var decimals  = raw.includes('.') ? (raw.split('.')[1] || '').length : 0;
+            var prefix    = el.getAttribute('data-gsap-prefix')    || '';
+            var suffix    = el.getAttribute('data-gsap-suffix')    || '';
+            var separator = el.getAttribute('data-gsap-separator') || '';
+            var obj       = { val: startVal };
+
+            function format(v) {
+                var s = v.toFixed(decimals);
+                if (separator) {
+                    var parts = s.split('.');
+                    parts[0]  = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, separator);
+                    s = parts.join('.');
+                }
+                return prefix + s + suffix;
+            }
+
+            el.textContent = format(startVal);
             playOnScroll(el, function () {
                 gsap.to(obj, {
                     val: endVal, duration: resolveDuration(el, 2), delay: resolveDelay(el),
                     ease: str(el, 'ease', 'power2.out'),
-                    onUpdate: function () { el.textContent = prefix + obj.val.toFixed(decimals) + suffix; }
+                    onUpdate: function () { el.textContent = format(obj.val); }
                 });
             });
         });
@@ -723,8 +788,8 @@
         document.querySelectorAll('.gsap-marquee').forEach(function (el) {
             var speed = num(el, 'speed', 45);
             var dir   = str(el, 'dir', 'left') === 'right' ? 1 : -1;
-            el.style.overflow = 'hidden';
-            el.style.display  = 'flex';
+            el.style.overflow   = 'hidden';
+            el.style.display    = 'flex';
             el.style.whiteSpace = 'nowrap';
             var inner = el.querySelector('[class*="marquee__inner"], [class*="marquee-inner"]') || (function () {
                 var wrap = document.createElement('div');
@@ -737,8 +802,10 @@
             var clone = inner.cloneNode(true);
             el.appendChild(clone);
             var w = inner.scrollWidth;
+            // Guarda: elemento oculto (accordion, tab) tem largura zero — evita duration:Infinity
+            if (!w) { return; }
             gsap.set([inner, clone], { x: dir < 0 ? 0 : -w });
-            gsap.to([inner, clone], {
+            var tween = gsap.to([inner, clone], {
                 x: dir < 0 ? -w : 0, duration: w / speed, ease: 'none', repeat: -1,
                 modifiers: {
                     x: gsap.utils.unitize(function (x) {
@@ -746,6 +813,9 @@
                     })
                 }
             });
+            // Pausa no hover (acessibilidade WCAG 2.1 — 2.2.2 Pause, Stop, Hide)
+            el.addEventListener('mouseenter', function () { tween.pause(); });
+            el.addEventListener('mouseleave', function () { tween.play(); });
         });
 
         document.querySelectorAll('.gsap-parallax').forEach(function (el) {
@@ -881,30 +951,44 @@
 
         document.querySelectorAll('.gsap-magnetic').forEach(function (el) {
             var strength = num(el, 'strength', 0.4);
+            var rafId    = null;
             el.addEventListener('mousemove', function (e) {
-                var r = el.getBoundingClientRect();
-                gsap.to(el, {
-                    x: (e.clientX - r.left - r.width / 2)  * strength,
-                    y: (e.clientY - r.top  - r.height / 2) * strength,
-                    duration: 0.4, ease: 'power3.out',
+                var cx = e.clientX, cy = e.clientY;
+                if (rafId) { return; }
+                rafId = requestAnimationFrame(function () {
+                    rafId = null;
+                    var r = el.getBoundingClientRect();
+                    gsap.to(el, {
+                        x: (cx - r.left - r.width  / 2) * strength,
+                        y: (cy - r.top  - r.height / 2) * strength,
+                        duration: 0.4, ease: 'power3.out',
+                    });
                 });
             });
             el.addEventListener('mouseleave', function () {
+                if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
                 gsap.to(el, { x: 0, y: 0, duration: 0.8, ease: 'elastic.out(1,0.4)' });
             });
         });
 
         document.querySelectorAll('.gsap-tilt').forEach(function (el) {
             var strength = num(el, 'strength', 14);
+            var rafId    = null;
             el.style.cssText += ';transform-style:preserve-3d;';
             gsap.set(el, { transformPerspective: 900 });
             el.addEventListener('mousemove', function (e) {
-                var r  = el.getBoundingClientRect();
-                var rx = ((e.clientY - r.top)  / r.height - 0.5) * -strength;
-                var ry = ((e.clientX - r.left) / r.width  - 0.5) *  strength;
-                gsap.to(el, { rotationX: rx, rotationY: ry, duration: 0.3, ease: 'power2.out' });
+                var cx = e.clientX, cy = e.clientY;
+                if (rafId) { return; }
+                rafId = requestAnimationFrame(function () {
+                    rafId = null;
+                    var r  = el.getBoundingClientRect();
+                    var rx = ((cy - r.top)  / r.height - 0.5) * -strength;
+                    var ry = ((cx - r.left) / r.width  - 0.5) *  strength;
+                    gsap.to(el, { rotationX: rx, rotationY: ry, duration: 0.3, ease: 'power2.out' });
+                });
             });
             el.addEventListener('mouseleave', function () {
+                if (rafId) { cancelAnimationFrame(rafId); rafId = null; }
                 gsap.to(el, { rotationX: 0, rotationY: 0, duration: 0.8, ease: 'elastic.out(1,0.3)' });
             });
         });

@@ -88,11 +88,25 @@
 }
 
 /* ── Acessibilidade: respeita preferência de menos movimento ────────────── */
+/*
+ * O JS já tem um early-return quando prefers-reduced-motion está ativo,
+ * mas este bloco CSS cobre o período antes do JS carregar e serve como
+ * camada extra de garantia para todos os elementos com classes GSAP.
+ */
 @media (prefers-reduced-motion: reduce) {
+    /* Animações de texto */
     .gsap-char-reveal span,
     .gsap-word-reveal span,
     .gsap-text-fade,
     .gsap-text-blur,
+    .gsap-typewriter,
+    .gsap-scramble,
+    /* Animações de imagem */
+    .gsap-img-reveal,
+    .gsap-img-zoom,
+    .gsap-img-fade,
+    .gsap-img-parallax,
+    /* Animações de elemento */
     .gsap-fade-up,
     .gsap-fade-down,
     .gsap-fade-left,
@@ -102,21 +116,50 @@
     .gsap-scale-out,
     .gsap-rotate-in,
     .gsap-flip-in,
-    .gsap-img-reveal,
-    .gsap-img-zoom,
-    .gsap-img-fade,
     .gsap-clip-left,
     .gsap-clip-right,
     .gsap-clip-top,
-    .gsap-clip-bottom {
+    .gsap-clip-bottom,
+    /* Grupos stagger */
+    .gsap-stagger > *,
+    .gsap-stagger-left > *,
+    .gsap-stagger-right > *,
+    .gsap-stagger-scale > *,
+    .gsap-stagger-fade > *,
+    .gsap-stagger-rotate > *,
+    .gsap-stagger-center > *,
+    /* Especiais */
+    .gsap-parallax,
+    .gsap-reveal-line,
+    .gsap-progress,
+    /* SVG */
+    .gsap-draw-svg,
+    .gsap-morph-svg,
+    /* ScrollSmoother */
+    .gsap-speed-slow,
+    .gsap-speed-fast {
         animation: none !important;
         transition: none !important;
         opacity: 1 !important;
         transform: none !important;
         clip-path: none !important;
         filter: none !important;
+        visibility: visible !important;
     }
+    /* Marquee: para o loop */
+    .gsap-marquee > * {
+        animation: none !important;
+        transform: none !important;
+    }
+    /* Highlight: mostra sublinhado completo imediatamente */
     .gsap-text-highlight {
         background-size: 100% 35% !important;
+    }
+    /* Hover: desabilita efeitos de movimento interativo */
+    .gsap-magnetic,
+    .gsap-tilt,
+    .gsap-hover-lift {
+        transform: none !important;
+        transition: none !important;
     }
 }

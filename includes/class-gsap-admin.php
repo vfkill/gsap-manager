@@ -69,11 +69,14 @@ class GSAP_Admin {
             $out['plugins'][ $plugin ] = ! empty( $input['plugins'][ $plugin ] );
         }
 
-        $out['smoother_smooth']    = min( 10, max( 0, floatval( $input['smoother_smooth'] ?? 1.5 ) ) );
+        $out['smoother_smooth']    = min( 10, max( 0, floatval( $input['smoother_smooth'] ?? 1 ) ) );
         $out['smoother_effects']   = ! empty( $input['smoother_effects'] );
         $out['smoother_normalize'] = ! empty( $input['smoother_normalize'] );
         $out['smoother_wrapper']   = sanitize_text_field( $input['smoother_wrapper'] ?? '#smooth-wrapper' ) ?: '#smooth-wrapper';
         $out['smoother_content']   = sanitize_text_field( $input['smoother_content'] ?? '#smooth-content' ) ?: '#smooth-content';
+
+        $out['highlight_color'] = sanitize_hex_color( $input['highlight_color'] ?? '' ) ?: '';
+        $out['progress_color']  = sanitize_hex_color( $input['progress_color'] ?? '' ) ?: '';
 
         return $out;
     }
@@ -277,6 +280,39 @@ class GSAP_Admin {
                 </div>
 
                 <div class="gsap-card">
+                    <h2 class="gsap-card__title">Personalização Visual</h2>
+                    <p class="gsap-card__desc">Cores aplicadas pelas classes de animação. Deixe em branco para usar o padrão verde GSAP (<code>#0AE448</code>).</p>
+
+                    <div class="gsap-field gsap-field--color">
+                        <label class="gsap-label" for="highlight_color">Cor do destaque de texto</label>
+                        <div class="gsap-color-row">
+                            <input type="color" id="highlight_color"
+                                   name="<?php echo GSAP_MANAGER_OPTION; ?>[highlight_color]"
+                                   value="<?php echo esc_attr( $s['highlight_color'] ?: '#0AE448' ); ?>">
+                            <input type="text" id="highlight_color_text"
+                                   class="gsap-input gsap-input--color-text"
+                                   value="<?php echo esc_attr( $s['highlight_color'] ?: '#0AE448' ); ?>"
+                                   placeholder="#0AE448">
+                        </div>
+                        <span class="gsap-field__desc">Cor do sublinhado animado da classe <code>gsap-text-highlight</code>. Use a variável CSS <code>--gsap-highlight-color</code> no tema para sobrescrever por elemento.</span>
+                    </div>
+
+                    <div class="gsap-field gsap-field--color">
+                        <label class="gsap-label" for="progress_color">Cor da barra de progresso</label>
+                        <div class="gsap-color-row">
+                            <input type="color" id="progress_color"
+                                   name="<?php echo GSAP_MANAGER_OPTION; ?>[progress_color]"
+                                   value="<?php echo esc_attr( $s['progress_color'] ?: '#0AE448' ); ?>">
+                            <input type="text" id="progress_color_text"
+                                   class="gsap-input gsap-input--color-text"
+                                   value="<?php echo esc_attr( $s['progress_color'] ?: '#0AE448' ); ?>"
+                                   placeholder="#0AE448">
+                        </div>
+                        <span class="gsap-field__desc">Cor da classe <code>gsap-progress</code>. Use a variável CSS <code>--gsap-progress-color</code> no tema para sobrescrever por elemento.</span>
+                    </div>
+                </div>
+
+                <div class="gsap-card">
                     <h2 class="gsap-card__title">JavaScript de Inicialização</h2>
                     <p class="gsap-card__desc">Código executado após o carregamento do GSAP. Ideal para configurações globais como <code>gsap.defaults()</code> ou registro de plugins.</p>
                     <div class="gsap-field">
@@ -362,9 +398,9 @@ ScrollTrigger.defaults({
                 <!-- ScrollSmoother: configurações avançadas -->
                 <div class="gsap-card <?php echo empty( $s['plugins']['ScrollSmoother'] ) ? 'gsap-field--hidden' : ''; ?>" id="gsap-smoother-settings">
                     <h2 class="gsap-card__title">Configurações do ScrollSmoother</h2>
-                    <div class="gsap-notice gsap-notice--warn" style="margin-bottom:1rem">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-                        <span><strong>Download manual necessário.</strong> ScrollSmoother não está disponível via CDN público — baixe o arquivo <code>ScrollSmoother.min.js</code> em <a href="https://gsap.com/docs/v3/Plugins/ScrollSmoother/" target="_blank" rel="noopener">gsap.com</a> e coloque em <code>assets/js/vendor/</code> do plugin. A fonte "CDN" nas configurações gerais não afeta este plugin.</span>
+                    <div class="gsap-notice gsap-notice--info" style="margin-bottom:1rem">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <span>ScrollSmoother é um plugin bonus e é sempre carregado do servidor local (<code>assets/js/vendor/</code>). A configuração de fonte <strong>CDN / Local</strong> nas configurações gerais não afeta este plugin.</span>
                     </div>
                     <p class="gsap-card__desc">
                         Os elementos <code>smooth-wrapper</code> e <code>smooth-content</code> são injetados
@@ -376,10 +412,10 @@ ScrollTrigger.defaults({
                         <label class="gsap-label" for="smoother_smooth">Suavidade do scroll</label>
                         <input type="number" id="smoother_smooth"
                                name="<?php echo GSAP_MANAGER_OPTION; ?>[smoother_smooth]"
-                               value="<?php echo esc_attr( $s['smoother_smooth'] ?? 1.5 ); ?>"
+                               value="<?php echo esc_attr( $s['smoother_smooth'] ?? 1 ); ?>"
                                class="gsap-input gsap-input--small"
                                min="0" max="10" step="0.1">
-                        <span class="gsap-field__desc"><strong>0</strong> = sem suavidade (scroll nativo) · <strong>1</strong> = leve · <strong>2+</strong> = muito suave. Padrão: 1.5</span>
+                        <span class="gsap-field__desc"><strong>0</strong> = sem suavidade (scroll nativo) · <strong>1</strong> = suave · <strong>2+</strong> = muito suave. Padrão: 1</span>
                     </div>
 
                     <div class="gsap-field gsap-field--toggle">
@@ -475,9 +511,10 @@ ScrollTrigger.defaults({
                     [ 'class' => 'gsap-stagger-scale',   'desc' => 'Filhos entram em cascata com escala.',                    'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-stagger-scale">...</div>' ],
                     [ 'class' => 'gsap-stagger-fade',    'desc' => 'Filhos entram em cascata com fade simples.',              'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-stagger-fade">...</div>' ],
                     [ 'class' => 'gsap-stagger-rotate',  'desc' => 'Filhos entram em cascata com rotação.',                   'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-stagger-rotate">...</div>' ],
+                    [ 'class' => 'gsap-stagger-center',  'desc' => 'Filhos entram em cascata a partir do centro — expande para fora simultaneamente. <code>data-gsap-stagger="0.1"</code> para intervalo customizado.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-stagger-center">...</div>' ],
                 ],
                 'Especiais' => [
-                    [ 'class' => 'gsap-counter',         'desc' => 'Anima um número do zero até o valor. Suporta <code>data-gsap-prefix</code>, <code>data-gsap-suffix</code>, <code>data-gsap-from</code>.', 'req' => 'ScrollTrigger', 'ex' => '<span class="gsap-counter" data-gsap-suffix="%">94</span>' ],
+                    [ 'class' => 'gsap-counter',         'desc' => 'Anima um número do zero até o valor. Suporta <code>data-gsap-prefix</code>, <code>data-gsap-suffix</code>, <code>data-gsap-from</code>, <code>data-gsap-separator=","</code> (separador de milhar).', 'req' => 'ScrollTrigger', 'ex' => '<span class="gsap-counter" data-gsap-suffix=" mil" data-gsap-separator=".">1500</span>' ],
                     [ 'class' => 'gsap-marquee',         'desc' => 'Faixa de conteúdo em loop horizontal. Use <code>data-gsap-speed</code> e <code>data-gsap-dir="right"</code>.', 'req' => '', 'ex' => '<div class="gsap-marquee" data-gsap-speed="50"><span>Item</span><span>Item</span></div>' ],
                     [ 'class' => 'gsap-parallax',        'desc' => 'Parallax genérico (não-imagem). O pai deve ter overflow:hidden.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-parallax">Elemento flutuante</div>' ],
                     [ 'class' => 'gsap-reveal-line',     'desc' => 'Linha cresce de largura zero. Perfeito para divisores.   <code>data-gsap-axis="height"</code> para vertical.', 'req' => 'ScrollTrigger', 'ex' => '<hr class="gsap-reveal-line">' ],
@@ -510,9 +547,10 @@ ScrollTrigger.defaults({
                             <code>(nenhuma)</code>
                             <span>Comportamento padrão: aguarda o elemento entrar na viewport para animar.</span>
                         </div>
-                        <div class="gsap-trigger-item">
+                        <div class="gsap-trigger-item gsap-trigger-item--deprecated">
                             <code>gsap-on-scroll</code>
-                            <span>Idêntico ao padrão — mantido por compatibilidade.</span>
+                            <span class="gsap-badge gsap-badge--deprecated">legado</span>
+                            <span>Idêntico ao comportamento padrão — mantido por compatibilidade. Não é necessário adicionar esta classe.</span>
                         </div>
                         <div class="gsap-trigger-item">
                             <code>gsap-on-load</code>
@@ -549,9 +587,11 @@ ScrollTrigger.defaults({
                         <div><code>gsap-delay-5</code> — atraso de 0.5s</div>
                         <div><code>gsap-slow</code> — duração 1.8× mais lenta</div>
                         <div><code>gsap-fast</code> — duração 2× mais rápida</div>
+                        <div><code>gsap-repeat</code> — re-dispara ao entrar/sair da viewport</div>
                     </div>
                     <p class="gsap-trigger-example">
-                        Exemplo: <code>gsap-fade-up gsap-on-scroll gsap-delay-2 gsap-slow</code>
+                        Exemplo: <code>gsap-fade-up gsap-on-scroll gsap-delay-2 gsap-slow</code> &nbsp;|&nbsp;
+                        <code>gsap-scale-in gsap-repeat</code> — anima toda vez que o elemento aparece na tela
                     </p>
                 </div>
 
@@ -566,6 +606,8 @@ ScrollTrigger.defaults({
                         <div><code>data-gsap-start</code> — posição do gatilho scroll <span>ex: <em>"top 70%"</em></span></div>
                         <div><code>data-gsap-chars</code> — charset do scramble <span>ex: <em>"01"</em>, <em>"upperCase"</em></span></div>
                         <div><code>data-gsap-target</code> — seletor do shape SVG alvo <span>ex: <em>"#shape-b"</em></span></div>
+                        <div><code>data-gsap-separator</code> — separador de milhar no counter <span>ex: <em>"."</em>, <em>","</em></span></div>
+                        <div><code>data-gsap-speed</code> — velocidade parallax no ScrollSmoother <span>ex: <em>0.5</em>, <em>1.8</em></span></div>
                     </div>
                 </div>
 
@@ -813,6 +855,13 @@ ScrollTrigger.defaults({
                             <p>Modifica <code>gsap-word-reveal</code>: cada palavra aparece ao rolar. Similar ao char-scrub, mas com granularidade de palavras — mais legível em textos longos. Requer ScrollTrigger.</p>
                         </div>
                     </div>
+                    <div class="gsap-trigger-row">
+                        <div class="gsap-trigger-row__badge gsap-trigger-row__badge--green">gsap-repeat</div>
+                        <div>
+                            <strong>Repetir a cada entrada</strong>
+                            <p>Por padrão, as animações disparam uma única vez. Com <code>gsap-repeat</code>, a animação se reinicia toda vez que o elemento entra na viewport e se oculta quando sai. Ideal para seções que o usuário pode visitar múltiplas vezes ao rolar. Funciona melhor com animações de elemento (fade, scale, clip) — evite em char-reveal e word-reveal.</p>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -859,7 +908,7 @@ ScrollTrigger.defaults({
                     <div class="gsap-step">
                         <div class="gsap-step__num">2</div>
                         <h4>Ajuste a suavidade</h4>
-                        <p>Configure a <em>Suavidade</em> conforme preferido: <strong>0</strong> = scroll nativo, <strong>1</strong> = suave, <strong>1.5</strong> = padrão, <strong>2+</strong> = muito suave. Valores altos criam um efeito mais "flutuante".</p>
+                        <p>Configure a <em>Suavidade</em> conforme preferido: <strong>0</strong> = scroll nativo, <strong>1</strong> = padrão, <strong>2+</strong> = muito suave. Valores altos criam um efeito mais "flutuante".</p>
                     </div>
                 </div>
 
