@@ -600,96 +600,392 @@ ScrollTrigger.defaults({
 
             <!-- TAB: Como Usar -->
             <div class="gsap-tab-panel <?php echo $tab === 'usage' ? 'is-active' : ''; ?>">
+
+            <!-- ── 1. O que é ──────────────────────────────────────────── -->
             <div class="gsap-card">
-                <h2 class="gsap-card__title">Como Usar o GSAP no WordPress</h2>
-                <p class="gsap-card__desc">O GSAP já está sendo carregado. Use-o dentro de blocos HTML customizados, temas ou outros plugins.</p>
-
-                <div class="gsap-usage-section">
-                    <h3>1. Animação básica</h3>
-                    <pre class="gsap-code"><code>&lt;script&gt;
-gsap.to(".meu-elemento", {
-    x: 100,
-    opacity: 1,
-    duration: 1
-});
-&lt;/script&gt;</code></pre>
-                </div>
-
-                <div class="gsap-usage-section">
-                    <h3>2. ScrollTrigger (ativar por scroll)</h3>
-                    <pre class="gsap-code"><code>&lt;script&gt;
-gsap.registerPlugin(ScrollTrigger);
-
-gsap.from(".hero-title", {
-    scrollTrigger: ".hero-title",
-    y: 60,
-    opacity: 0,
-    duration: 1
-});
-&lt;/script&gt;</code></pre>
-                </div>
-
-                <div class="gsap-usage-section">
-                    <h3>3. Timeline encadeada</h3>
-                    <pre class="gsap-code"><code>&lt;script&gt;
-const tl = gsap.timeline({ defaults: { duration: 0.6 } });
-
-tl.from(".nav",    { y: -40, opacity: 0 })
-  .from(".hero h1", { y: 30, opacity: 0 }, "-=0.3")
-  .from(".hero p",  { y: 30, opacity: 0 }, "-=0.3")
-  .from(".hero .btn", { scale: 0.8, opacity: 0 }, "-=0.2");
-&lt;/script&gt;</code></pre>
-                </div>
-
-                <div class="gsap-usage-section">
-                    <h3>4. Enqueue correto em temas/plugins filhos</h3>
-                    <pre class="gsap-code"><code>// No functions.php do seu tema:
-add_action('wp_enqueue_scripts', function() {
-    // O GSAP Manager já carregou o GSAP com o handle 'gsap'
-    // Use-o como dependência nos seus scripts:
-    wp_enqueue_script(
-        'meu-script',
-        get_template_directory_uri() . '/js/animacoes.js',
-        ['gsap', 'gsap-scrolltrigger'], // dependências
-        '1.0',
-        true
-    );
-});</code></pre>
-                </div>
-
-                <div class="gsap-usage-section">
-                    <h3>5. Handles disponíveis</h3>
-                    <div class="gsap-table-wrap">
-                        <table class="gsap-table">
-                            <thead><tr><th>Plugin</th><th>Handle WordPress</th></tr></thead>
-                            <tbody>
-                                <tr><td>GSAP Core</td><td><code>gsap</code></td></tr>
-                                <tr><td>ScrollTrigger</td><td><code>gsap-scrolltrigger</code></td></tr>
-                                <tr><td>ScrollToPlugin</td><td><code>gsap-scrolltoplugin</code></td></tr>
-                                <tr><td>Draggable</td><td><code>gsap-draggable</code></td></tr>
-                                <tr><td>Flip</td><td><code>gsap-flip</code></td></tr>
-                                <tr><td>MotionPathPlugin</td><td><code>gsap-motionpathplugin</code></td></tr>
-                                <tr><td>TextPlugin</td><td><code>gsap-textplugin</code></td></tr>
-                                <tr><td>Observer</td><td><code>gsap-observer</code></td></tr>
-                                <tr><td>CustomEase</td><td><code>gsap-customease</code></td></tr>
-                                <tr><td>EasePack</td><td><code>gsap-easepack</code></td></tr>
-                                <tr><td>CSSRulePlugin</td><td><code>gsap-cssruleplugin</code></td></tr>
-                                <tr><td colspan="2" style="padding-top:.75rem;font-size:11px;color:#888;font-weight:600;text-transform:uppercase;letter-spacing:.4px">Bonus (local)</td></tr>
-                                <tr><td>ScrollSmoother</td><td><code>gsap-scrollsmoother</code></td></tr>
-                                <tr><td>SplitText</td><td><code>gsap-splittext</code></td></tr>
-                                <tr><td>MorphSVGPlugin</td><td><code>gsap-morphsvgplugin</code></td></tr>
-                                <tr><td>DrawSVGPlugin</td><td><code>gsap-drawsvgplugin</code></td></tr>
-                                <tr><td>InertiaPlugin</td><td><code>gsap-inertiaplugin</code></td></tr>
-                                <tr><td>ScrambleTextPlugin</td><td><code>gsap-scrambletextplugin</code></td></tr>
-                                <tr><td>CustomBounce</td><td><code>gsap-custombounce</code></td></tr>
-                                <tr><td>CustomWiggle</td><td><code>gsap-customwiggle</code></td></tr>
-                                <tr><td>Physics2DPlugin</td><td><code>gsap-physics2dplugin</code></td></tr>
-                                <tr><td>GSDevTools</td><td><code>gsap-gsdevtools</code></td></tr>
-                            </tbody>
-                        </table>
+                <h2 class="gsap-card__title">O que é o GSAP Manager?</h2>
+                <p class="gsap-card__desc">
+                    O <strong>GSAP Manager</strong> integra o <strong>GSAP (GreenSock Animation Platform)</strong> — a biblioteca de animações JavaScript mais utilizada na web — diretamente ao WordPress, sem precisar escrever código. O sistema de classes permite adicionar animações profissionais a qualquer elemento do seu site apenas digitando uma classe CSS no campo do seu construtor.
+                </p>
+                <div class="gsap-usage-features">
+                    <div class="gsap-usage-feature">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Carrega o GSAP e seus plugins automaticamente — sem configuração manual</span>
+                    </div>
+                    <div class="gsap-usage-feature">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Animações ativadas por scroll, ao carregar, por hover e vinculadas ao scroll (scrub)</span>
+                    </div>
+                    <div class="gsap-usage-feature">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Compatível com Elementor, Gutenberg, Hello Elementor e qualquer tema WordPress</span>
+                    </div>
+                    <div class="gsap-usage-feature">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                        <span>Plugins bonus (ScrollSmoother, DrawSVG, MorphSVG, ScrambleText…) com classes prontas</span>
                     </div>
                 </div>
             </div>
+
+            <!-- ── 2. Início Rápido ────────────────────────────────────── -->
+            <div class="gsap-card">
+                <h2 class="gsap-card__title">Início Rápido — 3 passos</h2>
+                <div class="gsap-steps">
+                    <div class="gsap-step">
+                        <div class="gsap-step__num">1</div>
+                        <h4>Ative o plugin</h4>
+                        <p>Na aba <strong>Configurações</strong>, ligue <em>Habilitar GSAP</em> e <em>Animações por Classe</em>. Recomendado: marque <em>Carregar no rodapé</em>.</p>
+                    </div>
+                    <div class="gsap-step">
+                        <div class="gsap-step__num">2</div>
+                        <h4>Ative o ScrollTrigger</h4>
+                        <p>Na aba <strong>Plugins GSAP</strong>, habilite o <em>ScrollTrigger</em>. Ele é necessário para a maioria das animações ativadas por scroll.</p>
+                    </div>
+                    <div class="gsap-step">
+                        <div class="gsap-step__num">3</div>
+                        <h4>Adicione uma classe</h4>
+                        <p>No seu elemento (widget, bloco ou div), adicione a classe <code>gsap-fade-up</code>. Ao salvar, a animação dispara automaticamente ao scroll.</p>
+                    </div>
+                </div>
+                <div class="gsap-tip">
+                    <strong>É só isso!</strong> Nenhum JavaScript necessário para a maioria dos casos. Consulte a aba <strong>Animações por Classe</strong> para ver a lista completa de efeitos disponíveis.
+                </div>
+            </div>
+
+            <!-- ── 3. Onde adicionar as classes ───────────────────────── -->
+            <div class="gsap-card">
+                <h2 class="gsap-card__title">Onde adicionar as classes</h2>
+                <p class="gsap-card__desc">Cada plataforma tem um campo nativo para classes CSS. Não é preciso editar o HTML — use o campo do seu construtor favorito.</p>
+                <div class="gsap-where-grid">
+                    <div class="gsap-where-item">
+                        <div class="gsap-where-item__label">&#9654; Elementor</div>
+                        <p>Selecione o widget → aba <strong>Avançado</strong> → campo <strong>CSS Classes</strong>. Para atributos <code>data-gsap-*</code>, use <strong>Avançado → Atributos</strong>.</p>
+                        <pre class="gsap-code gsap-code--sm"><code>gsap-fade-up gsap-slow</code></pre>
+                    </div>
+                    <div class="gsap-where-item">
+                        <div class="gsap-where-item__label">&#9654; Gutenberg</div>
+                        <p>Selecione o bloco → painel lateral direito → <strong>Avançado</strong> → campo <strong>Classes CSS adicionais</strong>.</p>
+                        <pre class="gsap-code gsap-code--sm"><code>gsap-char-reveal gsap-delay-2</code></pre>
+                    </div>
+                    <div class="gsap-where-item">
+                        <div class="gsap-where-item__label">&#9654; HTML puro</div>
+                        <p>Adicione diretamente no atributo <code>class</code> do elemento HTML.</p>
+                        <pre class="gsap-code gsap-code--sm"><code>&lt;div class="gsap-fade-up"&gt;
+  Conteúdo
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── 4. Anatomia do sistema ─────────────────────────────── -->
+            <div class="gsap-card">
+                <h2 class="gsap-card__title">Como funciona — o sistema de classes</h2>
+                <p class="gsap-card__desc">Uma animação completa é formada por até 4 partes combinadas no campo de classes. Apenas a <strong>classe de animação</strong> é obrigatória — todo o resto é opcional.</p>
+
+                <div class="gsap-anatomy">
+                    <div class="gsap-anatomy__part">
+                        <span class="gsap-anatomy__badge gsap-anatomy__badge--anim">gsap-fade-up</span>
+                        <span class="gsap-anatomy__label">Animação<br><span class="gsap-anatomy__required">obrigatório</span></span>
+                    </div>
+                    <div class="gsap-anatomy__part">
+                        <span class="gsap-anatomy__badge gsap-anatomy__badge--plus">+</span>
+                    </div>
+                    <div class="gsap-anatomy__part">
+                        <span class="gsap-anatomy__badge gsap-anatomy__badge--mod">gsap-slow</span>
+                        <span class="gsap-anatomy__label">Velocidade<br><span class="gsap-anatomy__optional">opcional</span></span>
+                    </div>
+                    <div class="gsap-anatomy__part">
+                        <span class="gsap-anatomy__badge gsap-anatomy__badge--plus">+</span>
+                    </div>
+                    <div class="gsap-anatomy__part">
+                        <span class="gsap-anatomy__badge gsap-anatomy__badge--delay">gsap-delay-2</span>
+                        <span class="gsap-anatomy__label">Atraso<br><span class="gsap-anatomy__optional">opcional</span></span>
+                    </div>
+                    <div class="gsap-anatomy__part">
+                        <span class="gsap-anatomy__badge gsap-anatomy__badge--plus">+</span>
+                    </div>
+                    <div class="gsap-anatomy__part">
+                        <span class="gsap-anatomy__badge gsap-anatomy__badge--trig">gsap-on-load</span>
+                        <span class="gsap-anatomy__label">Gatilho<br><span class="gsap-anatomy__optional">opcional</span></span>
+                    </div>
+                </div>
+
+                <p class="gsap-section-label">Exemplos reais</p>
+                <div class="gsap-example-rows">
+                    <div class="gsap-example-row">
+                        <code>gsap-fade-up</code>
+                        <span>Sobe com fade ao entrar na viewport — comportamento padrão</span>
+                    </div>
+                    <div class="gsap-example-row">
+                        <code>gsap-fade-up gsap-slow</code>
+                        <span>Mesmo efeito, com duração 1.8× mais longa</span>
+                    </div>
+                    <div class="gsap-example-row">
+                        <code>gsap-char-reveal gsap-delay-3</code>
+                        <span>Revela caractere por caractere, com 0.3s de atraso antes de começar</span>
+                    </div>
+                    <div class="gsap-example-row">
+                        <code>gsap-fade-up gsap-on-load gsap-slow</code>
+                        <span>Sobe com fade ao carregar a página — sem esperar o scroll</span>
+                    </div>
+                    <div class="gsap-example-row">
+                        <code>gsap-text-fade gsap-scrub</code>
+                        <span>Fade do texto vinculado ao progresso do scroll</span>
+                    </div>
+                    <div class="gsap-example-row">
+                        <code>gsap-char-reveal gsap-char-scrub</code>
+                        <span>Caracteres revelados sincronizados com o scroll — efeito cinematográfico</span>
+                    </div>
+                    <div class="gsap-example-row">
+                        <code>gsap-stagger gsap-fast gsap-delay-1</code>
+                        <span>Filhos entram em cascata, rápido, com 0.1s de atraso inicial</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── 5. Modificadores de timing ────────────────────────── -->
+            <div class="gsap-card">
+                <h2 class="gsap-card__title">Modificadores de timing</h2>
+                <p class="gsap-card__desc">Adicione junto à classe de animação para ajustar velocidade e atraso sem nenhum código.</p>
+
+                <p class="gsap-section-label">Velocidade</p>
+                <div class="gsap-modifier-grid">
+                    <div class="gsap-modifier-item">
+                        <code>gsap-slow</code>
+                        <span>Duração 1.8× mais longa — efeito suave e elaborado</span>
+                    </div>
+                    <div class="gsap-modifier-item">
+                        <code>gsap-fast</code>
+                        <span>Duração 2× mais curta — entrada ágil e snappy</span>
+                    </div>
+                </div>
+
+                <p class="gsap-section-label" style="margin-top:1.25rem">Atraso (delay) — útil para sequenciar elementos na mesma seção</p>
+                <div class="gsap-modifier-grid">
+                    <div class="gsap-modifier-item"><code>gsap-delay-1</code><span>Aguarda 0.1s antes de animar</span></div>
+                    <div class="gsap-modifier-item"><code>gsap-delay-2</code><span>Aguarda 0.2s antes de animar</span></div>
+                    <div class="gsap-modifier-item"><code>gsap-delay-3</code><span>Aguarda 0.3s antes de animar</span></div>
+                    <div class="gsap-modifier-item"><code>gsap-delay-4</code><span>Aguarda 0.4s antes de animar</span></div>
+                    <div class="gsap-modifier-item"><code>gsap-delay-5</code><span>Aguarda 0.5s antes de animar</span></div>
+                </div>
+                <div class="gsap-tip">
+                    Para durações ou atrasos exatos, use os atributos <code>data-gsap-duration="1.2"</code> e <code>data-gsap-delay="0.8"</code> — eles têm prioridade sobre as classes.
+                </div>
+            </div>
+
+            <!-- ── 6. Gatilhos ───────────────────────────────────────── -->
+            <div class="gsap-card">
+                <h2 class="gsap-card__title">Quando animar — Gatilhos</h2>
+                <p class="gsap-card__desc">Por padrão, toda animação aguarda o elemento entrar na viewport. Use classes de gatilho para mudar esse comportamento.</p>
+                <div class="gsap-trigger-rows">
+                    <div class="gsap-trigger-row">
+                        <div class="gsap-trigger-row__badge">(padrão)</div>
+                        <div>
+                            <strong>Entrada na viewport</strong>
+                            <p>Dispara uma única vez quando o elemento aparece na tela ao rolar. Não é necessário nenhuma classe adicional — é o comportamento de todas as animações por padrão.</p>
+                        </div>
+                    </div>
+                    <div class="gsap-trigger-row">
+                        <div class="gsap-trigger-row__badge gsap-trigger-row__badge--blue">gsap-on-load</div>
+                        <div>
+                            <strong>Ao carregar a página</strong>
+                            <p>Inicia imediatamente, sem aguardar o scroll. Ideal para a seção <em>hero</em>: título principal, subtítulo, botão CTA, imagem de destaque.</p>
+                        </div>
+                    </div>
+                    <div class="gsap-trigger-row">
+                        <div class="gsap-trigger-row__badge gsap-trigger-row__badge--yellow">gsap-scrub</div>
+                        <div>
+                            <strong>Progresso vinculado ao scroll</strong>
+                            <p>O elemento anima conforme a página rola — avança ao descer, regride ao subir. Funciona com <code>gsap-text-fade</code>, <code>gsap-text-blur</code> e <code>gsap-text-highlight</code>.</p>
+                        </div>
+                    </div>
+                    <div class="gsap-trigger-row">
+                        <div class="gsap-trigger-row__badge gsap-trigger-row__badge--yellow">gsap-char-scrub</div>
+                        <div>
+                            <strong>Caracteres vinculados ao scroll</strong>
+                            <p>Modifica <code>gsap-char-reveal</code>: cada caractere é revelado conforme a página rola para baixo e ocultado ao subir. Efeito cinematográfico muito usado em títulos de destaque. Requer ScrollTrigger.</p>
+                        </div>
+                    </div>
+                    <div class="gsap-trigger-row">
+                        <div class="gsap-trigger-row__badge gsap-trigger-row__badge--yellow">gsap-word-scrub</div>
+                        <div>
+                            <strong>Palavras vinculadas ao scroll</strong>
+                            <p>Modifica <code>gsap-word-reveal</code>: cada palavra aparece ao rolar. Similar ao char-scrub, mas com granularidade de palavras — mais legível em textos longos. Requer ScrollTrigger.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── 7. Controle fino ──────────────────────────────────── -->
+            <div class="gsap-card">
+                <h2 class="gsap-card__title">Controle fino com atributos HTML</h2>
+                <p class="gsap-card__desc">Para ajustes precisos além das classes de modificador, use os atributos <code>data-gsap-*</code> diretamente no elemento. No Elementor, acesse <strong>Avançado → Atributos customizados</strong>.</p>
+                <div class="gsap-attrs-box" style="margin-top:1rem">
+                    <div class="gsap-attrs-grid">
+                        <div><code>data-gsap-duration="1.5"</code> — duração exata em segundos</div>
+                        <div><code>data-gsap-delay="0.4"</code> — atraso exato em segundos</div>
+                        <div><code>data-gsap-ease="elastic.out(1,0.5)"</code> — curva de easing GSAP</div>
+                        <div><code>data-gsap-distance="80"</code> — deslocamento em px (fade-up/down/left/right)</div>
+                        <div><code>data-gsap-stagger="0.12"</code> — intervalo entre filhos em grupos</div>
+                        <div><code>data-gsap-start="top 60%"</code> — posição do gatilho no scroll</div>
+                        <div><code>data-gsap-end="bottom 20%"</code> — fim do range (modo scrub)</div>
+                        <div><code>data-gsap-scrub="2"</code> — suavidade do scrub em segundos</div>
+                    </div>
+                </div>
+                <div class="gsap-tip">
+                    <strong>Dica Elementor:</strong> Em <strong>Avançado → Atributos</strong>, insira a chave sem o prefixo <em>data-</em> (ex: <code>gsap-duration</code>) e o valor (<code>1.5</code>) nos campos separados. O Elementor adiciona o <code>data-</code> automaticamente.
+                </div>
+                <pre class="gsap-code" style="margin-top:1rem"><code>&lt;!-- Exemplo: título com controle preciso --&gt;
+&lt;h2 class="gsap-char-reveal gsap-delay-1"
+    data-gsap-duration="0.5"
+    data-gsap-stagger="0.02"
+    data-gsap-ease="power4.out"&gt;
+    Título com controle preciso
+&lt;/h2&gt;</code></pre>
+            </div>
+
+            <!-- ── 8. ScrollSmoother ─────────────────────────────────── -->
+            <div class="gsap-card">
+                <h2 class="gsap-card__title">ScrollSmoother — Scroll suavizado e Parallax</h2>
+                <p class="gsap-card__desc">O ScrollSmoother adiciona inércia suave ao scroll da página e permite efeitos de parallax com classes simples. Requer o arquivo <code>ScrollSmoother.min.js</code> em <code>assets/js/vendor/</code> do plugin.</p>
+
+                <p class="gsap-section-label">Como ativar</p>
+                <div class="gsap-steps gsap-steps--two">
+                    <div class="gsap-step">
+                        <div class="gsap-step__num">1</div>
+                        <h4>Habilite na aba Plugins</h4>
+                        <p>Ative <strong>ScrollTrigger</strong> + <strong>ScrollSmoother</strong>. As configurações do ScrollSmoother aparecerão logo abaixo. Os wrappers HTML necessários são injetados <strong>automaticamente</strong> pelo plugin.</p>
+                    </div>
+                    <div class="gsap-step">
+                        <div class="gsap-step__num">2</div>
+                        <h4>Ajuste a suavidade</h4>
+                        <p>Configure a <em>Suavidade</em> conforme preferido: <strong>0</strong> = scroll nativo, <strong>1</strong> = suave, <strong>1.5</strong> = padrão, <strong>2+</strong> = muito suave. Valores altos criam um efeito mais "flutuante".</p>
+                    </div>
+                </div>
+
+                <p class="gsap-section-label" style="margin-top:1.25rem">Classes de parallax</p>
+                <div class="gsap-modifier-grid">
+                    <div class="gsap-modifier-item">
+                        <code>gsap-speed-slow</code>
+                        <span>Move a 0.6× do scroll — efeito de fundo / profundidade</span>
+                    </div>
+                    <div class="gsap-modifier-item">
+                        <code>gsap-speed-fast</code>
+                        <span>Move a 1.5× do scroll — efeito de primeiro plano</span>
+                    </div>
+                </div>
+                <div class="gsap-tip">
+                    Use <code>data-gsap-speed="0.3"</code> no elemento para um valor customizado de velocidade parallax.
+                </div>
+            </div>
+
+            <!-- ── 9. Plugins bonus com classes ──────────────────────── -->
+            <div class="gsap-card">
+                <h2 class="gsap-card__title">Plugins bonus com classes automáticas</h2>
+                <p class="gsap-card__desc">Estes plugins bonus têm classes prontas no sistema. Habilite o plugin correspondente na aba <strong>Plugins GSAP</strong> e adicione a classe ao elemento.</p>
+                <div class="gsap-bonus-list">
+
+                    <div class="gsap-bonus-item">
+                        <div class="gsap-bonus-item__header">
+                            <span class="gsap-badge gsap-badge--bonus">ScrambleTextPlugin</span>
+                            <code class="gsap-bonus-item__class">gsap-scramble</code>
+                        </div>
+                        <p>O texto embaralha com caracteres aleatórios e revela progressivamente o conteúdo real ao entrar na viewport. Use <code>data-gsap-chars="01"</code> para escolher o charset (padrão: letras maiúsculas). Outros valores: <code>"lowerCase"</code>, <code>"!@#$%"</code>, <code>"XO"</code>.</p>
+                        <pre class="gsap-code gsap-code--sm"><code>&lt;span class="gsap-scramble"&gt;Texto secreto&lt;/span&gt;
+&lt;span class="gsap-scramble" data-gsap-chars="01"&gt;Código binário&lt;/span&gt;</code></pre>
+                    </div>
+
+                    <div class="gsap-bonus-item">
+                        <div class="gsap-bonus-item__header">
+                            <span class="gsap-badge gsap-badge--bonus">DrawSVGPlugin</span>
+                            <code class="gsap-bonus-item__class">gsap-draw-svg</code>
+                        </div>
+                        <p>Anima o stroke de um <code>&lt;path&gt;</code>, <code>&lt;circle&gt;</code>, <code>&lt;line&gt;</code> ou qualquer forma SVG como se estivesse sendo desenhado ao entrar na viewport. <strong>Importante:</strong> o elemento SVG deve ter <code>stroke</code> e <code>stroke-width</code> definidos no CSS ou inline. Combine com <code>gsap-scrub</code> para vincular o desenho ao scroll.</p>
+                        <pre class="gsap-code gsap-code--sm"><code>&lt;!-- O elemento precisa ter stroke definido --&gt;
+&lt;path class="gsap-draw-svg"
+      stroke="#0AE448" stroke-width="3" fill="none"
+      d="M10 80 Q 95 10 180 80"&gt;&lt;/path&gt;
+
+&lt;!-- Vinculado ao scroll --&gt;
+&lt;path class="gsap-draw-svg gsap-scrub"
+      stroke="#fff" stroke-width="2" fill="none" d="..."&gt;&lt;/path&gt;</code></pre>
+                    </div>
+
+                    <div class="gsap-bonus-item">
+                        <div class="gsap-bonus-item__header">
+                            <span class="gsap-badge gsap-badge--bonus">MorphSVGPlugin</span>
+                            <code class="gsap-bonus-item__class">gsap-morph-svg</code>
+                        </div>
+                        <p>Transita suavemente de uma forma SVG para outra ao entrar na viewport. Requer <code>data-gsap-target="#seletor"</code> apontando para o <code>&lt;path&gt;</code> de destino. A forma alvo pode ficar oculta no DOM (<code>display:none</code>) — ela é usada apenas como referência de dados.</p>
+                        <pre class="gsap-code gsap-code--sm"><code>&lt;svg viewBox="0 0 100 100"&gt;
+    &lt;!-- Forma inicial — recebe a classe e aponta pro alvo --&gt;
+    &lt;path id="shape-a"
+          class="gsap-morph-svg"
+          data-gsap-target="#shape-b"
+          d="M10 10 L90 10 L90 90 L10 90Z"&gt;&lt;/path&gt;
+
+    &lt;!-- Forma alvo — pode estar oculta --&gt;
+    &lt;path id="shape-b"
+          style="display:none"
+          d="M50 5 L95 95 L5 95Z"&gt;&lt;/path&gt;
+&lt;/svg&gt;</code></pre>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- ── 10. Para desenvolvedores ──────────────────────────── -->
+            <div class="gsap-card">
+                <h2 class="gsap-card__title">Para desenvolvedores</h2>
+
+                <p class="gsap-section-label">JavaScript de inicialização customizado</p>
+                <p style="font-size:13px;color:var(--gsap-muted);margin:0 0 .75rem">Use o campo <strong>JavaScript de Inicialização</strong> na aba <strong>Configurações</strong> para executar código logo após o carregamento do GSAP — ideal para configurações globais ou animações que não usam o sistema de classes.</p>
+                <pre class="gsap-code"><code>// Definir defaults globais
+gsap.defaults({
+    ease: 'power3.out',
+    duration: 0.8
+});
+
+// Animação customizada via JS puro
+gsap.from('.minha-hero', {
+    y: 80, opacity: 0, duration: 1.2,
+    scrollTrigger: { trigger: '.minha-hero', start: 'top 80%' }
+});</code></pre>
+
+                <p class="gsap-section-label" style="margin-top:1.5rem">Usar o GSAP em scripts próprios (wp_enqueue)</p>
+                <p style="font-size:13px;color:var(--gsap-muted);margin:0 0 .75rem">O GSAP Manager registra todos os plugins com os handles corretos. Declare-os como dependência no seu <code>wp_enqueue_script()</code> para garantir a ordem de carregamento:</p>
+                <pre class="gsap-code"><code>// No functions.php do tema:
+add_action('wp_enqueue_scripts', function() {
+    wp_enqueue_script(
+        'meu-script',
+        get_template_directory_uri() . '/js/animacoes.js',
+        ['gsap', 'gsap-scrolltrigger'], // handles do GSAP Manager
+        '1.0',
+        true // carregar no rodapé
+    );
+});</code></pre>
+
+                <p class="gsap-section-label" style="margin-top:1.5rem">Handles disponíveis</p>
+                <div class="gsap-table-wrap">
+                    <table class="gsap-table">
+                        <thead><tr><th>Plugin</th><th>Handle</th><th>Plugin</th><th>Handle</th></tr></thead>
+                        <tbody>
+                            <tr><td>GSAP Core</td><td><code>gsap</code></td><td>ScrollSmoother</td><td><code>gsap-scrollsmoother</code></td></tr>
+                            <tr><td>ScrollTrigger</td><td><code>gsap-scrolltrigger</code></td><td>SplitText</td><td><code>gsap-splittext</code></td></tr>
+                            <tr><td>ScrollToPlugin</td><td><code>gsap-scrolltoplugin</code></td><td>MorphSVGPlugin</td><td><code>gsap-morphsvgplugin</code></td></tr>
+                            <tr><td>Draggable</td><td><code>gsap-draggable</code></td><td>DrawSVGPlugin</td><td><code>gsap-drawsvgplugin</code></td></tr>
+                            <tr><td>Flip</td><td><code>gsap-flip</code></td><td>InertiaPlugin</td><td><code>gsap-inertiaplugin</code></td></tr>
+                            <tr><td>MotionPathPlugin</td><td><code>gsap-motionpathplugin</code></td><td>ScrambleTextPlugin</td><td><code>gsap-scrambletextplugin</code></td></tr>
+                            <tr><td>TextPlugin</td><td><code>gsap-textplugin</code></td><td>CustomBounce</td><td><code>gsap-custombounce</code></td></tr>
+                            <tr><td>Observer</td><td><code>gsap-observer</code></td><td>CustomWiggle</td><td><code>gsap-customwiggle</code></td></tr>
+                            <tr><td>CustomEase</td><td><code>gsap-customease</code></td><td>Physics2DPlugin</td><td><code>gsap-physics2dplugin</code></td></tr>
+                            <tr><td>EasePack</td><td><code>gsap-easepack</code></td><td>GSDevTools</td><td><code>gsap-gsdevtools</code></td></tr>
+                            <tr><td>CSSRulePlugin</td><td><code>gsap-cssruleplugin</code></td><td>MotionPathHelper</td><td><code>gsap-motionpathhelper</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
             </div><!-- /gsap-tab-panel usage -->
 
         </div>
