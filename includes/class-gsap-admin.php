@@ -327,7 +327,7 @@ ScrollTrigger.defaults({
                     </div>
 
                     <h3 class="gsap-plugins-section-title" style="margin-top:1.5rem">Plugins bonus <span>carregados do servidor local (assets/js/vendor/)</span></h3>
-                    <div class="gsap-plugins-grid">
+                    <div class="gsap-plugins-grid gsap-plugins-grid--bonus">
                         <?php foreach ( $plugins_info as $name => $info ) : if ( empty( $info['bonus'] ) ) continue; ?>
                         <label class="gsap-plugin-card gsap-plugin-card--bonus <?php echo ! empty( $s['plugins'][ $name ] ) ? 'is-active' : ''; ?>">
                             <input type="checkbox"

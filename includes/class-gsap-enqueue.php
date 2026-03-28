@@ -165,7 +165,7 @@ class GSAP_Enqueue {
         if ( ! empty( $s['plugins']['ScrollSmoother'] ) ) {
             $wrapper   = esc_js( $s['smoother_wrapper']   ?? '#smooth-wrapper' );
             $content   = esc_js( $s['smoother_content']   ?? '#smooth-content' );
-            $smooth    = floatval( $s['smoother_smooth']   ?? 0 );
+            $smooth    = floatval( $s['smoother_smooth']   ?? 1 );
             $effects   = ! empty( $s['smoother_effects'] )   ? 'true' : 'false';
             $normalize = ! empty( $s['smoother_normalize'] ) ? 'true' : 'false';
 

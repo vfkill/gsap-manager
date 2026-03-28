@@ -297,6 +297,9 @@
     gap: 12px;
     margin-top: 4px;
 }
+.gsap-plugins-grid--bonus {
+    grid-template-columns: repeat(2, 1fr);
+}
 .gsap-plugin-card {
     display: block;
     background: var(--gsap-input);
