@@ -140,16 +140,15 @@
 
     // ── ScrollTrigger.refresh() + hash inicial (chamado ao fim do init()) ─────
     function finalizeScrollSmoother() {
-        // rAF garante que os pin spacers do ScrollTrigger já foram inseridos no DOM
-        // e que o ScrollSmoother processou o evento de refresh antes de calcular posições.
+        if (typeof ScrollTrigger !== 'undefined') { ScrollTrigger.refresh(); }
+        if (typeof ScrollSmoother === 'undefined') { return; }
+        var sm = ScrollSmoother.get();
+        if (!sm || !window.location.hash) { return; }
+        var hashTarget = document.querySelector(window.location.hash);
+        if (!hashTarget) { return; }
+        // Duplo rAF: garante que o ScrollTrigger.refresh() já calculou as posições
+        // antes de rolar para o hash inicial da URL.
         requestAnimationFrame(function () {
-            if (typeof ScrollTrigger !== 'undefined') { ScrollTrigger.refresh(); }
-            if (typeof ScrollSmoother === 'undefined') { return; }
-            var sm = ScrollSmoother.get();
-            if (!sm || !window.location.hash) { return; }
-            var hashTarget = document.querySelector(window.location.hash);
-            if (!hashTarget) { return; }
-            // Segundo rAF: ScrollTrigger.refresh() processou; agora calcula posição do hash.
             requestAnimationFrame(function () {
                 var hEl = document.querySelector('header,[data-elementor-type="header"],.elementor-location-header,#masthead');
                 var hH = hEl ? hEl.offsetHeight : 0;
@@ -734,11 +733,12 @@
                 scale: 1,
                 ease: 'none',
                 scrollTrigger: {
-                    trigger:            el,
-                    start:              str(el, 'start', 'top top'),
-                    end:                endVal,
-                    pin:                true,
-                    scrub:              scrubVal,
+                    trigger:             el,
+                    start:               str(el, 'start', 'top top'),
+                    end:                 endVal,
+                    pin:                 true,
+                    pinSpacing:          false,
+                    scrub:               scrubVal,
                     invalidateOnRefresh: true,
                 }
             });
