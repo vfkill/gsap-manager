@@ -92,15 +92,25 @@
     overflow: hidden;
     width: 100%;
 }
+/* Filho direto: estica para preencher o container.
+ * flex: 1 0 auto funciona no contexto flex-column do Elementor (e-con).
+ * min-height: 0 evita overflow em alguns layouts flex.
+ * will-change ativa a camada de composição para a animação de scale. */
+.gsap-zoom-reveal > :first-child {
+    flex: 1 0 auto;
+    min-height: 0;
+    will-change: transform;
+}
+/* Imagens e vídeos diretos ou dentro do primeiro filho preenchem o espaço */
 .gsap-zoom-reveal > img,
 .gsap-zoom-reveal > video,
 .gsap-zoom-reveal > picture > img,
-.gsap-zoom-reveal > :first-child {
+.gsap-zoom-reveal > :first-child img,
+.gsap-zoom-reveal > :first-child video {
     display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;
-    will-change: transform;
 }
 
 /* ── Acessibilidade: respeita preferência de menos movimento ────────────── */
