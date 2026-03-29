@@ -12,7 +12,7 @@
  *   data-gsap-scrub     — suavização do scrub     (ex: 1)
  *   data-gsap-dir       — direção (img-reveal)    (ex: "right")
  *   data-gsap-strength  — força do efeito         (ex: 0.5)
- *   data-gsap-from      — valor inicial (counter) (ex: 0)
+ *   data-gsap-from      — valor inicial (counter/zoom-reveal) (ex: 0 | 0.15)
  *   data-gsap-prefix    — prefixo (counter)       (ex: "R$")
  *   data-gsap-suffix    — sufixo (counter)        (ex: "%")
  *   data-gsap-speed     — velocidade (marquee)    (ex: 60)
@@ -65,6 +65,7 @@
         initScrollSmootherEffects();
         initTextAnimations();
         initImageAnimations();
+        initZoomReveal();
         initElementAnimations();
         initStaggerAnimations();
         initSpecialAnimations();
@@ -700,6 +701,42 @@
             gsap.to(el, {
                 y: num(el, 'distance', -70), ease: 'none',
                 scrollTrigger: { trigger: parent, start: 'top bottom', end: 'bottom top', scrub: num(el, 'scrub', 1.5) }
+            });
+        });
+    }
+
+    // ─── Zoom Reveal ────────────────────────────────────────────────────────
+    // Aplica no CONTAINER (.gsap-zoom-reveal).
+    // O elemento filho direto (img, video, ou primeiro filho) escala de
+    // data-gsap-from (padrão 0.15) até 1 enquanto o scroll avança,
+    // com o container pinado na tela durante toda a animação.
+    //
+    //   data-gsap-from   → escala inicial       (ex: 0.2)
+    //   data-gsap-end    → distância de scroll  (ex: "+=200%")
+    //   data-gsap-scrub  → suavização do scrub  (ex: 1.5)
+
+    function initZoomReveal() {
+        if (typeof ScrollTrigger === 'undefined') { return; }
+        document.querySelectorAll('.gsap-zoom-reveal').forEach(function (el) {
+            var fromScale = num(el, 'from', 0.15);
+            var endVal    = str(el, 'end', '+=150%');
+            var scrubVal  = num(el, 'scrub', 1);
+            var media     = el.querySelector('img, video, picture > img');
+            if (!media && el.firstElementChild) { media = el.firstElementChild; }
+            if (!media) { return; }
+
+            gsap.set(media, { scale: fromScale, transformOrigin: '50% 50%' });
+            gsap.to(media, {
+                scale: 1,
+                ease: 'none',
+                scrollTrigger: {
+                    trigger:      el,
+                    start:        str(el, 'start', 'top top'),
+                    end:          endVal,
+                    pin:          true,
+                    scrub:        scrubVal,
+                    anticipatePin: 1,
+                }
             });
         });
     }

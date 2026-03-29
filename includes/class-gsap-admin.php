@@ -488,6 +488,7 @@ ScrollTrigger.defaults({
                     [ 'class' => 'gsap-img-zoom',        'desc' => 'Entra com zoom + fade.',                                   'req' => 'ScrollTrigger', 'ex' => '<img class="gsap-img-zoom" src="foto.jpg">' ],
                     [ 'class' => 'gsap-img-fade',        'desc' => 'Fade simples na imagem.',                                  'req' => 'ScrollTrigger', 'ex' => '<img class="gsap-img-fade" src="foto.jpg">' ],
                     [ 'class' => 'gsap-img-parallax',    'desc' => 'Parallax no scroll. O elemento pai vira o container.',     'req' => 'ScrollTrigger', 'ex' => '<div style="overflow:hidden"><img class="gsap-img-parallax" src="foto.jpg"></div>' ],
+                    [ 'class' => 'gsap-zoom-reveal',     'desc' => 'Pina a seção e escala o filho (img/vídeo) de pequeno até fullscreen enquanto o usuário scrolla. <code>data-gsap-from="0.15"</code> escala inicial · <code>data-gsap-end="+=150%"</code> distância de scroll · <code>data-gsap-scrub="1"</code>.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-zoom-reveal" style="height:100vh"><img src="foto.jpg"></div>' ],
                 ],
                 'Elementos' => [
                     [ 'class' => 'gsap-fade-up',         'desc' => 'Fade + sobe para a posição original.',                    'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-fade-up">Conteúdo</div>' ],

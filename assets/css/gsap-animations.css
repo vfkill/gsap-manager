@@ -87,6 +87,22 @@
     will-change: width;
 }
 
+/* ── gsap-zoom-reveal ── container pinado com filho escalando ───────────── */
+.gsap-zoom-reveal {
+    overflow: hidden;
+    width: 100%;
+}
+.gsap-zoom-reveal > img,
+.gsap-zoom-reveal > video,
+.gsap-zoom-reveal > picture > img,
+.gsap-zoom-reveal > :first-child {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    will-change: transform;
+}
+
 /* ── Acessibilidade: respeita preferência de menos movimento ────────────── */
 /*
  * O JS já tem um early-return quando prefers-reduced-motion está ativo,
@@ -135,6 +151,11 @@
     /* SVG */
     .gsap-draw-svg,
     .gsap-morph-svg,
+    /* Zoom Reveal */
+    .gsap-zoom-reveal > img,
+    .gsap-zoom-reveal > video,
+    .gsap-zoom-reveal > picture > img,
+    .gsap-zoom-reveal > :first-child,
     /* ScrollSmoother */
     .gsap-speed-slow,
     .gsap-speed-fast {
