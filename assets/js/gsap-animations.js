@@ -70,6 +70,7 @@
         initSpecialAnimations();
         initBonusAnimations();
         initHoverAnimations();
+        finalizeScrollSmoother();
     }
 
     // ─── ScrollSmoother: efeitos de parallax por classe ─────────────────────
@@ -96,10 +97,17 @@
             smoother.effects(el, config);
         });
 
+        // ── Helper: altura do header (agora fora do smooth-wrapper) ─────────────
+        function getHeaderOffset() {
+            var h = document.querySelector('header,[data-elementor-type="header"],.elementor-location-header,#masthead');
+            return h ? h.offsetHeight : 0;
+        }
+
         // ── Âncoras: delega cliques em <a href="#..."> para o ScrollSmoother ──
-        // O ScrollSmoother move o conteúdo via translateY, não via scroll nativo.
         // Usa CAPTURE PHASE (true) para interceptar antes de qualquer handler do
         // Elementor/tema que possa chamar stopPropagation() e bloquear o evento.
+        // O terceiro argumento do scrollTo ("top Xpx") compensa a altura do header
+        // fixo para que a seção não fique escondida atrás dele.
         document.addEventListener('click', function (e) {
             var link = e.target.closest('a[href]');
             if (!link) { return; }
@@ -108,33 +116,45 @@
             var hashIndex = href.indexOf('#');
             if (hashIndex === -1) { return; }
             var id = href.slice(hashIndex);
-            if (id.length < 2) { return; } // só "#" sem id
-            // Garante que é navegação na mesma página
+            if (id.length < 2) { return; }
+            // Só intercepta navegação na mesma página
             var pagePart = href.slice(0, hashIndex);
             if (pagePart && pagePart !== window.location.pathname && pagePart !== window.location.href.split('#')[0]) { return; }
             var target = document.querySelector(id);
             if (!target) { return; }
             e.preventDefault();
-            smoother.scrollTo(target, true);
-            // Atualiza o hash na URL sem causar outro scroll nativo
-            if (history.pushState) {
-                history.pushState(null, null, id);
-            }
-        }, true); // capture phase — intercepta antes do stopPropagation do Elementor
+            smoother.scrollTo(target, true, 'top ' + getHeaderOffset() + 'px');
+            if (history.pushState) { history.pushState(null, null, id); }
+        }, true);
 
-        // ── Hash inicial na URL ao carregar a página ──────────────────────────
-        // Se a URL já contém #hash no carregamento (ex: link externo ou refresh),
-        // o browser tenta um scroll nativo antes do ScrollSmoother estar pronto.
-        // Deixamos o ScrollSmoother corrigir a posição após a inicialização.
-        if (window.location.hash) {
-            var initTarget = document.querySelector(window.location.hash);
-            if (initTarget) {
-                // Pequeno delay para garantir que ScrollTrigger calculou as posições
-                setTimeout(function () {
-                    smoother.scrollTo(initTarget, true);
-                }, 100);
+        // ── hashchange: digitação direta de hash na barra de endereços ────────
+        window.addEventListener('hashchange', function () {
+            if (!window.location.hash) { return; }
+            var target = document.querySelector(window.location.hash);
+            if (target) {
+                smoother.scrollTo(target, true, 'top ' + getHeaderOffset() + 'px');
             }
+        });
+    }
+
+    // ── ScrollTrigger.refresh() + hash inicial (chamado ao fim do init()) ─────
+    function finalizeScrollSmoother() {
+        if (typeof ScrollTrigger !== 'undefined') {
+            ScrollTrigger.refresh();
         }
+        if (typeof ScrollSmoother === 'undefined') { return; }
+        var sm = ScrollSmoother.get();
+        if (!sm || !window.location.hash) { return; }
+        var hashTarget = document.querySelector(window.location.hash);
+        if (!hashTarget) { return; }
+        // Duplo rAF: garante que o ScrollTrigger.refresh() já calculou as posições
+        requestAnimationFrame(function () {
+            requestAnimationFrame(function () {
+                var hEl = document.querySelector('header,[data-elementor-type="header"],.elementor-location-header,#masthead');
+                var hH = hEl ? hEl.offsetHeight : 0;
+                sm.scrollTo(hashTarget, false, 'top ' + hH + 'px');
+            });
+        });
     }
 
     // ─── Helpers ────────────────────────────────────────────────────────────

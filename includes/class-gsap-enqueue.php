@@ -169,21 +169,31 @@ class GSAP_Enqueue {
     if(typeof ScrollSmoother==='undefined'||!document.querySelector('{$wrapper}')){return;}
     gsap.registerPlugin(ScrollTrigger,ScrollSmoother);
 
-    // ── Reposiciona o header fora do smooth-content ──────────────────────────
-    // O ScrollSmoother aplica transform:translateY no #smooth-content inteiro.
-    // Se o header estiver dentro, ele sai do viewport ao navegar para seções
-    // mais abaixo — causando o desaparecimento do header e do conteúdo acima.
-    // Solução oficial GSAP: header deve ser filho de smooth-wrapper mas
-    // irmão de smooth-content (não dentro dele).
+    // ── 1. Mata scroll-behavior:smooth do tema/Bootstrap ─────────────────────
+    // Qualquer scroll-behavior:smooth no CSS conflita com o ScrollSmoother,
+    // criando dois sistemas de scroll suavizado competindo entre si.
+    gsap.set('html,body',{scrollBehavior:'auto'});
+
+    // ── 2. Impede o browser de restaurar posição de scroll ───────────────────
+    // O browser tenta rolar para a última posição salva ao recarregar a página,
+    // o que conflita com o ScrollSmoother que controla o scroll via transform.
+    if(history.scrollRestoration){history.scrollRestoration='manual';}
+
+    // ── 3. Move o header para FORA do smooth-wrapper ─────────────────────────
+    // PROBLEMA: ScrollSmoother aplica CSS transform no #smooth-content.
+    // Por spec CSS, qualquer elemento com transform cria um novo containing block.
+    // Elementos position:fixed DENTRO de um pai com transform ficam fixos
+    // relativo ao pai transformado — não ao viewport. Resultado: o header
+    // 'segue' o scroll e desaparece quando a página rola para baixo.
+    // SOLUÇÃO OFICIAL GSAP: o header deve ser IRMÃO do smooth-wrapper no DOM,
+    // completamente fora dele. Assim position:fixed funciona relativo ao viewport.
     (function(){
         var w=document.querySelector('{$wrapper}');
-        var c=document.querySelector('{$content}');
-        if(!w||!c){return;}
-        var h=c.querySelector('header,[data-elementor-type=\"header\"],.elementor-location-header,#masthead');
+        if(!w||!w.parentNode){return;}
+        var h=w.querySelector('header,[data-elementor-type=\"header\"],.elementor-location-header,#masthead');
         if(!h){return;}
-        w.insertBefore(h,c); // move para fora do smooth-content
-        // Compensa o espaço do header no topo do conteúdo
-        c.style.paddingTop=h.offsetHeight+'px';
+        // Insere o header antes do smooth-wrapper no DOM (irmão, fora do wrapper)
+        w.parentNode.insertBefore(h,w);
     })();
 
     window.smoother=ScrollSmoother.create({
@@ -195,6 +205,15 @@ class GSAP_Enqueue {
     });
 })();";
             wp_add_inline_script( 'gsap-scrollsmoother', $init );
+
+            // CSS crítico para ScrollSmoother funcionar corretamente
+            wp_add_inline_style( 'gsap-animations',
+                // Garante que nenhum CSS de tema/Bootstrap reintroduza scroll-behavior:smooth
+                'html,body{scroll-behavior:auto!important;}' .
+                // Previne margin-collapse no primeiro filho do smooth-content,
+                // que faz o ScrollSmoother calcular altura errada e cortar o final da página
+                $content . '{border-top:1px solid transparent;}'
+            );
         }
 
         // ── Animações por classe (gsap-animations.js) ───────────────────────
