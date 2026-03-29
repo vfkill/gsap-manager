@@ -718,23 +718,27 @@
     function initZoomReveal() {
         if (typeof ScrollTrigger === 'undefined') { return; }
         document.querySelectorAll('.gsap-zoom-reveal').forEach(function (el) {
+            // Escala sempre o PRIMEIRO FILHO DIRETO do container.
+            // Isso cobre tanto <img> direta quanto wrappers do Elementor/Gutenberg
+            // (.elementor-widget-image, .wp-block-image, etc.) que envolvem a imagem
+            // em múltiplas camadas — escalando o wrapper o efeito de clipping funciona.
+            var target = el.firstElementChild;
+            if (!target) { return; }
+
             var fromScale = num(el, 'from', 0.15);
             var endVal    = str(el, 'end', '+=150%');
             var scrubVal  = num(el, 'scrub', 1);
-            var media     = el.querySelector('img, video, picture > img');
-            if (!media && el.firstElementChild) { media = el.firstElementChild; }
-            if (!media) { return; }
 
-            gsap.set(media, { scale: fromScale, transformOrigin: '50% 50%' });
-            gsap.to(media, {
+            gsap.set(target, { scale: fromScale, transformOrigin: '50% 50%' });
+            gsap.to(target, {
                 scale: 1,
                 ease: 'none',
                 scrollTrigger: {
-                    trigger:      el,
-                    start:        str(el, 'start', 'top top'),
-                    end:          endVal,
-                    pin:          true,
-                    scrub:        scrubVal,
+                    trigger:       el,
+                    start:         str(el, 'start', 'top top'),
+                    end:           endVal,
+                    pin:           true,
+                    scrub:         scrubVal,
                     anticipatePin: 1,
                 }
             });
