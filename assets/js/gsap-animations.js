@@ -12,7 +12,7 @@
  *   data-gsap-scrub     — suavização do scrub     (ex: 1)
  *   data-gsap-dir       — direção (img-reveal)    (ex: "right")
  *   data-gsap-strength  — força do efeito         (ex: 0.5)
- *   data-gsap-from      — valor inicial (counter/zoom-reveal) (ex: 0 | 0.15)
+ *   data-gsap-from      — valor inicial (counter/zoom-reveal) (ex: 0 | 0.4)
  *   data-gsap-prefix    — prefixo (counter)       (ex: "R$")
  *   data-gsap-suffix    — sufixo (counter)        (ex: "%")
  *   data-gsap-speed     — velocidade (marquee)    (ex: 60)
@@ -724,24 +724,26 @@
             var target = el.firstElementChild;
             if (!target) { return; }
 
-            var fromScale = num(el, 'from', 0.15);
+            var fromScale = num(el, 'from', 0.4);
             var endVal    = str(el, 'end', '+=150%');
             var scrubVal  = num(el, 'scrub', 1);
 
-            gsap.set(target, { scale: fromScale, transformOrigin: '50% 50%' });
-            gsap.to(target, {
-                scale: 1,
-                ease: 'none',
-                scrollTrigger: {
-                    trigger:             el,
-                    start:               str(el, 'start', 'top top'),
-                    end:                 endVal,
-                    pin:                 true,
-                    pinSpacing:          false,
-                    scrub:               scrubVal,
-                    invalidateOnRefresh: true,
+            gsap.fromTo(target,
+                { scale: fromScale, transformOrigin: '50% 50%' },
+                {
+                    scale: 1,
+                    ease:  'none',
+                    scrollTrigger: {
+                        trigger:             el,
+                        start:               str(el, 'start', 'top top'),
+                        end:                 endVal,
+                        pin:                 true,
+                        pinSpacing:          false,
+                        scrub:               scrubVal,
+                        invalidateOnRefresh: true,
+                    }
                 }
-            });
+            );
         });
     }
 

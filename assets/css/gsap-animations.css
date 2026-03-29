@@ -88,25 +88,29 @@
 }
 
 /* ── gsap-zoom-reveal ── container pinado com filho escalando ───────────── */
+/*
+ * OBRIGATÓRIO no Elementor: defina o container com HEIGHT (não min-height).
+ * Ex: Style → Layout → Height → Custom → 100vh  (ou valor em px/vw)
+ * Com apenas min-height o filho não consegue calcular height:100%.
+ */
 .gsap-zoom-reveal {
     overflow: hidden;
     width: 100%;
+    /* Garante que height:100% nos filhos se resolve contra este container */
+    position: relative;
 }
-/* Filho direto: estica para preencher o container.
- * flex: 1 0 auto funciona no contexto flex-column do Elementor (e-con).
- * min-height: 0 evita overflow em alguns layouts flex.
- * will-change ativa a camada de composição para a animação de scale. */
-.gsap-zoom-reveal > :first-child {
-    flex: 1 0 auto;
-    min-height: 0;
+/* Cadeia de preenchimento: cada nível precisa herdar a altura.
+ * Elementor injeta .elementor-widget-image > .elementor-widget-container > img
+ * então precisamos forçar height:100% em cada camada. */
+.gsap-zoom-reveal > :first-child,
+.gsap-zoom-reveal > :first-child > :first-child {
+    width: 100%;
+    height: 100%;
     will-change: transform;
 }
-/* Imagens e vídeos diretos ou dentro do primeiro filho preenchem o espaço */
-.gsap-zoom-reveal > img,
-.gsap-zoom-reveal > video,
-.gsap-zoom-reveal > picture > img,
-.gsap-zoom-reveal > :first-child img,
-.gsap-zoom-reveal > :first-child video {
+/* A imagem ou vídeo no fundo da cadeia */
+.gsap-zoom-reveal img,
+.gsap-zoom-reveal video {
     display: block;
     width: 100%;
     height: 100%;
