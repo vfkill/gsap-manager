@@ -738,7 +738,6 @@
                         start:               str(el, 'start', 'top top'),
                         end:                 endVal,
                         pin:                 true,
-                        pinSpacing:          false,
                         scrub:               scrubVal,
                         invalidateOnRefresh: true,
                     }
