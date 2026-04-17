@@ -140,6 +140,73 @@ html {
     object-fit: cover;
 }
 
+/* ── gsap-mask-reveal ─── hero com logo-máscara crescente ──────────────── */
+/*
+ * A estrutura interna é gerada pelo JS (setupMaskRevealDOM) quando a classe
+ * .gsap-mask-reveal é encontrada. O elemento original recebe a classe
+ * --init quando a estrutura já foi montada.
+ *
+ * Camadas internas (top → bottom no visual):
+ *   __mask (div com mask-image: logo.svg) → __mask-image (img igual ao bg)
+ *   __overlay (div branco, opacity 0 → 0.8)
+ *   __bg (img de fundo, full-screen)
+ *
+ * margin-bottom: -100vh faz a próxima section sobrepor os últimos 100vh do
+ * hero (efeito "exit" combinado com height:0vh animado no sticky).
+ */
+.gsap-mask-reveal--init {
+    display: block;
+    width: 100%;
+    margin-bottom: -100vh;
+    position: relative;
+}
+.gsap-mask-reveal__scroller {
+    position: relative;
+    width: 100%;
+}
+.gsap-mask-reveal__sticky {
+    position: sticky;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+}
+.gsap-mask-reveal__bg,
+.gsap-mask-reveal__mask-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+}
+.gsap-mask-reveal__mask-image {
+    will-change: transform;
+}
+.gsap-mask-reveal__overlay {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    will-change: opacity;
+}
+.gsap-mask-reveal__mask {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    -webkit-mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-position: center;
+    mask-repeat: no-repeat;
+    will-change: mask-size;
+}
+
 /* ── Acessibilidade: respeita preferência de menos movimento ────────────── */
 /*
  * O JS já tem um early-return quando prefers-reduced-motion está ativo,
@@ -221,5 +288,12 @@ html {
     .gsap-hover-lift {
         transform: none !important;
         transition: none !important;
+    }
+    /* Mask reveal: mostra hero estático em 100vh, sem scroll-effect */
+    .gsap-mask-reveal--init {
+        margin-bottom: 0 !important;
+    }
+    .gsap-mask-reveal__scroller {
+        height: 100vh !important;
     }
 }

@@ -522,6 +522,7 @@ ScrollTrigger.defaults({
                     [ 'class' => 'gsap-parallax',        'desc' => 'Parallax genérico (não-imagem). O pai deve ter overflow:hidden.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-parallax">Elemento flutuante</div>' ],
                     [ 'class' => 'gsap-reveal-line',     'desc' => 'Linha cresce de largura zero. Perfeito para divisores.   <code>data-gsap-axis="height"</code> para vertical.', 'req' => 'ScrollTrigger', 'ex' => '<hr class="gsap-reveal-line">' ],
                     [ 'class' => 'gsap-progress',        'desc' => 'Barra de progresso animada. Define a largura alvo no estilo.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-progress" style="width:80%"></div>' ],
+                    [ 'class' => 'gsap-mask-reveal',     'desc' => 'Hero com logo-máscara crescente + parallax interno + overlay branco (inspirado em dropedition.com). Use num widget HTML: requer <code>data-gsap-logo</code> (SVG) e <code>data-gsap-image</code> (imagem). A JS gera toda a estrutura interna. Ajuste fino: <code>data-gsap-mask-from="80"</code>, <code>data-gsap-mask-to="110"</code>, <code>data-gsap-overlay-opacity="0.8"</code>, <code>data-gsap-parallax="20"</code>, <code>data-gsap-distance="300"</code> (vh do scroller).', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-mask-reveal" data-gsap-logo="URL_LOGO.svg" data-gsap-image="URL_HERO.jpg"></div>' ],
                 ],
                 'SVG' => [
                     [ 'class' => 'gsap-draw-svg',  'desc' => 'Anima o stroke de um path/shape SVG de 0% a 100%, como se estivesse sendo desenhado. Suporta <code>gsap-scrub</code> para vincular ao scroll.', 'req' => 'DrawSVGPlugin', 'ex' => '<path class="gsap-draw-svg" d="M10 80 Q 95 10 180 80">' ],
@@ -614,6 +615,12 @@ ScrollTrigger.defaults({
                         <div><code>data-gsap-from-color</code> — cor inicial em <code>gsap-char-color</code> <span>ex: <em>"#616161"</em></span></div>
                         <div><code>data-gsap-to-color</code> — cor final em <code>gsap-char-color</code> <span>ex: <em>"#FFFFFF"</em> (padrão: cor do Elementor)</span></div>
                         <div><code>data-gsap-blur</code> — intensidade inicial do blur em <code>gsap-word-blur</code> <span>ex: <em>8</em>, <em>14</em> (padrão: 8 · desktop)</span></div>
+                        <div><code>data-gsap-logo</code> — URL do SVG usado como máscara em <code>gsap-mask-reveal</code> <span>ex: <em>"/wp-content/uploads/logo.svg"</em></span></div>
+                        <div><code>data-gsap-image</code> — URL da imagem de fundo em <code>gsap-mask-reveal</code> <span>ex: <em>"/wp-content/uploads/hero.jpg"</em></span></div>
+                        <div><code>data-gsap-mask-from</code> / <code>data-gsap-mask-to</code> — tamanho inicial/final da máscara em % <span>ex: <em>80</em> → <em>110</em> (padrão)</span></div>
+                        <div><code>data-gsap-overlay-opacity</code> — opacidade final do overlay em <code>gsap-mask-reveal</code> <span>ex: <em>0.8</em> (padrão)</span></div>
+                        <div><code>data-gsap-overlay-color</code> — cor do overlay em <code>gsap-mask-reveal</code> <span>ex: <em>"#ffffff"</em> (padrão)</span></div>
+                        <div><code>data-gsap-parallax</code> — desloc. Y interno da imagem em % (<code>gsap-mask-reveal</code>) <span>ex: <em>20</em> (padrão)</span></div>
                     </div>
                 </div>
 

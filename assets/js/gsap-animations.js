@@ -1,5 +1,5 @@
 /**
- * GSAP Manager — Animações por Classe  v2.3.0
+ * GSAP Manager — Animações por Classe  v2.4.0
  *
  * Atributos de controle (opcionais em qualquer elemento):
  *   data-gsap-duration   — duração em segundos    (ex: 1.2)
@@ -23,6 +23,13 @@
  *   data-gsap-from-color — cor inicial (char-color) (ex: "#616161")
  *   data-gsap-to-color   — cor final (char-color)   (ex: "#FFFFFF")  ← padrão: cor do Elementor
  *   data-gsap-blur       — intensidade inicial de blur em px (word-blur) (ex: 8)
+ *   data-gsap-logo       — URL do SVG usado como máscara (mask-reveal)
+ *   data-gsap-image      — URL da imagem de fundo (mask-reveal)
+ *   data-gsap-mask-from  — mask-size inicial em % (mask-reveal, padrão 80)
+ *   data-gsap-mask-to    — mask-size final em % (mask-reveal, padrão 110)
+ *   data-gsap-overlay-opacity — opacidade final do overlay (mask-reveal, padrão 0.8)
+ *   data-gsap-overlay-color   — cor do overlay (mask-reveal, padrão #ffffff)
+ *   data-gsap-parallax   — desloc. Y da imagem interna em % (mask-reveal, padrão 20)
  *
  * Classes de gatilho:
  *   (nenhuma)        → aguarda o elemento entrar na viewport (padrão)
@@ -38,6 +45,15 @@
     'use strict';
 
     // ─── Bootstrap ──────────────────────────────────────────────────────────
+    // Setup estrutural do mask-reveal roda no DOMContentLoaded — antes do init()
+    // e FORA da guarda reduced-motion, para garantir que a seção renderize
+    // (ao menos estaticamente) mesmo quando o usuário desabilitou animações.
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupMaskRevealDOM);
+    } else {
+        setupMaskRevealDOM();
+    }
+
     window.addEventListener('load', function () {
         var afterFonts = (document.fonts && document.fonts.ready)
             ? document.fonts.ready
@@ -69,6 +85,7 @@
         initTextAnimations();
         initImageAnimations();
         initZoomReveal();
+        initMaskReveal();
         initElementAnimations();
         initStaggerAnimations();
         initSpecialAnimations();
@@ -872,6 +889,120 @@
                     }
                 }
             );
+        });
+    }
+
+    // ─── Mask Reveal ────────────────────────────────────────────────────────
+    // Hero com logo-máscara crescente + parallax interno + overlay branco.
+    // Inspirado em https://dropedition.com/ — usa CSS mask-image + ScrollTrigger scrub.
+    //
+    // Uso no Elementor (widget HTML):
+    //   <div class="gsap-mask-reveal"
+    //        data-gsap-logo="URL_SVG"
+    //        data-gsap-image="URL_IMG"></div>
+    //
+    // Atributos opcionais:
+    //   data-gsap-distance="300"        — altura do scroller em vh (padrão 300)
+    //   data-gsap-mask-from="80"        — mask-size inicial em %   (padrão 80)
+    //   data-gsap-mask-to="110"         — mask-size final em %     (padrão 110)
+    //   data-gsap-overlay-opacity="0.8" — opacidade final do overlay (padrão 0.8)
+    //   data-gsap-overlay-color="#fff"  — cor do overlay             (padrão #ffffff)
+    //   data-gsap-parallax="20"         — desloc. Y da imagem em %   (padrão 20)
+    //   data-gsap-start / data-gsap-end / data-gsap-scrub — ScrollTrigger custom
+    //
+    // A estrutura DOM é gerada no DOMContentLoaded (fora da guarda reduced-motion)
+    // para que a seção renderize estaticamente mesmo sem animação.
+    function setupMaskRevealDOM() {
+        var items = document.querySelectorAll('.gsap-mask-reveal');
+        if (!items.length) { return; }
+
+        items.forEach(function (el) {
+            if (el.classList.contains('gsap-mask-reveal--init')) { return; }
+
+            var logo  = el.getAttribute('data-gsap-logo')  || '';
+            var image = el.getAttribute('data-gsap-image') || '';
+            if (!logo || !image) {
+                console.warn('[GSAP Manager] gsap-mask-reveal requer data-gsap-logo e data-gsap-image.', el);
+                return;
+            }
+
+            var distance     = parseFloat(el.getAttribute('data-gsap-distance'))  || 300;
+            var maskFrom     = parseFloat(el.getAttribute('data-gsap-mask-from')) || 80;
+            var overlayColor = el.getAttribute('data-gsap-overlay-color')         || '#ffffff';
+
+            el.classList.add('gsap-mask-reveal--init');
+
+            var scroller = document.createElement('div');
+            scroller.className = 'gsap-mask-reveal__scroller';
+            scroller.style.height = distance + 'vh';
+
+            var sticky = document.createElement('div');
+            sticky.className = 'gsap-mask-reveal__sticky';
+
+            var bg = document.createElement('img');
+            bg.className = 'gsap-mask-reveal__bg';
+            bg.src = image;
+            bg.alt = '';
+
+            var overlay = document.createElement('div');
+            overlay.className = 'gsap-mask-reveal__overlay';
+            overlay.style.backgroundColor = overlayColor;
+
+            var mask = document.createElement('div');
+            mask.className = 'gsap-mask-reveal__mask';
+            var maskUrl = 'url("' + logo + '")';
+            mask.style.maskImage       = maskUrl;
+            mask.style.webkitMaskImage = maskUrl;
+            mask.style.maskSize        = maskFrom + '%';
+            mask.style.webkitMaskSize  = maskFrom + '%';
+
+            var maskImg = document.createElement('img');
+            maskImg.className = 'gsap-mask-reveal__mask-image';
+            maskImg.src = image;
+            maskImg.alt = '';
+
+            mask.appendChild(maskImg);
+            sticky.appendChild(bg);
+            sticky.appendChild(overlay);
+            sticky.appendChild(mask);
+            scroller.appendChild(sticky);
+            el.appendChild(scroller);
+        });
+    }
+
+    // Anexa o timeline GSAP em cada .gsap-mask-reveal--init que já teve a
+    // estrutura gerada. Chamado dentro de init() (respeita reduced-motion).
+    function initMaskReveal() {
+        if (typeof ScrollTrigger === 'undefined') { return; }
+
+        document.querySelectorAll('.gsap-mask-reveal--init').forEach(function (el) {
+            var scroller = el.querySelector('.gsap-mask-reveal__scroller');
+            var sticky   = el.querySelector('.gsap-mask-reveal__sticky');
+            var mask     = el.querySelector('.gsap-mask-reveal__mask');
+            var maskImg  = el.querySelector('.gsap-mask-reveal__mask-image');
+            var overlay  = el.querySelector('.gsap-mask-reveal__overlay');
+            if (!scroller || !mask) { return; }
+
+            var maskTo         = num(el, 'mask-to',         110);
+            var overlayOpacity = num(el, 'overlay-opacity', 0.8);
+            var parallaxY      = num(el, 'parallax',        20);
+
+            // scrub: default true (linear sem smoothing) — casa com o efeito de referência
+            var scrubRaw = el.getAttribute('data-gsap-scrub');
+            var scrub    = (scrubRaw === null || scrubRaw === '') ? true : parseFloat(scrubRaw);
+
+            gsap.timeline({
+                scrollTrigger: {
+                    trigger: scroller,
+                    start:   str(el, 'start', 'top top'),
+                    end:     str(el, 'end',   'bottom bottom'),
+                    scrub:   scrub,
+                }
+            })
+                .to(mask,    { maskSize: maskTo + '%', webkitMaskSize: maskTo + '%', ease: 'none' })
+                .to(maskImg, { yPercent: parallaxY,    ease: 'none' }, '<')
+                .to(overlay, { opacity:  overlayOpacity, ease: 'none' }, '<')
+                .to(sticky,  { height:   '0vh',         ease: 'none' });
         });
     }
 
