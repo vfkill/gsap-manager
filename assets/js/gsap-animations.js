@@ -1,5 +1,5 @@
 /**
- * GSAP Manager — Animações por Classe  v2.4.0
+ * GSAP Manager — Animações por Classe  v2.5.0
  *
  * Atributos de controle (opcionais em qualquer elemento):
  *   data-gsap-duration   — duração em segundos    (ex: 1.2)
@@ -30,6 +30,10 @@
  *   data-gsap-overlay-opacity — opacidade final do overlay (mask-reveal, padrão 0.8)
  *   data-gsap-overlay-color   — cor do overlay (mask-reveal, padrão #ffffff)
  *   data-gsap-parallax   — desloc. Y da imagem interna em % (mask-reveal, padrão 20)
+ *   data-gsap-scale-peak — escala máxima no centro (text-focus, padrão 2.1)
+ *   data-gsap-y-peak     — deslocamento Y máximo em px (text-focus, padrão 60)
+ *   data-gsap-rotation   — ângulo do leque em graus (text-focus, padrão 4)
+ *   data-gsap-mobile-blur — "off" desabilita blur em <1024px (word-blur, text-focus)
  *
  * Classes de gatilho:
  *   (nenhuma)        → aguarda o elemento entrar na viewport (padrão)
@@ -606,20 +610,25 @@
 
         // gsap-word-blur [+ gsap-word-scrub]
         // Cada palavra entra com opacity + blur + slide Y (entrando em foco).
-        // Mobile (<1024px): desliga o blur para performance — só opacity + y.
+        // Blur permanece ativo no mobile por padrão — para desativar em casos
+        // de performance ruim em dispositivos fracos, use
+        // data-gsap-mobile-blur="off" no elemento.
         //
-        //   data-gsap-blur     → intensidade inicial do blur em px (padrão: 8)
-        //   data-gsap-distance → translate Y inicial em px         (padrão: 20)
-        //   data-gsap-stagger  → intervalo entre palavras          (padrão: 0.03)
-        //   data-gsap-duration → duração por palavra                (padrão: 0.5)
-        //   data-gsap-ease     → curva de easing                    (padrão: "power3.out")
+        //   data-gsap-blur         → intensidade inicial do blur em px (padrão: 8)
+        //   data-gsap-distance     → translate Y inicial em px         (padrão: 20)
+        //   data-gsap-stagger      → intervalo entre palavras          (padrão: 0.03)
+        //   data-gsap-duration     → duração por palavra               (padrão: 0.5)
+        //   data-gsap-ease         → curva de easing                   (padrão: "power3.out")
+        //   data-gsap-mobile-blur  → "off" desabilita blur em <1024px  (padrão: on)
         document.querySelectorAll('.gsap-word-blur').forEach(function (el) {
-            var isMobile = window.innerWidth < 1024;
-            var blurPx   = num(el, 'blur', 8);
-            var distance = num(el, 'distance', 20);
+            var isMobile    = window.innerWidth < 1024;
+            var mobileBlur  = str(el, 'mobile-blur', 'on') !== 'off';
+            var useBlur     = !isMobile || mobileBlur;
+            var blurPx      = num(el, 'blur', 8);
+            var distance    = num(el, 'distance', 20);
 
             var fromState = { opacity: 0, y: distance };
-            if (!isMobile) { fromState.filter = 'blur(' + blurPx + 'px)'; }
+            if (useBlur) { fromState.filter = 'blur(' + blurPx + 'px)'; }
 
             if (el.classList.contains('gsap-word-scrub')) {
                 if (typeof ScrollTrigger === 'undefined') {
@@ -650,6 +659,83 @@
                     }));
                 });
             }
+        });
+
+        // gsap-text-focus
+        // "Foco gaussiano": cada palavra entra com chars em curva de sino —
+        // letras do meio maiores, mais baixas e fora de foco, bordas menores e
+        // próximas do baseline. Tudo se reorganiza pro estado final (scale:1,
+        // y:0, blur:0) com stagger from:center. Inspirado em enumeramolecular.com.
+        //
+        //   data-gsap-scale-peak    → scale máximo no centro         (padrão: 2.1)
+        //   data-gsap-y-peak        → deslocamento Y máximo em px    (padrão: 60)
+        //   data-gsap-rotation      → ângulo do leque em graus       (padrão: 4)
+        //   data-gsap-blur          → blur inicial em px             (padrão: 12)
+        //   data-gsap-duration      → duração por palavra em s       (padrão: 1.8)
+        //   data-gsap-stagger       → amount total do stagger em s   (padrão: 0.75)
+        //   data-gsap-ease          → curva de easing                (padrão: "power2.inOut")
+        //   data-gsap-mobile-blur   → "off" desabilita blur em <1024px (padrão: on)
+        document.querySelectorAll('.gsap-text-focus').forEach(function (el) {
+            var isMobile   = window.innerWidth < 1024;
+            var mobileBlur = str(el, 'mobile-blur', 'on') !== 'off';
+            var useBlur    = !isMobile || mobileBlur;
+
+            var scalePeak    = num(el, 'scale-peak', 2.1);
+            var yPeak        = num(el, 'y-peak',     60);
+            var rotationPeak = num(el, 'rotation',   4);
+            var blurPx       = num(el, 'blur',       12);
+
+            // splitChars já trata: aria-label no target, wrapper por palavra
+            // (white-space:nowrap para não quebrar dentro da palavra) e captura
+            // de estilos. Agrupamos os chars retornados pelo parent (wrapper de
+            // palavra) para aplicar a curva gaussiana por-palavra.
+            playOnScroll(el, function () {
+                var r      = splitChars(el);
+                var groups = new Map();
+                r.spans.forEach(function (ch) {
+                    var word = ch.parentElement;
+                    if (!groups.has(word)) { groups.set(word, []); }
+                    groups.get(word).push(ch);
+                });
+
+                // Anima cada palavra separadamente — curva gaussiana é por-palavra
+                groups.forEach(function (chars) {
+                    var n = chars.length;
+                    if (!n) { return; }
+
+                    // Função triangular: pico no meio da palavra
+                    function triangularT(e) {
+                        return e < Math.ceil(n / 2)
+                            ? e
+                            : Math.ceil(n / 2) - Math.abs(Math.floor(n / 2) - e) - 1;
+                    }
+
+                    var fromState = {
+                        transformOrigin: '50% 100%',
+                        scale: function (i) { return gsap.utils.mapRange(0, Math.ceil(n / 2), 0.5, scalePeak, triangularT(i)); },
+                        y:     function (i) { return gsap.utils.mapRange(0, Math.ceil(n / 2), 0,   yPeak,     triangularT(i)); },
+                        rotation: function (i) {
+                            var t = triangularT(i);
+                            return i < n / 2
+                                ? gsap.utils.mapRange(0, Math.ceil(n / 2), -rotationPeak, 0, t)
+                                : gsap.utils.mapRange(0, Math.ceil(n / 2), 0, rotationPeak, t);
+                        },
+                        opacity: 0,
+                    };
+                    if (useBlur) { fromState.filter = 'blur(' + blurPx + 'px)'; }
+
+                    var toState = {
+                        y: 0, rotation: 0, scale: 1, opacity: 1,
+                        ease:     str(el, 'ease', 'power2.inOut'),
+                        duration: resolveDuration(el, 1.8),
+                        delay:    resolveDelay(el),
+                        stagger:  { amount: num(el, 'stagger', 0.75), from: 'center' },
+                    };
+                    if (useBlur) { toState.filter = 'blur(0px)'; }
+
+                    gsap.fromTo(chars, fromState, toState);
+                });
+            });
         });
 
         document.querySelectorAll('.gsap-text-fade').forEach(function (el) {

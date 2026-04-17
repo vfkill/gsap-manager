@@ -478,7 +478,8 @@ ScrollTrigger.defaults({
                     [ 'class' => 'gsap-char-reveal',     'desc' => 'Cada caractere sobe do clip, revelando o texto.',          'req' => 'ScrollTrigger', 'ex' => '<h2 class="gsap-char-reveal">Título Incrível</h2>' ],
                     [ 'class' => 'gsap-char-color',      'desc' => 'Char-a-char muda da cor inicial para a cor final do Elementor conforme o scroll. <code>data-gsap-from-color="#616161"</code> · <code>data-gsap-to-color</code> sobrescreve a cor final.', 'req' => 'ScrollTrigger', 'ex' => '<p class="gsap-char-color">Texto que ilumina ao rolar</p>' ],
                     [ 'class' => 'gsap-word-reveal',     'desc' => 'Cada palavra sobe do clip individualmente.',               'req' => 'ScrollTrigger', 'ex' => '<h3 class="gsap-word-reveal">Frase por palavras</h3>' ],
-                    [ 'class' => 'gsap-word-blur',       'desc' => 'Palavras entram em foco com blur + slide + opacity. Mobile desliga o blur. <code>data-gsap-blur="8"</code> · aceita <code>gsap-word-scrub</code> para scrub.', 'req' => 'ScrollTrigger', 'ex' => '<p class="gsap-word-blur">Palavras entrando em foco</p>' ],
+                    [ 'class' => 'gsap-word-blur',       'desc' => 'Palavras entram em foco com blur + slide + opacity. Mobile mantém blur por padrão — use <code>data-gsap-mobile-blur="off"</code> para desligar em dispositivos fracos. <code>data-gsap-blur="8"</code> · aceita <code>gsap-word-scrub</code> para scrub.', 'req' => 'ScrollTrigger', 'ex' => '<p class="gsap-word-blur">Palavras entrando em foco</p>' ],
+                    [ 'class' => 'gsap-text-focus',      'desc' => 'Foco gaussiano: letras do meio de cada palavra entram maiores, mais baixas, rotacionadas em leque e desfocadas — reorganizam-se pro estado final com stagger do centro pra fora. Inspirado em enumeramolecular.com. Ajuste: <code>data-gsap-scale-peak="2.1"</code> · <code>data-gsap-y-peak="60"</code> · <code>data-gsap-rotation="4"</code> · <code>data-gsap-blur="12"</code> · <code>data-gsap-mobile-blur="off"</code> para desligar blur em mobile fraco.', 'req' => '', 'ex' => '<h1 class="gsap-text-focus">Clinical omics, simplified</h1>' ],
                     [ 'class' => 'gsap-text-fade',       'desc' => 'Texto completo faz fade + sobe suavemente.',               'req' => 'ScrollTrigger', 'ex' => '<p class="gsap-text-fade">Parágrafo de texto</p>' ],
                     [ 'class' => 'gsap-typewriter',      'desc' => 'Digita o conteúdo do elemento como uma máquina de escrever.','req' => '',             'ex' => '<span class="gsap-typewriter">Texto digitado...</span>' ],
                     [ 'class' => 'gsap-text-blur',       'desc' => 'Começa borrado e vai nitidificando.',                      'req' => 'ScrollTrigger', 'ex' => '<h2 class="gsap-text-blur">Título desfocado</h2>' ],
@@ -621,6 +622,36 @@ ScrollTrigger.defaults({
                         <div><code>data-gsap-overlay-opacity</code> — opacidade final do overlay em <code>gsap-mask-reveal</code> <span>ex: <em>0.8</em> (padrão)</span></div>
                         <div><code>data-gsap-overlay-color</code> — cor do overlay em <code>gsap-mask-reveal</code> <span>ex: <em>"#ffffff"</em> (padrão)</span></div>
                         <div><code>data-gsap-parallax</code> — desloc. Y interno da imagem em % (<code>gsap-mask-reveal</code>) <span>ex: <em>20</em> (padrão)</span></div>
+                        <div><code>data-gsap-scale-peak</code> — escala máxima no centro em <code>gsap-text-focus</code> <span>ex: <em>2.1</em> (padrão)</span></div>
+                        <div><code>data-gsap-y-peak</code> — deslocamento Y máximo em px em <code>gsap-text-focus</code> <span>ex: <em>60</em> (padrão)</span></div>
+                        <div><code>data-gsap-rotation</code> — ângulo do leque em graus em <code>gsap-text-focus</code> <span>ex: <em>4</em> (padrão)</span></div>
+                        <div><code>data-gsap-mobile-blur</code> — desliga blur em &lt;1024px em <code>gsap-word-blur</code> / <code>gsap-text-focus</code> <span>ex: <em>"off"</em> (padrão: on)</span></div>
+                    </div>
+                </div>
+
+                <div class="gsap-perf-box">
+                    <h3>⚡ Boas práticas de performance</h3>
+                    <p class="gsap-perf-box__desc">
+                        As animações com <code>filter: blur()</code> são bonitas mas custam GPU — principalmente no mobile.
+                        Use com parcimônia para manter o site fluido em dispositivos fracos.
+                    </p>
+                    <div class="gsap-perf-grid">
+                        <div>
+                            <strong>Classes que usam blur:</strong>
+                            <span><code>gsap-word-blur</code>, <code>gsap-text-focus</code>, <code>gsap-text-blur</code></span>
+                        </div>
+                        <div>
+                            <strong>Recomendado:</strong>
+                            <span>1 animação blur por página, de preferência no hero. O custo de blur depende da área e do raio — H1 com blur 12px é barato; blur grande em imagens é caro.</span>
+                        </div>
+                        <div>
+                            <strong>Se usar em várias seções:</strong>
+                            <span>Considere <code>data-gsap-mobile-blur="off"</code> nas secundárias para manter desktop com o efeito completo e aliviar o mobile.</span>
+                        </div>
+                        <div>
+                            <strong>Teste no dispositivo real:</strong>
+                            <span>DevTools não simula GPU de celular — teste no seu Android/iPhone antes de publicar se a página tiver muitos efeitos.</span>
+                        </div>
                     </div>
                 </div>
 

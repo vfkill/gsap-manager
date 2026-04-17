@@ -219,6 +219,7 @@ html {
     .gsap-char-color span,
     .gsap-word-reveal span,
     .gsap-word-blur span,
+    .gsap-text-focus span,
     .gsap-text-fade,
     .gsap-text-blur,
     .gsap-typewriter,

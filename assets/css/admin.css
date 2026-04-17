@@ -672,6 +672,56 @@
 .gsap-attrs-grid span { color: var(--gsap-muted); font-size: 12px; }
 .gsap-attrs-grid em { font-style: normal; color: #79c0ff; }
 
+/* Performance box — dicas sobre blur/GPU */
+.gsap-perf-box {
+    background: rgba(255, 107, 107, .05);
+    border: 1px solid rgba(255, 107, 107, .25);
+    border-radius: 8px;
+    padding: 16px 20px;
+    margin-bottom: 28px;
+}
+.gsap-perf-box h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #ff8a8a;
+    margin: 0 0 10px;
+    text-transform: uppercase;
+    letter-spacing: .5px;
+}
+.gsap-perf-box__desc {
+    font-size: 12.5px;
+    color: var(--gsap-text);
+    line-height: 1.6;
+    margin: 0 0 12px;
+}
+.gsap-perf-box__desc code {
+    background: rgba(255,255,255,.08);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 11.5px;
+    color: var(--gsap-text);
+}
+.gsap-perf-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 10px 20px;
+    font-size: 12.5px;
+    line-height: 1.6;
+}
+.gsap-perf-grid > div {
+    color: var(--gsap-text);
+}
+.gsap-perf-grid strong { color: #ff8a8a; display: block; margin-bottom: 2px; font-size: 12px; }
+.gsap-perf-grid span { display: block; color: var(--gsap-muted); font-size: 12px; }
+.gsap-perf-grid code {
+    background: rgba(255,138,138,.1);
+    color: #ff8a8a;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 11.5px;
+    font-family: 'SFMono-Regular', Consolas, monospace;
+}
+
 /* How-to box — caso especial mask-reveal */
 .gsap-howto-box {
     background: rgba(255, 196, 0, .05);
