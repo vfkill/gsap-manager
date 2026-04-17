@@ -998,6 +998,28 @@
     //
     // A estrutura DOM é gerada no DOMContentLoaded (fora da guarda reduced-motion)
     // para que a seção renderize estaticamente mesmo sem animação.
+
+    // Localiza o container de topo no fluxo onde a margem -100vh deve ser
+    // aplicada. No Elementor (V3 flex), o widget HTML fica aninhado em
+    // wrappers com display:flex e margin-bottom do filho não puxa o
+    // próximo irmão do avô. Procuramos o ancestral mais alto que seja
+    // uma top-section / e-parent / elementor-section. Fallback: o próprio
+    // elemento (uso fora do Elementor, em temas clássicos).
+    function findMaskRevealHost(el) {
+        var cursor = el.parentElement;
+        var lastMatch = null;
+        while (cursor && cursor !== document.body) {
+            if (cursor.classList &&
+                (cursor.classList.contains('e-parent') ||
+                 cursor.classList.contains('elementor-top-section') ||
+                 cursor.classList.contains('elementor-section'))) {
+                lastMatch = cursor;
+            }
+            cursor = cursor.parentElement;
+        }
+        return lastMatch || el;
+    }
+
     function setupMaskRevealDOM() {
         var items = document.querySelectorAll('.gsap-mask-reveal');
         if (!items.length) { return; }
@@ -1017,6 +1039,15 @@
             var overlayColor = el.getAttribute('data-gsap-overlay-color')         || '#ffffff';
 
             el.classList.add('gsap-mask-reveal--init');
+
+            // A margem -100vh precisa estar no topo da árvore de containers
+            // (irmão direto da próxima section) para o fluxo funcionar. Dentro
+            // do Elementor, o widget HTML é aninhado em wrappers com flex, e
+            // a margem não propaga. Procuramos o container top-level e
+            // marcamos com a classe .gsap-mask-reveal-host. Fora do Elementor,
+            // o próprio elemento vira o host (fallback).
+            var host = findMaskRevealHost(el);
+            host.classList.add('gsap-mask-reveal-host');
 
             var scroller = document.createElement('div');
             scroller.className = 'gsap-mask-reveal__scroller';
