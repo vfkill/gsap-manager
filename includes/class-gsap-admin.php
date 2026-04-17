@@ -624,6 +624,68 @@ ScrollTrigger.defaults({
                     </div>
                 </div>
 
+                <div class="gsap-howto-box">
+                    <h3>Caso especial — <code>gsap-mask-reveal</code> (hero com logo-máscara)</h3>
+                    <p class="gsap-howto-box__desc">
+                        Diferente das outras classes (que você adiciona no campo <strong>CSS Classes</strong> de qualquer widget),
+                        <code>gsap-mask-reveal</code> exige um widget <strong>HTML</strong> do Elementor porque o efeito monta uma estrutura
+                        específica em múltiplas camadas. A JS gera toda a árvore interna a partir do snippet abaixo.
+                    </p>
+
+                    <ol class="gsap-howto-steps">
+                        <li>No WP → <strong>Mídia</strong>, faça upload da <strong>logo em SVG</strong> e da <strong>imagem hero</strong> (jpg/webp grande, ≥1920px). Copie as URLs de cada arquivo.</li>
+                        <li>No Elementor, arraste o widget <strong>HTML</strong> para a posição desejada (geralmente no topo da página, sem container ao redor).</li>
+                        <li>Cole o snippet abaixo e troque as duas URLs pelas suas.</li>
+                        <li>Publique e role a página — a logo cresce, a imagem faz parallax interno, o fundo desvanece pra branco e a próxima seção sobrepõe.</li>
+                    </ol>
+
+                    <div class="gsap-howto-code">
+                        <div class="gsap-howto-code__label">
+                            <span>Snippet mínimo</span>
+                            <button class="gsap-copy-btn" data-copy='&lt;div class=&quot;gsap-mask-reveal&quot;
+     data-gsap-logo=&quot;https://seusite.com/wp-content/uploads/logo.svg&quot;
+     data-gsap-image=&quot;https://seusite.com/wp-content/uploads/hero.jpg&quot;&gt;&lt;/div&gt;' title="Copiar">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                copiar
+                            </button>
+                        </div>
+<pre class="gsap-howto-code__block"><code>&lt;div class="gsap-mask-reveal"
+     data-gsap-logo="https://seusite.com/wp-content/uploads/logo.svg"
+     data-gsap-image="https://seusite.com/wp-content/uploads/hero.jpg"&gt;&lt;/div&gt;</code></pre>
+                    </div>
+
+                    <div class="gsap-howto-code">
+                        <div class="gsap-howto-code__label">
+                            <span>Com customizações (todos opcionais)</span>
+                        </div>
+<pre class="gsap-howto-code__block"><code>&lt;div class="gsap-mask-reveal"
+     data-gsap-logo="https://seusite.com/wp-content/uploads/logo.svg"
+     data-gsap-image="https://seusite.com/wp-content/uploads/hero.jpg"
+     data-gsap-distance="300"
+     data-gsap-mask-from="80"
+     data-gsap-mask-to="110"
+     data-gsap-overlay-opacity="0.8"
+     data-gsap-overlay-color="#ffffff"
+     data-gsap-parallax="20"&gt;&lt;/div&gt;</code></pre>
+                    </div>
+
+                    <div class="gsap-howto-grid">
+                        <div><code>data-gsap-logo</code> <span>URL do SVG — recortará a imagem no formato da logo. Use um SVG com fundo transparente e a silhueta em preto sólido.</span></div>
+                        <div><code>data-gsap-image</code> <span>URL da imagem hero — mesma imagem é usada no fundo e dentro da máscara.</span></div>
+                        <div><code>data-gsap-distance</code> <span>Altura total do scroller em vh (padrão: <em>300</em>). Quanto maior, mais longa a animação durante o scroll.</span></div>
+                        <div><code>data-gsap-mask-from</code> <span>Tamanho inicial da logo em % (padrão: <em>80</em>). Valores menores → logo aparece menor no início.</span></div>
+                        <div><code>data-gsap-mask-to</code> <span>Tamanho final da logo em % (padrão: <em>110</em>). Acima de 100 a logo "engole" toda a tela.</span></div>
+                        <div><code>data-gsap-overlay-opacity</code> <span>Opacidade final do overlay no fim do scroll (padrão: <em>0.8</em>). Use <em>1</em> para cobertura total, <em>0</em> para desligar.</span></div>
+                        <div><code>data-gsap-overlay-color</code> <span>Cor do overlay (padrão: <em>#ffffff</em>). Pode ser preto, cor da marca, etc.</span></div>
+                        <div><code>data-gsap-parallax</code> <span>Desloc. vertical da imagem dentro da máscara em % (padrão: <em>20</em>). <em>0</em> desliga o parallax.</span></div>
+                    </div>
+
+                    <p class="gsap-howto-tip">
+                        <strong>Observação sobre sobreposição:</strong> o efeito aplica <code>margin-bottom: -100vh</code> automaticamente, fazendo a próxima section sobrepor o hero no final do scroll.
+                        Se na sua página a próxima section ficar atrás em vez de em cima, defina <strong>Z-Index: 2</strong> nela em <em>Avançado → Z-Index</em>.
+                    </p>
+                </div>
+
                 <?php foreach ( $anim_ref as $group => $items ) : ?>
                 <div class="gsap-ref-group">
                     <h3 class="gsap-ref-group__title"><?php echo esc_html( $group ); ?></h3>
