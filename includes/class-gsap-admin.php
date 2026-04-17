@@ -476,7 +476,9 @@ ScrollTrigger.defaults({
             $anim_ref = [
                 'Texto' => [
                     [ 'class' => 'gsap-char-reveal',     'desc' => 'Cada caractere sobe do clip, revelando o texto.',          'req' => 'ScrollTrigger', 'ex' => '<h2 class="gsap-char-reveal">Título Incrível</h2>' ],
+                    [ 'class' => 'gsap-char-color',      'desc' => 'Char-a-char muda da cor inicial para a cor final do Elementor conforme o scroll. <code>data-gsap-from-color="#616161"</code> · <code>data-gsap-to-color</code> sobrescreve a cor final.', 'req' => 'ScrollTrigger', 'ex' => '<p class="gsap-char-color">Texto que ilumina ao rolar</p>' ],
                     [ 'class' => 'gsap-word-reveal',     'desc' => 'Cada palavra sobe do clip individualmente.',               'req' => 'ScrollTrigger', 'ex' => '<h3 class="gsap-word-reveal">Frase por palavras</h3>' ],
+                    [ 'class' => 'gsap-word-blur',       'desc' => 'Palavras entram em foco com blur + slide + opacity. Mobile desliga o blur. <code>data-gsap-blur="8"</code> · aceita <code>gsap-word-scrub</code> para scrub.', 'req' => 'ScrollTrigger', 'ex' => '<p class="gsap-word-blur">Palavras entrando em foco</p>' ],
                     [ 'class' => 'gsap-text-fade',       'desc' => 'Texto completo faz fade + sobe suavemente.',               'req' => 'ScrollTrigger', 'ex' => '<p class="gsap-text-fade">Parágrafo de texto</p>' ],
                     [ 'class' => 'gsap-typewriter',      'desc' => 'Digita o conteúdo do elemento como uma máquina de escrever.','req' => '',             'ex' => '<span class="gsap-typewriter">Texto digitado...</span>' ],
                     [ 'class' => 'gsap-text-blur',       'desc' => 'Começa borrado e vai nitidificando.',                      'req' => 'ScrollTrigger', 'ex' => '<h2 class="gsap-text-blur">Título desfocado</h2>' ],
@@ -609,6 +611,9 @@ ScrollTrigger.defaults({
                         <div><code>data-gsap-target</code> — seletor do shape SVG alvo <span>ex: <em>"#shape-b"</em></span></div>
                         <div><code>data-gsap-separator</code> — separador de milhar no counter <span>ex: <em>"."</em>, <em>","</em></span></div>
                         <div><code>data-gsap-speed</code> — velocidade parallax no ScrollSmoother <span>ex: <em>0.5</em>, <em>1.8</em></span></div>
+                        <div><code>data-gsap-from-color</code> — cor inicial em <code>gsap-char-color</code> <span>ex: <em>"#616161"</em></span></div>
+                        <div><code>data-gsap-to-color</code> — cor final em <code>gsap-char-color</code> <span>ex: <em>"#FFFFFF"</em> (padrão: cor do Elementor)</span></div>
+                        <div><code>data-gsap-blur</code> — intensidade inicial do blur em <code>gsap-word-blur</code> <span>ex: <em>8</em>, <em>14</em> (padrão: 8 · desktop)</span></div>
                     </div>
                 </div>
 

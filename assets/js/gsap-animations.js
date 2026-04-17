@@ -1,25 +1,28 @@
 /**
- * GSAP Manager — Animações por Classe  v2.1.0
+ * GSAP Manager — Animações por Classe  v2.3.0
  *
  * Atributos de controle (opcionais em qualquer elemento):
- *   data-gsap-duration  — duração em segundos    (ex: 1.2)
- *   data-gsap-delay     — atraso em segundos      (ex: 0.3)
- *   data-gsap-ease      — easing do GSAP          (ex: "elastic.out(1,0.5)")
- *   data-gsap-distance  — distância em px         (ex: 80)
- *   data-gsap-stagger   — stagger em segundos     (ex: 0.15)
- *   data-gsap-start     — ScrollTrigger start     (ex: "top 70%")
- *   data-gsap-end       — ScrollTrigger end       (ex: "bottom 20%")  ← scrub
- *   data-gsap-scrub     — suavização do scrub     (ex: 1)
- *   data-gsap-dir       — direção (img-reveal)    (ex: "right")
- *   data-gsap-strength  — força do efeito         (ex: 0.5)
- *   data-gsap-from      — valor inicial (counter/zoom-reveal) (ex: 0 | 0.4)
- *   data-gsap-prefix    — prefixo (counter)       (ex: "R$")
- *   data-gsap-suffix    — sufixo (counter)        (ex: "%")
- *   data-gsap-speed     — velocidade (marquee)    (ex: 60)
- *   data-gsap-axis      — eixo (reveal-line)      (ex: "height")
- *   data-gsap-chars     — chars do scramble       (ex: "01", "!@#", "lowerCase")
- *   data-gsap-target    — seletor SVG alvo        (ex: "#shape-final")  ← morph
- *   data-gsap-separator — separador de milhar     (ex: ".", ",")        ← counter
+ *   data-gsap-duration   — duração em segundos    (ex: 1.2)
+ *   data-gsap-delay      — atraso em segundos      (ex: 0.3)
+ *   data-gsap-ease       — easing do GSAP          (ex: "elastic.out(1,0.5)")
+ *   data-gsap-distance   — distância em px         (ex: 80)
+ *   data-gsap-stagger    — stagger em segundos     (ex: 0.15)
+ *   data-gsap-start      — ScrollTrigger start     (ex: "top 70%")
+ *   data-gsap-end        — ScrollTrigger end       (ex: "bottom 20%")  ← scrub
+ *   data-gsap-scrub      — suavização do scrub     (ex: 1)
+ *   data-gsap-dir        — direção (img-reveal)    (ex: "right")
+ *   data-gsap-strength   — força do efeito         (ex: 0.5)
+ *   data-gsap-from       — valor inicial (counter/zoom-reveal) (ex: 0 | 0.4)
+ *   data-gsap-prefix     — prefixo (counter)       (ex: "R$")
+ *   data-gsap-suffix     — sufixo (counter)        (ex: "%")
+ *   data-gsap-speed      — velocidade (marquee)    (ex: 60)
+ *   data-gsap-axis       — eixo (reveal-line)      (ex: "height")
+ *   data-gsap-chars      — chars do scramble       (ex: "01", "!@#", "lowerCase")
+ *   data-gsap-target     — seletor SVG alvo        (ex: "#shape-final")  ← morph
+ *   data-gsap-separator  — separador de milhar     (ex: ".", ",")        ← counter
+ *   data-gsap-from-color — cor inicial (char-color) (ex: "#616161")
+ *   data-gsap-to-color   — cor final (char-color)   (ex: "#FFFFFF")  ← padrão: cor do Elementor
+ *   data-gsap-blur       — intensidade inicial de blur em px (word-blur) (ex: 8)
  *
  * Classes de gatilho:
  *   (nenhuma)        → aguarda o elemento entrar na viewport (padrão)
@@ -27,7 +30,7 @@
  *   gsap-on-load     → anima imediatamente quando a página carrega
  *   gsap-repeat      → re-anima toda vez que o elemento entra/sai da viewport
  *   gsap-char-scrub  → modifica gsap-char-reveal: progresso vinculado ao scroll (requer ScrollTrigger)
- *   gsap-word-scrub  → modifica gsap-word-reveal: progresso vinculado ao scroll (requer ScrollTrigger)
+ *   gsap-word-scrub  → modifica gsap-word-reveal / gsap-word-blur: progresso vinculado ao scroll (requer ScrollTrigger)
  *   gsap-scrub       → modifica gsap-text-fade / gsap-text-blur / gsap-text-highlight: scrub genérico
  */
 
@@ -496,6 +499,54 @@
             }
         });
 
+        // gsap-char-color
+        // Revela cor char-a-char vinculado ao scroll (sempre scrub).
+        // Cor inicial: cinza apagado (#616161). Cor final: cor computada do
+        // elemento (a definida no Elementor) — sobrescritível por data-gsap-to-color.
+        //
+        //   data-gsap-from-color → cor inicial "apagada" (padrão: "#616161")
+        //   data-gsap-to-color   → sobrescreve cor final  (padrão: cor original do texto)
+        //   data-gsap-stagger    → atraso entre chars     (padrão: 0.02)
+        //   data-gsap-start/end  → range do ScrollTrigger (padrão: "top 80%" / "bottom 50%")
+        //   data-gsap-scrub      → suavização             (padrão: 1)
+        document.querySelectorAll('.gsap-char-color').forEach(function (el) {
+            if (typeof ScrollTrigger === 'undefined') {
+                console.warn('[GSAP Manager] gsap-char-color requer ScrollTrigger ativo nas configurações do plugin.');
+                return;
+            }
+            // Captura a cor original ANTES do split (evita pegar 'transparent' de gradiente)
+            var origColor = window.getComputedStyle(findTextTarget(el)).color;
+            var fromColor = str(el, 'from-color', '#616161');
+            var toColor   = str(el, 'to-color', origColor);
+
+            var r = splitChars(el);
+
+            // applyStyles copia -webkit-text-fill-color do texto original nos spans.
+            // Em WebKit/Chromium essa propriedade sobrescreve `color`, bloqueando
+            // a animação. Forçamos currentColor para que `color` seja a cor efetiva.
+            r.spans.forEach(function (span) {
+                if (span.style.color !== 'transparent') {
+                    span.style.webkitTextFillColor = 'currentColor';
+                }
+            });
+
+            gsap.set(r.spans, { color: fromColor });
+
+            gsap.timeline({
+                scrollTrigger: {
+                    trigger: el,
+                    start:   str(el, 'start', 'top 80%'),
+                    end:     str(el, 'end',   'bottom 50%'),
+                    scrub:   num(el, 'scrub', 1),
+                }
+            }).to(r.spans, {
+                color:    toColor,
+                duration: 0.1,
+                stagger:  num(el, 'stagger', 0.02),
+                ease:     str(el, 'ease', 'none'),
+            });
+        });
+
         // gsap-word-reveal [+ gsap-word-scrub]
         // Sem gsap-word-scrub → dispara uma vez ao entrar na viewport.
         // Com gsap-word-scrub → progresso vinculado à posição do scroll (requer ScrollTrigger).
@@ -532,6 +583,54 @@
                         ease:       str(el, 'ease', 'power4.out'),
                         onComplete: r.revert,
                     });
+                });
+            }
+        });
+
+        // gsap-word-blur [+ gsap-word-scrub]
+        // Cada palavra entra com opacity + blur + slide Y (entrando em foco).
+        // Mobile (<1024px): desliga o blur para performance — só opacity + y.
+        //
+        //   data-gsap-blur     → intensidade inicial do blur em px (padrão: 8)
+        //   data-gsap-distance → translate Y inicial em px         (padrão: 20)
+        //   data-gsap-stagger  → intervalo entre palavras          (padrão: 0.03)
+        //   data-gsap-duration → duração por palavra                (padrão: 0.5)
+        //   data-gsap-ease     → curva de easing                    (padrão: "power3.out")
+        document.querySelectorAll('.gsap-word-blur').forEach(function (el) {
+            var isMobile = window.innerWidth < 1024;
+            var blurPx   = num(el, 'blur', 8);
+            var distance = num(el, 'distance', 20);
+
+            var fromState = { opacity: 0, y: distance };
+            if (!isMobile) { fromState.filter = 'blur(' + blurPx + 'px)'; }
+
+            if (el.classList.contains('gsap-word-scrub')) {
+                if (typeof ScrollTrigger === 'undefined') {
+                    console.warn('[GSAP Manager] gsap-word-scrub requer ScrollTrigger ativo nas configurações do plugin.');
+                    return;
+                }
+                var r = splitWords(el);
+                gsap.timeline({
+                    scrollTrigger: {
+                        trigger: el,
+                        start:   str(el, 'start', 'top 85%'),
+                        end:     str(el, 'end',   'center 30%'),
+                        scrub:   num(el, 'scrub', 1),
+                    }
+                }).from(r.spans, Object.assign({}, fromState, {
+                    stagger: { each: num(el, 'stagger', 0.03), from: 'start' },
+                    ease:    str(el, 'ease', 'none'),
+                }));
+            } else {
+                playOnScroll(el, function () {
+                    var r = splitWords(el);
+                    gsap.from(r.spans, Object.assign({}, fromState, {
+                        duration:   resolveDuration(el, 0.5),
+                        delay:      resolveDelay(el),
+                        stagger:    num(el, 'stagger', 0.03),
+                        ease:       str(el, 'ease', 'power3.out'),
+                        onComplete: r.revert,
+                    }));
                 });
             }
         });
@@ -716,6 +815,11 @@
 
     function initZoomReveal() {
         if (typeof ScrollTrigger === 'undefined') { return; }
+
+        // ── Correção global: scroll-behavior:smooth no <html> quebra as
+        // medições do ScrollTrigger.refresh() (comum no Bootstrap 5 / Elementor).
+        document.documentElement.style.scrollBehavior = 'auto';
+
         document.querySelectorAll('.gsap-zoom-reveal').forEach(function (el) {
             // Escala sempre o PRIMEIRO FILHO DIRETO do container.
             // Isso cobre tanto <img> direta quanto wrappers do Elementor/Gutenberg
@@ -728,6 +832,28 @@
             var endVal    = str(el, 'end', '+=150%');
             var scrubVal  = num(el, 'scrub', 1);
 
+            // Garante que o container ocupe 100vh, centralize o conteúdo
+            // e recorte a imagem durante a escala.
+            el.style.height         = '100vh';
+            el.style.display        = 'flex';
+            el.style.alignItems     = 'center';
+            el.style.justifyContent = 'center';
+            el.style.overflow       = 'hidden';
+
+            // Remove transition dos elementos PAI (Elementor aplica transition:all
+            // nas seções/containers, o que faz o browser tentar suavizar cada
+            // update de transform que o GSAP faz a 60fps, causando comportamento errático).
+            var anc = el.parentElement;
+            while (anc && anc !== document.body) {
+                anc.style.transitionProperty = 'none';
+                anc = anc.parentElement;
+            }
+
+            // pinReparent:true move o elemento para o <body> durante o período
+            // de pin, escapando qualquer ancestor com overflow:hidden, transform
+            // ou will-change que impeça o position:fixed de funcionar corretamente.
+            // É a solução recomendada pelo GSAP para ambientes WordPress/Elementor
+            // onde os ancestors não podem ser modificados de forma confiável.
             gsap.fromTo(target,
                 { scale: fromScale, transformOrigin: '50% 50%' },
                 {
@@ -735,9 +861,12 @@
                     ease:  'none',
                     scrollTrigger: {
                         trigger:             el,
-                        start:               str(el, 'start', 'top top'),
+                        start:               'top top',
                         end:                 endVal,
                         pin:                 true,
+                        pinSpacing:          true,
+                        pinReparent:         true,
+                        anticipatePin:       1,
                         scrub:               scrubVal,
                         invalidateOnRefresh: true,
                     }

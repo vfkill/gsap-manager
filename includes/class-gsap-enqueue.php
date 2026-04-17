@@ -53,7 +53,7 @@ class GSAP_Enqueue {
     }
 
     public function smoother_wrapper_open(): void {
-        if ( ! $this->should_load() ) {
+        if ( ! $this->should_load_smoother() ) {
             return;
         }
         $wrapper = $this->smoother_id( $this->settings['smoother_wrapper'] ?? '#smooth-wrapper', 'smooth-wrapper' );
@@ -62,7 +62,7 @@ class GSAP_Enqueue {
     }
 
     public function smoother_wrapper_close(): void {
-        if ( ! $this->should_load() ) {
+        if ( ! $this->should_load_smoother() ) {
             return;
         }
         echo '</div></div>';
@@ -158,7 +158,11 @@ class GSAP_Enqueue {
         }
 
         // ── ScrollSmoother: inicialização automática ─────────────────────────
-        if ( ! empty( $s['plugins']['ScrollSmoother'] ) ) {
+        // Não inicializa em páginas do WooCommerce — o wrapper que envolve o DOM
+        // inteiro e o transform:translateY que o ScrollSmoother aplica quebram:
+        // mini-cart, sticky add-to-cart, redirecionamentos do checkout, abas de
+        // produto e qualquer elemento position:fixed dentro do conteúdo.
+        if ( ! empty( $s['plugins']['ScrollSmoother'] ) && $this->should_load_smoother() ) {
             $wrapper   = esc_js( $s['smoother_wrapper']   ?? '#smooth-wrapper' );
             $content   = esc_js( $s['smoother_content']   ?? '#smooth-content' );
             $smooth    = floatval( $s['smoother_smooth']   ?? 1 );
@@ -282,5 +286,109 @@ class GSAP_Enqueue {
             default: // 'all'
                 return true;
         }
+    }
+
+    /**
+     * Determina se o ScrollSmoother pode ser carregado na página atual.
+     *
+     * O ScrollSmoother NÃO deve rodar em páginas do WooCommerce porque:
+     *
+     * 1. Wrapper DOM: injeta #smooth-wrapper > #smooth-content em volta da
+     *    página inteira. O ScrollSmoother aplica transform:translateY() nesse
+     *    container, criando um novo containing block — elementos position:fixed
+     *    dentro dele (mini-cart, sticky add-to-cart, notificações) param de
+     *    funcionar relativo ao viewport.
+     *
+     * 2. overflow:hidden no body: o ScrollSmoother seta isso para controlar o
+     *    scroll, fechando painéis off-canvas, dropdowns e modais do WooCommerce.
+     *
+     * 3. history.scrollRestoration='manual': o WooCommerce depende da restauração
+     *    nativa de scroll para rolar até mensagens de erro após submit do checkout
+     *    e para manter posição após AJAX.
+     *
+     * 4. Interceptação de cliques em âncoras: o handler no capture phase chama
+     *    e.preventDefault() em qualquer link com '#', quebrando abas de produto
+     *    (#tab-description, #tab-reviews), toggles do checkout e UI do WooCommerce
+     *    que usa href="#" para acionar JS próprio.
+     *
+     * GSAP + ScrollTrigger continuam funcionando normalmente nessas páginas —
+     * apenas o ScrollSmoother é desativado.
+     */
+    private function should_load_smoother(): bool {
+        if ( ! $this->should_load() ) {
+            return false;
+        }
+
+        // Desativa no editor e no preview do Elementor.
+        //
+        // O Elementor carrega a página em um iframe para edição. Nesse iframe
+        // o wp_body_open dispara normalmente — sem essa verificação o ScrollSmoother
+        // inicializa dentro do editor, aplica overflow:hidden no body do iframe e
+        // registra um handler de captura de cliques (e.preventDefault em todos os
+        // links com '#'), travando completamente a UI do Elementor.
+        //
+        // Detecção via duas estratégias complementares:
+        // 1. $_GET['elementor-preview'] — Elementor sempre passa este parâmetro
+        //    na URL do iframe de edição (ex: ?elementor-preview=22&ver=...).
+        // 2. API do Elementor — is_preview_mode() cobre o preview do Theme Builder
+        //    e outros contextos onde o parâmetro GET pode não estar presente.
+        if ( $this->is_elementor_editor() ) {
+            return false;
+        }
+
+        // Desativa em qualquer página gerenciada pelo WooCommerce.
+        // is_woocommerce() cobre: loja, produto, categoria, tag.
+        // As demais funções cobrem páginas especiais que is_woocommerce() não inclui.
+        if ( function_exists( 'is_woocommerce' ) && is_woocommerce() ) {
+            return false;
+        }
+        if ( function_exists( 'is_cart' ) && is_cart() ) {
+            return false;
+        }
+        if ( function_exists( 'is_checkout' ) && is_checkout() ) {
+            return false;
+        }
+        if ( function_exists( 'is_account_page' ) && is_account_page() ) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Retorna true quando a requisição atual é o editor ou preview do Elementor.
+     *
+     * O Elementor possui dois contextos que carregam o frontend em um iframe:
+     *
+     * - Editor (edição ao vivo): URL contém ?elementor-preview=<post_id>
+     *   Nesse contexto o usuário está arrastando widgets, clicando em painéis, etc.
+     *   Qualquer script que intercepte cliques ou modifique o scroll trava a UI.
+     *
+     * - Preview do Theme Builder: is_preview_mode() retorna true quando o Elementor
+     *   está renderizando um template (header, footer, single, archive) para preview.
+     *   O parâmetro GET pode estar ausente nesses casos.
+     */
+    private function is_elementor_editor(): bool {
+        // Verificação via parâmetro GET — disponível desde o início da requisição,
+        // antes mesmo de qualquer plugin ser carregado.
+        // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+        if ( isset( $_GET['elementor-preview'] ) ) {
+            return true;
+        }
+
+        // Verificação via API do Elementor — cobre previews e outros contextos
+        // onde o parâmetro GET pode não estar presente.
+        if ( class_exists( '\Elementor\Plugin' ) ) {
+            $plugin = \Elementor\Plugin::$instance;
+            if (
+                isset( $plugin->preview ) &&
+                method_exists( $plugin->preview, 'is_preview_mode' ) &&
+                $plugin->preview->is_preview_mode()
+            ) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

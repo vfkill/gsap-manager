@@ -87,16 +87,39 @@
     will-change: width;
 }
 
+/* ── Correções globais para compatibilidade com ScrollTrigger/pin ─────────── */
+/*
+ * Elementor aplica transition:all nos seus containers — isso conflita com
+ * as atualizações de transform que o GSAP faz a 60fps, causando saltos.
+ * O JS também aplica transitionProperty:none via inline style, mas o CSS
+ * garante cobertura antes do JS carregar.
+ */
+.e-con,
+.e-con-inner,
+.elementor-section,
+.elementor-column,
+.elementor-widget-wrap {
+    transition-property: none !important;
+}
+/*
+ * scroll-behavior:smooth no <html> quebra as medições do ScrollTrigger.refresh()
+ * (Bootstrap 5 e Elementor definem isso por padrão).
+ * O JS também sobrescreve via documentElement.style, mas o CSS garante cobertura.
+ */
+html {
+    scroll-behavior: auto !important;
+}
+
 /* ── gsap-zoom-reveal ── container pinado com filho escalando ───────────── */
 /*
- * OBRIGATÓRIO no Elementor: defina o container com HEIGHT (não min-height).
- * Ex: Style → Layout → Height → Custom → 100vh  (ou valor em px/vw)
- * Com apenas min-height o filho não consegue calcular height:100%.
+ * height:100vh, display:flex e align-items:center são aplicados via JS
+ * para centralizar a imagem na viewport durante o pin.
+ * pinReparent:true (JS) move o elemento para <body> durante o pin,
+ * escapando overflow:hidden de qualquer ancestor (Elementor/theme).
  */
 .gsap-zoom-reveal {
-    overflow: hidden;
+    overflow: hidden;           /* recorta a imagem durante a escala  */
     width: 100%;
-    /* Garante que height:100% nos filhos se resolve contra este container */
     position: relative;
 }
 /* Cadeia de preenchimento: cada nível precisa herdar a altura.
@@ -126,7 +149,9 @@
 @media (prefers-reduced-motion: reduce) {
     /* Animações de texto */
     .gsap-char-reveal span,
+    .gsap-char-color span,
     .gsap-word-reveal span,
+    .gsap-word-blur span,
     .gsap-text-fade,
     .gsap-text-blur,
     .gsap-typewriter,
