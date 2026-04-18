@@ -159,16 +159,6 @@ html {
     width: 100%;
     position: relative;
 }
-/*
- * A margem negativa vai no "host" — o ancestral top-level (Elementor section
- * / .e-parent) identificado pelo JS via findMaskRevealHost(). Isso garante
- * que o margin-bottom puxe a próxima section como irmã direta, sem ficar
- * preso nos wrappers flex do Elementor.
- * Fora do Elementor, o próprio .gsap-mask-reveal--init recebe a classe host.
- */
-.gsap-mask-reveal-host {
-    margin-bottom: -100vh;
-}
 .gsap-mask-reveal__scroller {
     position: relative;
     width: 100%;
@@ -300,9 +290,6 @@ html {
         transition: none !important;
     }
     /* Mask reveal: mostra hero estático em 100vh, sem scroll-effect */
-    .gsap-mask-reveal-host {
-        margin-bottom: 0 !important;
-    }
     .gsap-mask-reveal__scroller {
         height: 100vh !important;
     }

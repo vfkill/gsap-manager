@@ -988,7 +988,7 @@
     //        data-gsap-image="URL_IMG"></div>
     //
     // Atributos opcionais:
-    //   data-gsap-distance="300"        — altura do scroller em vh (padrão 300)
+    //   data-gsap-distance="100"        — altura total da section em vh (padrão 100 = 1 viewport)
     //   data-gsap-mask-from="80"        — mask-size inicial em %   (padrão 80)
     //   data-gsap-mask-to="110"         — mask-size final em %     (padrão 110)
     //   data-gsap-overlay-opacity="0.8" — opacidade final do overlay (padrão 0.8)
@@ -998,28 +998,6 @@
     //
     // A estrutura DOM é gerada no DOMContentLoaded (fora da guarda reduced-motion)
     // para que a seção renderize estaticamente mesmo sem animação.
-
-    // Localiza o container de topo no fluxo onde a margem -100vh deve ser
-    // aplicada. No Elementor (V3 flex), o widget HTML fica aninhado em
-    // wrappers com display:flex e margin-bottom do filho não puxa o
-    // próximo irmão do avô. Procuramos o ancestral mais alto que seja
-    // uma top-section / e-parent / elementor-section. Fallback: o próprio
-    // elemento (uso fora do Elementor, em temas clássicos).
-    function findMaskRevealHost(el) {
-        var cursor = el.parentElement;
-        var lastMatch = null;
-        while (cursor && cursor !== document.body) {
-            if (cursor.classList &&
-                (cursor.classList.contains('e-parent') ||
-                 cursor.classList.contains('elementor-top-section') ||
-                 cursor.classList.contains('elementor-section'))) {
-                lastMatch = cursor;
-            }
-            cursor = cursor.parentElement;
-        }
-        return lastMatch || el;
-    }
-
     function setupMaskRevealDOM() {
         var items = document.querySelectorAll('.gsap-mask-reveal');
         if (!items.length) { return; }
@@ -1034,20 +1012,15 @@
                 return;
             }
 
-            var distance     = parseFloat(el.getAttribute('data-gsap-distance'))  || 300;
+            // distance = altura total da section (em vh). Default 100 = hero
+            // ocupa exatamente 1 viewport e o efeito de scrub acontece
+            // enquanto o user rola por esses 100vh. Valores maiores (ex:
+            // 200, 300) tornam o efeito mais longo (pin extra).
+            var distance     = parseFloat(el.getAttribute('data-gsap-distance'))  || 100;
             var maskFrom     = parseFloat(el.getAttribute('data-gsap-mask-from')) || 80;
             var overlayColor = el.getAttribute('data-gsap-overlay-color')         || '#ffffff';
 
             el.classList.add('gsap-mask-reveal--init');
-
-            // A margem -100vh precisa estar no topo da árvore de containers
-            // (irmão direto da próxima section) para o fluxo funcionar. Dentro
-            // do Elementor, o widget HTML é aninhado em wrappers com flex, e
-            // a margem não propaga. Procuramos o container top-level e
-            // marcamos com a classe .gsap-mask-reveal-host. Fora do Elementor,
-            // o próprio elemento vira o host (fallback).
-            var host = findMaskRevealHost(el);
-            host.classList.add('gsap-mask-reveal-host');
 
             var scroller = document.createElement('div');
             scroller.className = 'gsap-mask-reveal__scroller';
@@ -1108,18 +1081,20 @@
             var scrubRaw = el.getAttribute('data-gsap-scrub');
             var scrub    = (scrubRaw === null || scrubRaw === '') ? true : parseFloat(scrubRaw);
 
+            // end="bottom top" — a animação consome o scroll da altura total
+            // da section (distance vh). Assim o efeito termina exatamente
+            // quando o hero sai da viewport, sem overlap/espaço vazio.
             gsap.timeline({
                 scrollTrigger: {
                     trigger: scroller,
                     start:   str(el, 'start', 'top top'),
-                    end:     str(el, 'end',   'bottom bottom'),
+                    end:     str(el, 'end',   'bottom top'),
                     scrub:   scrub,
                 }
             })
                 .to(mask,    { maskSize: maskTo + '%', webkitMaskSize: maskTo + '%', ease: 'none' })
                 .to(maskImg, { yPercent: parallaxY,    ease: 'none' }, '<')
-                .to(overlay, { opacity:  overlayOpacity, ease: 'none' }, '<')
-                .to(sticky,  { height:   '0vh',         ease: 'none' });
+                .to(overlay, { opacity:  overlayOpacity, ease: 'none' }, '<');
         });
     }
 

@@ -618,6 +618,7 @@ ScrollTrigger.defaults({
                         <div><code>data-gsap-blur</code> — intensidade inicial do blur em <code>gsap-word-blur</code> <span>ex: <em>8</em>, <em>14</em> (padrão: 8 · desktop)</span></div>
                         <div><code>data-gsap-logo</code> — URL do SVG usado como máscara em <code>gsap-mask-reveal</code> <span>ex: <em>"/wp-content/uploads/logo.svg"</em></span></div>
                         <div><code>data-gsap-image</code> — URL da imagem de fundo em <code>gsap-mask-reveal</code> <span>ex: <em>"/wp-content/uploads/hero.jpg"</em></span></div>
+                        <div><code>data-gsap-distance</code> — altura total da section em vh (<code>gsap-mask-reveal</code>) <span>ex: <em>100</em> (padrão, 1 viewport)</span></div>
                         <div><code>data-gsap-mask-from</code> / <code>data-gsap-mask-to</code> — tamanho inicial/final da máscara em % <span>ex: <em>80</em> → <em>110</em> (padrão)</span></div>
                         <div><code>data-gsap-overlay-opacity</code> — opacidade final do overlay em <code>gsap-mask-reveal</code> <span>ex: <em>0.8</em> (padrão)</span></div>
                         <div><code>data-gsap-overlay-color</code> — cor do overlay em <code>gsap-mask-reveal</code> <span>ex: <em>"#ffffff"</em> (padrão)</span></div>
@@ -667,7 +668,7 @@ ScrollTrigger.defaults({
                         <li>No WP → <strong>Mídia</strong>, faça upload da <strong>logo em SVG</strong> e da <strong>imagem hero</strong> (jpg/webp grande, ≥1920px). Copie as URLs de cada arquivo.</li>
                         <li>No Elementor, arraste o widget <strong>HTML</strong> para a posição desejada (geralmente no topo da página, sem container ao redor).</li>
                         <li>Cole o snippet abaixo e troque as duas URLs pelas suas.</li>
-                        <li>Publique e role a página — a logo cresce, a imagem faz parallax interno, o fundo desvanece pra branco e a próxima seção sobrepõe.</li>
+                        <li>Publique e role a página — a logo cresce, a imagem faz parallax interno e o fundo desvanece pra branco enquanto a section sai da viewport.</li>
                     </ol>
 
                     <div class="gsap-howto-code">
@@ -692,7 +693,7 @@ ScrollTrigger.defaults({
 <pre class="gsap-howto-code__block"><code>&lt;div class="gsap-mask-reveal"
      data-gsap-logo="https://seusite.com/wp-content/uploads/logo.svg"
      data-gsap-image="https://seusite.com/wp-content/uploads/hero.jpg"
-     data-gsap-distance="300"
+     data-gsap-distance="100"
      data-gsap-mask-from="80"
      data-gsap-mask-to="110"
      data-gsap-overlay-opacity="0.8"
@@ -703,7 +704,7 @@ ScrollTrigger.defaults({
                     <div class="gsap-howto-grid">
                         <div><code>data-gsap-logo</code> <span>URL do SVG — recortará a imagem no formato da logo. Use um SVG com fundo transparente e a silhueta em preto sólido.</span></div>
                         <div><code>data-gsap-image</code> <span>URL da imagem hero — mesma imagem é usada no fundo e dentro da máscara.</span></div>
-                        <div><code>data-gsap-distance</code> <span>Altura total do scroller em vh (padrão: <em>300</em>). Quanto maior, mais longa a animação durante o scroll.</span></div>
+                        <div><code>data-gsap-distance</code> <span>Altura total da section em vh (padrão: <em>100</em> = 1 viewport). Valores maiores (<em>200</em>, <em>300</em>) estendem o efeito — o hero fica pinado por mais tempo durante o scroll.</span></div>
                         <div><code>data-gsap-mask-from</code> <span>Tamanho inicial da logo em % (padrão: <em>80</em>). Valores menores → logo aparece menor no início.</span></div>
                         <div><code>data-gsap-mask-to</code> <span>Tamanho final da logo em % (padrão: <em>110</em>). Acima de 100 a logo "engole" toda a tela.</span></div>
                         <div><code>data-gsap-overlay-opacity</code> <span>Opacidade final do overlay no fim do scroll (padrão: <em>0.8</em>). Use <em>1</em> para cobertura total, <em>0</em> para desligar.</span></div>
@@ -712,8 +713,8 @@ ScrollTrigger.defaults({
                     </div>
 
                     <p class="gsap-howto-tip">
-                        <strong>Observação sobre sobreposição:</strong> o efeito aplica <code>margin-bottom: -100vh</code> automaticamente, fazendo a próxima section sobrepor o hero no final do scroll.
-                        Se na sua página a próxima section ficar atrás em vez de em cima, defina <strong>Z-Index: 2</strong> nela em <em>Avançado → Z-Index</em>.
+                        <strong>Observação sobre duração:</strong> o padrão <code>data-gsap-distance="100"</code> consome <strong>1 viewport de scroll</strong> para completar o efeito (rápido e sem espaço vazio).
+                        Se quiser um efeito mais longo (estilo dropedition.com), use <code>data-gsap-distance="200"</code> ou <code>"300"</code> — o hero fica pinado no topo por mais tempo enquanto o scrub acontece.
                     </p>
                 </div>
 
