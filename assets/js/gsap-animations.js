@@ -907,18 +907,19 @@
 
         // ─── Img Scroll Scale ───────────────────────────────────────────────
         // Aplica na IMAGEM. Mantém o tamanho atual configurado e escala UP
-        // até preencher o container (cover) com scrub. O origin é detectado
-        // pela borda mais próxima da imagem (encostada à direita → cresce
-        // pra esquerda; centralizada → cresce pra todos os lados).
+        // até preencher o container (cover) com scrub.
         //
-        // Variantes:
+        // RECOMENDADO: marque o container explicitamente com a classe
+        // .gsap-scale-container — isso garante que o origin seja detectado
+        // corretamente (a auto-detecção pode falhar em estruturas complexas
+        // do Elementor). O JS usa el.closest('.gsap-scale-container').
+        //
+        // Variantes da imagem:
         //   .gsap-img-scroll-scale       — sem pin (escala enquanto cruza viewport)
-        //   .gsap-img-scroll-scale-pin   — com pin (section trava no topo até animar tudo)
+        //   .gsap-img-scroll-scale-pin   — com pin (container trava no topo)
         //
-        // Container: detectado automaticamente subindo no DOM até achar um
-        // ancestor pelo menos 1.2× maior que a imagem (resolve o problema do
-        // Elementor onde parentElement direto é um wrapper tight).
-        // Override via data-gsap-container=".meu-seletor".
+        // Origin: detectado pela borda mais próxima da imagem dentro do container
+        // (encostada à direita → cresce pra esquerda; centralizada → todos lados).
         //
         // Atributos opcionais:
         //   data-gsap-container → seletor CSS do container (override do auto)
@@ -928,14 +929,32 @@
         //   data-gsap-start     → start do ScrollTrigger
         //                          (padrão pin: "top top" · sem pin: "top bottom")
         //   data-gsap-end       → end do ScrollTrigger
-        //                          (padrão pin: "+=100%" · sem pin: "bottom top")
-        //   data-gsap-scrub     → suavização (padrão: 0.5)
+        //                          (padrão pin: "+=50%" · sem pin: "bottom top")
+        //   data-gsap-scrub     → suavização (padrão: 0.3)
+        //   data-gsap-debug     → "1" pra logar o container detectado no console
         function findScaleContainer(el) {
+            // 1. Marcação explícita pela classe (preferido)
+            var marked = el.closest('.gsap-scale-container');
+            if (marked && marked !== el) { return marked; }
+
+            // 2. Override via data-attr
+            var sel = str(el, 'container', '');
+            if (sel) {
+                var custom = el.closest(sel);
+                if (custom && custom !== el) { return custom; }
+            }
+
+            // 3. Fallback auto: sobe no DOM achando o primeiro ancestor que
+            // (a) ENVOLVE completamente a imagem e (b) é meaningfully maior.
             var elRect = el.getBoundingClientRect();
             var p = el.parentElement;
-            for (var i = 0; i < 6 && p && p !== document.body; i++) {
+            for (var i = 0; i < 8 && p && p !== document.body; i++) {
                 var pRect = p.getBoundingClientRect();
-                if (pRect.width > elRect.width * 1.2 || pRect.height > elRect.height * 1.2) {
+                var wraps = elRect.left   >= pRect.left   - 1 &&
+                            elRect.right  <= pRect.right  + 1 &&
+                            elRect.top    >= pRect.top    - 1 &&
+                            elRect.bottom <= pRect.bottom + 1;
+                if (wraps && (pRect.width > elRect.width * 1.3 || pRect.height > elRect.height * 1.3)) {
                     return p;
                 }
                 p = p.parentElement;
@@ -946,10 +965,13 @@
         document.querySelectorAll('.gsap-img-scroll-scale, .gsap-img-scroll-scale-pin').forEach(function (el) {
             if (typeof ScrollTrigger === 'undefined') { return; }
 
-            var pinned     = el.classList.contains('gsap-img-scroll-scale-pin');
-            var customSel  = str(el, 'container', '');
-            var container  = customSel ? el.closest(customSel) : findScaleContainer(el);
+            var pinned    = el.classList.contains('gsap-img-scroll-scale-pin');
+            var container = findScaleContainer(el);
             if (!container || container === el) { return; }
+
+            if (str(el, 'debug', '') === '1') {
+                console.log('[gsap-img-scroll-scale]', { image: el, container: container });
+            }
 
             var build = function () {
                 var elRect  = el.getBoundingClientRect();
@@ -989,8 +1011,8 @@
                         scrollTrigger: {
                             trigger: container,
                             start:   str(el, 'start', pinned ? 'top top'  : 'top bottom'),
-                            end:     str(el, 'end',   pinned ? '+=100%'   : 'bottom top'),
-                            scrub:   num(el, 'scrub', 0.5),
+                            end:     str(el, 'end',   pinned ? '+=50%'    : 'bottom top'),
+                            scrub:   num(el, 'scrub', 0.3),
                             pin:     pinned ? container : false,
                             invalidateOnRefresh: true,
                         }
