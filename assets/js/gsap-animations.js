@@ -945,14 +945,19 @@
                 var autoFrom = Math.min(ratioW, ratioH);
                 var fromScale = num(el, 'from', autoFrom);
 
-                // Auto-detect origin pela posição da imagem no container.
-                // Tolerância de 4px pra absorver sub-pixel/border.
-                var T = 4;
-                var ox = 'center', oy = 'center';
-                if (Math.abs(elRect.left   - conRect.left)   < T) { ox = 'left';   }
-                else if (Math.abs(elRect.right  - conRect.right)  < T) { ox = 'right';  }
-                if (Math.abs(elRect.top    - conRect.top)    < T) { oy = 'top';    }
-                else if (Math.abs(elRect.bottom - conRect.bottom) < T) { oy = 'bottom'; }
+                // Auto-detect origin pela posição RELATIVA do centro da imagem
+                // dentro do container. Mais robusto que checar pixels exatos —
+                // tolera padding/gap (a referência dsgngroup tem um offset visível
+                // e mesmo assim queremos detectar como "right").
+                //   centro em <33% do eixo → origin nesse lado
+                //   centro em >67% do eixo → origin no lado oposto
+                //   entre 33–67%           → center nesse eixo
+                var elCx = elRect.left + elRect.width  / 2;
+                var elCy = elRect.top  + elRect.height / 2;
+                var pctX = (elCx - conRect.left) / conRect.width;
+                var pctY = (elCy - conRect.top)  / conRect.height;
+                var ox = (pctX < 0.33) ? 'left' : (pctX > 0.67 ? 'right'  : 'center');
+                var oy = (pctY < 0.33) ? 'top'  : (pctY > 0.67 ? 'bottom' : 'center');
                 var origin = str(el, 'origin', oy + ' ' + ox);
 
                 el.style.transformOrigin = origin;
