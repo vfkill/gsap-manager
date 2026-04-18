@@ -537,6 +537,7 @@ ScrollTrigger.defaults({
                     [ 'class' => 'gsap-magnetic',        'desc' => 'O elemento atrai o cursor como um ímã. Ideal para botões.  <code>data-gsap-strength="0.4"</code>', 'req' => '', 'ex' => '<button class="gsap-magnetic">Clique aqui</button>' ],
                     [ 'class' => 'gsap-tilt',            'desc' => 'Inclinação 3D ao passar o mouse. <code>data-gsap-strength="14"</code>', 'req' => '', 'ex' => '<div class="gsap-tilt">Card 3D</div>' ],
                     [ 'class' => 'gsap-hover-lift',      'desc' => 'Levita suavemente ao hover. <code>data-gsap-distance="-8"</code>', 'req' => '', 'ex' => '<div class="gsap-hover-lift">Card flutuante</div>' ],
+                    [ 'class' => 'gsap-char-stretch-hover', 'desc' => 'Cada caractere estica em Y conforme o mouse passa, com decay nos vizinhos. Fica incrível em fonts condensed (Six Caps, Bebas Neue, Anton, Oswald). <code>data-gsap-scale="0.2"</code> amplitude · <code>data-gsap-neighbors="1"</code> vizinhos afetados · <code>data-gsap-duration="0.4"</code>.', 'req' => '', 'ex' => '<h1 class="gsap-char-stretch-hover" style="font-family:\'Bebas Neue\'">TYPOGRAPHY</h1>' ],
                 ],
             ];
             ?>
@@ -619,6 +620,8 @@ ScrollTrigger.defaults({
                         <div><code>data-gsap-logo</code> — URL do SVG usado como máscara em <code>gsap-mask-reveal</code> <span>ex: <em>"/wp-content/uploads/logo.svg"</em></span></div>
                         <div><code>data-gsap-image</code> — URL da imagem de fundo em <code>gsap-mask-reveal</code> <span>ex: <em>"/wp-content/uploads/hero.jpg"</em></span></div>
                         <div><code>data-gsap-distance</code> — altura total da section em vh (<code>gsap-mask-reveal</code>) <span>ex: <em>100</em> (padrão, 1 viewport)</span></div>
+                        <div><code>data-gsap-scale</code> — amplitude do scaleY em <code>gsap-char-stretch-hover</code> <span>ex: <em>0.2</em> (padrão)</span></div>
+                        <div><code>data-gsap-neighbors</code> — número de vizinhos afetados em <code>gsap-char-stretch-hover</code> <span>ex: <em>1</em> (padrão)</span></div>
                         <div><code>data-gsap-mask-from</code> / <code>data-gsap-mask-to</code> — tamanho inicial/final da máscara em % <span>ex: <em>80</em> → <em>110</em> (padrão)</span></div>
                         <div><code>data-gsap-overlay-opacity</code> — opacidade final do overlay em <code>gsap-mask-reveal</code> <span>ex: <em>0.8</em> (padrão)</span></div>
                         <div><code>data-gsap-overlay-color</code> — cor do overlay em <code>gsap-mask-reveal</code> <span>ex: <em>"#ffffff"</em> (padrão)</span></div>

@@ -1443,6 +1443,71 @@
                 gsap.to(el, { y: 0, duration: 0.5, ease: 'elastic.out(1,0.5)' });
             });
         });
+
+        // gsap-char-stretch-hover: cada char escala em Y baseado na distância
+        // do mouse, com decay nos vizinhos. Inspirado em dsgngroup.it
+        // (style-caption-timeline). Fica melhor com fonts condensed (Six Caps,
+        // Bebas Neue, Anton, Oswald) que já são alongadas verticalmente.
+        document.querySelectorAll('.gsap-char-stretch-hover').forEach(function (el) {
+            var r = splitChars(el);
+            if (!r.spans.length) { return; }
+
+            var scale     = num(el, 'scale',     0.2);
+            var neighbors = Math.max(0, num(el, 'neighbors', 1) | 0);
+            var dur       = num(el, 'duration',  0.4);
+
+            // transform-origin: bottom center faz o char crescer só pra cima,
+            // mantendo a baseline alinhada (efeito "esticar" em vez de "inchar").
+            r.spans.forEach(function (s) { s.style.transformOrigin = 'bottom center'; });
+
+            var ticking = false;
+
+            el.addEventListener('mousemove', function (e) {
+                if (ticking) { return; }
+                ticking = true;
+                requestAnimationFrame(function () {
+                    ticking = false;
+
+                    var rects = r.spans.map(function (s) { return s.getBoundingClientRect(); });
+
+                    // Acha o char mais próximo do mouseX (baseado no centro).
+                    var closestIdx  = -1;
+                    var closestDist = Infinity;
+                    rects.forEach(function (rect, i) {
+                        var cx = rect.left + rect.width / 2;
+                        var d  = Math.abs(e.clientX - cx);
+                        if (d < closestDist) { closestDist = d; closestIdx = i; }
+                    });
+                    if (closestIdx === -1) { return; }
+
+                    var hRect  = rects[closestIdx];
+                    var mouseX = e.clientX - hRect.left;
+                    var center = hRect.width / 2 || 1;
+                    // Fórmula: no centro do char → scaleY = 1 + 2*scale; nas bordas → 1 + scale.
+                    var hovered = (1 + scale) + (scale * (center - Math.abs(center - mouseX))) / center;
+
+                    r.spans.forEach(function (s, i) {
+                        var dist = Math.abs(i - closestIdx);
+                        var target;
+                        if (dist === 0) {
+                            target = hovered;
+                        } else if (dist <= neighbors) {
+                            var nbRect = rects[i];
+                            var dPx    = Math.min(Math.abs(e.clientX - nbRect.left), center);
+                            var decay  = 1 / dist;   // 1º vizinho: full; 2º: metade; 3º: 1/3
+                            target = 1 + decay * (scale * (center - dPx)) / center;
+                        } else {
+                            target = 1;
+                        }
+                        gsap.to(s, { scaleY: target, duration: dur, ease: 'power4.out' });
+                    });
+                });
+            });
+
+            el.addEventListener('mouseleave', function () {
+                gsap.to(r.spans, { scaleY: 1, duration: dur, ease: 'power4.out' });
+            });
+        });
     }
 
 })();

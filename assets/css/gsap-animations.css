@@ -293,7 +293,8 @@ html {
     /* Hover: desabilita efeitos de movimento interativo */
     .gsap-magnetic,
     .gsap-tilt,
-    .gsap-hover-lift {
+    .gsap-hover-lift,
+    .gsap-char-stretch-hover span {
         transform: none !important;
         transition: none !important;
     }
