@@ -990,6 +990,8 @@
     // Atributos opcionais:
     //   data-gsap-distance="100"        — altura total da section em vh (padrão 100 = 1 viewport)
     //   data-gsap-mask-from="80"        — mask-size inicial em %   (padrão 80)
+    //   data-gsap-mask-mobile-from="50" — override do mask-from em telas ≤768px
+    //   data-gsap-mask-mobile-to="100"  — override do mask-to em telas ≤768px
     //   data-gsap-mask-to="110"         — mask-size final em %     (padrão 110)
     //   data-gsap-overlay-opacity="0.8" — opacidade final do overlay (padrão 0.8)
     //   data-gsap-overlay-color="#fff"  — cor do overlay             (padrão #ffffff)
@@ -1016,9 +1018,14 @@
             // ocupa exatamente 1 viewport e o efeito de scrub acontece
             // enquanto o user rola por esses 100vh. Valores maiores (ex:
             // 200, 300) tornam o efeito mais longo (pin extra).
-            var distance     = parseFloat(el.getAttribute('data-gsap-distance'))  || 100;
-            var maskFrom     = parseFloat(el.getAttribute('data-gsap-mask-from')) || 80;
-            var overlayColor = el.getAttribute('data-gsap-overlay-color')         || '#ffffff';
+            var distance     = parseFloat(el.getAttribute('data-gsap-distance')) || 100;
+            // mask-from/to: aceitam override mobile via data-gsap-mask-mobile-from
+            // e data-gsap-mask-mobile-to (breakpoint 768px). Fallback: desktop.
+            var isMobile     = window.matchMedia('(max-width: 768px)').matches;
+            var maskFromAttr = (isMobile && el.hasAttribute('data-gsap-mask-mobile-from'))
+                               ? 'mask-mobile-from' : 'mask-from';
+            var maskFrom     = num(el, maskFromAttr, 80);
+            var overlayColor = el.getAttribute('data-gsap-overlay-color') || '#ffffff';
 
             el.classList.add('gsap-mask-reveal--init');
 
@@ -1073,7 +1080,11 @@
             var overlay  = el.querySelector('.gsap-mask-reveal__overlay');
             if (!scroller || !mask) { return; }
 
-            var maskTo         = num(el, 'mask-to',         110);
+            // mask-to: aceita override mobile (ver setupMaskRevealDOM acima).
+            var isMobile       = window.matchMedia('(max-width: 768px)').matches;
+            var maskToAttr     = (isMobile && el.hasAttribute('data-gsap-mask-mobile-to'))
+                                 ? 'mask-mobile-to' : 'mask-to';
+            var maskTo         = num(el, maskToAttr,        110);
             var overlayOpacity = num(el, 'overlay-opacity', 0.8);
             var parallaxY      = num(el, 'parallax',        20);
 

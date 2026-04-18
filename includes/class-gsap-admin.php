@@ -707,6 +707,8 @@ ScrollTrigger.defaults({
                         <div><code>data-gsap-distance</code> <span>Altura total da section em vh (padrão: <em>100</em> = 1 viewport). Valores maiores (<em>200</em>, <em>300</em>) estendem o efeito — o hero fica pinado por mais tempo durante o scroll.</span></div>
                         <div><code>data-gsap-mask-from</code> <span>Tamanho inicial da logo em % (padrão: <em>80</em>). Valores menores → logo aparece menor no início.</span></div>
                         <div><code>data-gsap-mask-to</code> <span>Tamanho final da logo em % (padrão: <em>110</em>). Acima de 100 a logo "engole" toda a tela.</span></div>
+                        <div><code>data-gsap-mask-mobile-from</code> <span>Override do <code>mask-from</code> em telas ≤768px. Útil quando a logo fica desproporcional no mobile.</span></div>
+                        <div><code>data-gsap-mask-mobile-to</code> <span>Override do <code>mask-to</code> em telas ≤768px. Se omitido, usa o valor desktop.</span></div>
                         <div><code>data-gsap-overlay-opacity</code> <span>Opacidade final do overlay no fim do scroll (padrão: <em>0.8</em>). Use <em>1</em> para cobertura total, <em>0</em> para desligar.</span></div>
                         <div><code>data-gsap-overlay-color</code> <span>Cor do overlay (padrão: <em>#ffffff</em>). Pode ser preto, cor da marca, etc.</span></div>
                         <div><code>data-gsap-parallax</code> <span>Desloc. vertical da imagem dentro da máscara em % (padrão: <em>20</em>). <em>0</em> desliga o parallax.</span></div>
