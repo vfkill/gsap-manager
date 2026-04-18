@@ -172,15 +172,23 @@ html {
     max-height: 100vh;
     overflow: hidden;
 }
+/*
+ * !important aqui é necessário: Elementor + muitos temas WP aplicam
+ * "img { height: auto }" globalmente (especialmente em breakpoints
+ * mobile), o que sobrescreve height:100% e quebra o object-fit.
+ * Usamos 100% (do pai .__sticky que já é 100vh) em vez de 100vh
+ * direto — evita o bug do 100vh no iOS Safari (address bar).
+ */
 .gsap-mask-reveal__bg,
 .gsap-mask-reveal__mask-image {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100vh;
-    object-fit: cover;
-    object-position: center;
-    display: block;
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    object-fit: cover !important;
+    object-position: center !important;
+    display: block !important;
 }
 .gsap-mask-reveal__mask-image {
     will-change: transform;
