@@ -1069,43 +1069,59 @@
 
     // Anexa o timeline GSAP em cada .gsap-mask-reveal--init que já teve a
     // estrutura gerada. Chamado dentro de init() (respeita reduced-motion).
+    //
+    // Usa gsap.matchMedia() — padrão oficial do GSAP pra animações responsivas:
+    // ao cruzar o breakpoint (768px), o timeline antigo é revertido e o novo
+    // é criado automaticamente com os valores do breakpoint atual.
     function initMaskReveal() {
         if (typeof ScrollTrigger === 'undefined') { return; }
 
         document.querySelectorAll('.gsap-mask-reveal--init').forEach(function (el) {
             var scroller = el.querySelector('.gsap-mask-reveal__scroller');
-            var sticky   = el.querySelector('.gsap-mask-reveal__sticky');
             var mask     = el.querySelector('.gsap-mask-reveal__mask');
             var maskImg  = el.querySelector('.gsap-mask-reveal__mask-image');
             var overlay  = el.querySelector('.gsap-mask-reveal__overlay');
             if (!scroller || !mask) { return; }
 
-            // mask-to: aceita override mobile (ver setupMaskRevealDOM acima).
-            var isMobile       = window.matchMedia('(max-width: 768px)').matches;
-            var maskToAttr     = (isMobile && el.hasAttribute('data-gsap-mask-mobile-to'))
-                                 ? 'mask-mobile-to' : 'mask-to';
-            var maskTo         = num(el, maskToAttr,        110);
             var overlayOpacity = num(el, 'overlay-opacity', 0.8);
             var parallaxY      = num(el, 'parallax',        20);
 
-            // scrub: default true (linear sem smoothing) — casa com o efeito de referência
             var scrubRaw = el.getAttribute('data-gsap-scrub');
             var scrub    = (scrubRaw === null || scrubRaw === '') ? true : parseFloat(scrubRaw);
 
-            // end="bottom top" — a animação consome o scroll da altura total
-            // da section (distance vh). Assim o efeito termina exatamente
-            // quando o hero sai da viewport, sem overlap/espaço vazio.
-            gsap.timeline({
-                scrollTrigger: {
-                    trigger: scroller,
-                    start:   str(el, 'start', 'top top'),
-                    end:     str(el, 'end',   'bottom top'),
-                    scrub:   scrub,
-                }
-            })
-                .to(mask,    { maskSize: maskTo + '%', webkitMaskSize: maskTo + '%', ease: 'none' })
-                .to(maskImg, { yPercent: parallaxY,    ease: 'none' }, '<')
-                .to(overlay, { opacity:  overlayOpacity, ease: 'none' }, '<');
+            var startAttr = str(el, 'start', 'top top');
+            var endAttr   = str(el, 'end',   'bottom top');
+
+            function buildTimeline(isMobile) {
+                var fromAttr = (isMobile && el.hasAttribute('data-gsap-mask-mobile-from'))
+                               ? 'mask-mobile-from' : 'mask-from';
+                var toAttr   = (isMobile && el.hasAttribute('data-gsap-mask-mobile-to'))
+                               ? 'mask-mobile-to'   : 'mask-to';
+                var maskFrom = num(el, fromAttr, 80);
+                var maskTo   = num(el, toAttr,   110);
+
+                // gsap.set dentro do matchMedia é revertido ao cruzar breakpoint.
+                gsap.set(mask, {
+                    maskSize:       maskFrom + '%',
+                    webkitMaskSize: maskFrom + '%',
+                });
+
+                gsap.timeline({
+                    scrollTrigger: {
+                        trigger: scroller,
+                        start:   startAttr,
+                        end:     endAttr,
+                        scrub:   scrub,
+                    }
+                })
+                    .to(mask,    { maskSize: maskTo + '%', webkitMaskSize: maskTo + '%', ease: 'none' })
+                    .to(maskImg, { yPercent: parallaxY,    ease: 'none' }, '<')
+                    .to(overlay, { opacity:  overlayOpacity, ease: 'none' }, '<');
+            }
+
+            var mm = gsap.matchMedia();
+            mm.add('(max-width: 768px)', function () { buildTimeline(true);  });
+            mm.add('(min-width: 769px)', function () { buildTimeline(false); });
         });
     }
 
