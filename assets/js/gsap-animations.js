@@ -933,15 +933,15 @@
         //   data-gsap-scrub     → suavização (padrão: 0.3)
         //   data-gsap-debug     → "1" pra logar o container detectado no console
         function findScaleContainer(el) {
-            // 1. Marcação explícita pela classe (preferido)
+            // 1. Marcação explícita pela classe (preferido — 100% confiável)
             var marked = el.closest('.gsap-scale-container');
-            if (marked && marked !== el) { return marked; }
+            if (marked && marked !== el) { return { node: marked, source: 'marked' }; }
 
             // 2. Override via data-attr
             var sel = str(el, 'container', '');
             if (sel) {
                 var custom = el.closest(sel);
-                if (custom && custom !== el) { return custom; }
+                if (custom && custom !== el) { return { node: custom, source: 'data-attr' }; }
             }
 
             // 3. Fallback auto: sobe no DOM achando o primeiro ancestor que
@@ -955,22 +955,29 @@
                             elRect.top    >= pRect.top    - 1 &&
                             elRect.bottom <= pRect.bottom + 1;
                 if (wraps && (pRect.width > elRect.width * 1.3 || pRect.height > elRect.height * 1.3)) {
-                    return p;
+                    return { node: p, source: 'auto' };
                 }
                 p = p.parentElement;
             }
-            return el.parentElement;
+            return { node: el.parentElement, source: 'fallback' };
         }
 
         document.querySelectorAll('.gsap-img-scroll-scale, .gsap-img-scroll-scale-pin').forEach(function (el) {
             if (typeof ScrollTrigger === 'undefined') { return; }
 
-            var pinned    = el.classList.contains('gsap-img-scroll-scale-pin');
-            var container = findScaleContainer(el);
-            if (!container || container === el) { return; }
+            var pinned = el.classList.contains('gsap-img-scroll-scale-pin');
+            var found  = findScaleContainer(el);
+            if (!found || !found.node || found.node === el) { return; }
+            var container = found.node;
 
+            // Avisa quando a detecção cai no fallback (sem .gsap-scale-container
+            // marcado e auto-detect não achou ancestor apropriado). Nesse caso
+            // o origin pode sair errado — recomenda marcar explicitamente.
+            if (found.source === 'fallback' && typeof console !== 'undefined') {
+                console.warn('[gsap-img-scroll-scale] Container não detectado confiavelmente — adicione a classe .gsap-scale-container no container desejado.', el);
+            }
             if (str(el, 'debug', '') === '1') {
-                console.log('[gsap-img-scroll-scale]', { image: el, container: container });
+                console.log('[gsap-img-scroll-scale]', { image: el, container: container, via: found.source });
             }
 
             var build = function () {
@@ -1011,8 +1018,15 @@
                         scrollTrigger: {
                             trigger: container,
                             start:   str(el, 'start', pinned ? 'top top'  : 'top bottom'),
-                            end:     str(el, 'end',   pinned ? '+=50%'    : 'bottom top'),
-                            scrub:   num(el, 'scrub', 0.3),
+                            end:     str(el, 'end',   pinned ? '+=100%'   : 'bottom top'),
+                            // scrub: true por padrão (tight, sem lag, estilo dsgngroup).
+                            // Usuário pode passar um número pra adicionar smoothing.
+                            scrub:   (function () {
+                                var v = el.getAttribute('data-gsap-scrub');
+                                if (v === null || v === '') { return true; }
+                                var n = parseFloat(v);
+                                return isNaN(n) ? true : n;
+                            })(),
                             pin:     pinned ? container : false,
                             invalidateOnRefresh: true,
                         }
