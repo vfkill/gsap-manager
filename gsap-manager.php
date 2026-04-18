@@ -3,7 +3,7 @@
  * Plugin Name: GSAP Manager
  * Plugin URI:  https://github.com/vfkill/gsap-manager
  * Description: Carrega o GSAP e seus plugins no WordPress com configurações flexíveis via painel administrativo.
- * Version:     3.7.4
+ * Version:     3.7.5
  * Author:      Victor Kill
  * License:     GPL-2.0-or-later
  * Text Domain: gsap-manager

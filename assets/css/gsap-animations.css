@@ -236,6 +236,8 @@ html {
     .gsap-img-zoom,
     .gsap-img-fade,
     .gsap-img-parallax,
+    .gsap-img-scroll-scale,
+    .gsap-img-scroll-scale-pin,
     /* Animações de elemento */
     .gsap-fade-up,
     .gsap-fade-down,

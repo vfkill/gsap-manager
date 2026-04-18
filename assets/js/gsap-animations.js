@@ -904,6 +904,79 @@
                 scrollTrigger: { trigger: parent, start: 'top bottom', end: 'bottom top', scrub: num(el, 'scrub', 1.5) }
             });
         });
+
+        // ─── Img Scroll Scale ───────────────────────────────────────────────
+        // Aplica na IMAGEM (ou wrapper). Lê o tamanho/posição atual dentro do
+        // container pai e escala até preencher (scale 1) com scrub. O origin
+        // é auto-detectado pela posição da imagem no container — encostada à
+        // direita cresce pra esquerda, no topo cresce pra baixo, etc.
+        //
+        // Variantes:
+        //   .gsap-img-scroll-scale       — sem pin (escala enquanto cruza viewport)
+        //   .gsap-img-scroll-scale-pin   — com pin (section trava no topo até animar tudo)
+        //
+        // Atributos opcionais:
+        //   data-gsap-from   → escala inicial (padrão: auto, calculada por imgW/containerW)
+        //   data-gsap-origin → override manual do transform-origin (ex: "top right")
+        //   data-gsap-start  → start do ScrollTrigger
+        //                       (padrão pin: "top top" · padrão sem pin: "top bottom")
+        //   data-gsap-end    → end do ScrollTrigger
+        //                       (padrão pin: "+=100%" · padrão sem pin: "bottom top")
+        //   data-gsap-scrub  → suavização (padrão: 1)
+        document.querySelectorAll('.gsap-img-scroll-scale, .gsap-img-scroll-scale-pin').forEach(function (el) {
+            if (typeof ScrollTrigger === 'undefined') { return; }
+
+            var pinned    = el.classList.contains('gsap-img-scroll-scale-pin');
+            var container = el.parentElement;
+            if (!container) { return; }
+
+            // Mede imagem vs container pra derivar scale inicial e origin.
+            // Roda em ScrollTrigger.refresh callback pra garantir layout estável.
+            var build = function () {
+                var elRect  = el.getBoundingClientRect();
+                var conRect = container.getBoundingClientRect();
+                if (!elRect.width || !conRect.width) { return; }
+
+                // Scale inicial = quanto a imagem ocupa do container hoje.
+                // Override manual via data-gsap-from se quiser.
+                var ratioW = elRect.width  / conRect.width;
+                var ratioH = elRect.height / conRect.height;
+                // Usa o maior pra garantir cover ao escalar até 1.
+                var autoFrom = Math.min(ratioW, ratioH);
+                var fromScale = num(el, 'from', autoFrom);
+
+                // Auto-detect origin pela posição da imagem no container.
+                // Tolerância de 4px pra absorver sub-pixel/border.
+                var T = 4;
+                var ox = 'center', oy = 'center';
+                if (Math.abs(elRect.left   - conRect.left)   < T) { ox = 'left';   }
+                else if (Math.abs(elRect.right  - conRect.right)  < T) { ox = 'right';  }
+                if (Math.abs(elRect.top    - conRect.top)    < T) { oy = 'top';    }
+                else if (Math.abs(elRect.bottom - conRect.bottom) < T) { oy = 'bottom'; }
+                var origin = str(el, 'origin', oy + ' ' + ox);
+
+                el.style.transformOrigin = origin;
+                el.style.willChange      = 'transform';
+
+                gsap.fromTo(el,
+                    { scale: fromScale },
+                    {
+                        scale:    1,
+                        ease:     'none',
+                        scrollTrigger: {
+                            trigger: container,
+                            start:   str(el, 'start', pinned ? 'top top'  : 'top bottom'),
+                            end:     str(el, 'end',   pinned ? '+=100%'   : 'bottom top'),
+                            scrub:   num(el, 'scrub', 1),
+                            pin:     pinned ? container : false,
+                            invalidateOnRefresh: true,
+                        }
+                    }
+                );
+            };
+
+            build();
+        });
     }
 
     // ─── Zoom Reveal ────────────────────────────────────────────────────────
