@@ -906,73 +906,91 @@
         });
 
         // ─── Img Scroll Scale ───────────────────────────────────────────────
-        // Aplica na IMAGEM (ou wrapper). Lê o tamanho/posição atual dentro do
-        // container pai e escala até preencher (scale 1) com scrub. O origin
-        // é auto-detectado pela posição da imagem no container — encostada à
-        // direita cresce pra esquerda, no topo cresce pra baixo, etc.
+        // Aplica na IMAGEM. Mantém o tamanho atual configurado e escala UP
+        // até preencher o container (cover) com scrub. O origin é detectado
+        // pela borda mais próxima da imagem (encostada à direita → cresce
+        // pra esquerda; centralizada → cresce pra todos os lados).
         //
         // Variantes:
         //   .gsap-img-scroll-scale       — sem pin (escala enquanto cruza viewport)
         //   .gsap-img-scroll-scale-pin   — com pin (section trava no topo até animar tudo)
         //
+        // Container: detectado automaticamente subindo no DOM até achar um
+        // ancestor pelo menos 1.2× maior que a imagem (resolve o problema do
+        // Elementor onde parentElement direto é um wrapper tight).
+        // Override via data-gsap-container=".meu-seletor".
+        //
         // Atributos opcionais:
-        //   data-gsap-from   → escala inicial (padrão: auto, calculada por imgW/containerW)
-        //   data-gsap-origin → override manual do transform-origin (ex: "top right")
-        //   data-gsap-start  → start do ScrollTrigger
-        //                       (padrão pin: "top top" · padrão sem pin: "top bottom")
-        //   data-gsap-end    → end do ScrollTrigger
-        //                       (padrão pin: "+=100%" · padrão sem pin: "bottom top")
-        //   data-gsap-scrub  → suavização (padrão: 1)
+        //   data-gsap-container → seletor CSS do container (override do auto)
+        //   data-gsap-from      → escala inicial (padrão: 1 = tamanho configurado)
+        //   data-gsap-to        → escala final  (padrão: cover do container)
+        //   data-gsap-origin    → override do transform-origin (ex: "top right")
+        //   data-gsap-start     → start do ScrollTrigger
+        //                          (padrão pin: "top top" · sem pin: "top bottom")
+        //   data-gsap-end       → end do ScrollTrigger
+        //                          (padrão pin: "+=100%" · sem pin: "bottom top")
+        //   data-gsap-scrub     → suavização (padrão: 0.5)
+        function findScaleContainer(el) {
+            var elRect = el.getBoundingClientRect();
+            var p = el.parentElement;
+            for (var i = 0; i < 6 && p && p !== document.body; i++) {
+                var pRect = p.getBoundingClientRect();
+                if (pRect.width > elRect.width * 1.2 || pRect.height > elRect.height * 1.2) {
+                    return p;
+                }
+                p = p.parentElement;
+            }
+            return el.parentElement;
+        }
+
         document.querySelectorAll('.gsap-img-scroll-scale, .gsap-img-scroll-scale-pin').forEach(function (el) {
             if (typeof ScrollTrigger === 'undefined') { return; }
 
-            var pinned    = el.classList.contains('gsap-img-scroll-scale-pin');
-            var container = el.parentElement;
-            if (!container) { return; }
+            var pinned     = el.classList.contains('gsap-img-scroll-scale-pin');
+            var customSel  = str(el, 'container', '');
+            var container  = customSel ? el.closest(customSel) : findScaleContainer(el);
+            if (!container || container === el) { return; }
 
-            // Mede imagem vs container pra derivar scale inicial e origin.
-            // Roda em ScrollTrigger.refresh callback pra garantir layout estável.
             var build = function () {
                 var elRect  = el.getBoundingClientRect();
                 var conRect = container.getBoundingClientRect();
                 if (!elRect.width || !conRect.width) { return; }
 
-                // Scale inicial = quanto a imagem ocupa do container hoje.
-                // Override manual via data-gsap-from se quiser.
-                var ratioW = elRect.width  / conRect.width;
-                var ratioH = elRect.height / conRect.height;
-                // Usa o maior pra garantir cover ao escalar até 1.
-                var autoFrom = Math.min(ratioW, ratioH);
-                var fromScale = num(el, 'from', autoFrom);
+                // Scale alvo (cover): o maior dos inversos garante que a imagem
+                // cubra 100% do container ao terminar. O eixo "menor" precisa
+                // crescer mais — o outro overflowa e é cortado pelo overflow:hidden.
+                var fillScale = Math.max(conRect.width / elRect.width, conRect.height / elRect.height);
+                var fromScale = num(el, 'from', 1);
+                var toScale   = num(el, 'to', fillScale);
 
-                // Auto-detect origin pela posição RELATIVA do centro da imagem
-                // dentro do container. Mais robusto que checar pixels exatos —
-                // tolera padding/gap (a referência dsgngroup tem um offset visível
-                // e mesmo assim queremos detectar como "right").
-                //   centro em <33% do eixo → origin nesse lado
-                //   centro em >67% do eixo → origin no lado oposto
-                //   entre 33–67%           → center nesse eixo
-                var elCx = elRect.left + elRect.width  / 2;
-                var elCy = elRect.top  + elRect.height / 2;
-                var pctX = (elCx - conRect.left) / conRect.width;
-                var pctY = (elCy - conRect.top)  / conRect.height;
-                var ox = (pctX < 0.33) ? 'left' : (pctX > 0.67 ? 'right'  : 'center');
-                var oy = (pctY < 0.33) ? 'top'  : (pctY > 0.67 ? 'bottom' : 'center');
+                // Origin: borda mais próxima em cada eixo. Tolera offset/padding
+                // (5% do tamanho do container = "balanceado" → center).
+                var leftGap   = elRect.left   - conRect.left;
+                var rightGap  = conRect.right - elRect.right;
+                var topGap    = elRect.top    - conRect.top;
+                var bottomGap = conRect.bottom - elRect.bottom;
+                var balanceX  = conRect.width  * 0.05;
+                var balanceY  = conRect.height * 0.05;
+                var ox = (Math.abs(leftGap - rightGap) < balanceX) ? 'center' : (leftGap < rightGap ? 'left' : 'right');
+                var oy = (Math.abs(topGap  - bottomGap) < balanceY) ? 'center' : (topGap  < bottomGap ? 'top'  : 'bottom');
                 var origin = str(el, 'origin', oy + ' ' + ox);
 
                 el.style.transformOrigin = origin;
                 el.style.willChange      = 'transform';
+                // Container precisa cortar o overflow do scale up.
+                container.style.overflow = 'hidden';
 
                 gsap.fromTo(el,
-                    { scale: fromScale },
+                    { scale: fromScale, force3D: true },
                     {
-                        scale:    1,
+                        scale:    toScale,
+                        force3D:  true,
                         ease:     'none',
                         scrollTrigger: {
                             trigger: container,
                             start:   str(el, 'start', pinned ? 'top top'  : 'top bottom'),
                             end:     str(el, 'end',   pinned ? '+=100%'   : 'bottom top'),
-                            scrub:   num(el, 'scrub', 1),
+                            scrub:   num(el, 'scrub', 0.5),
                             pin:     pinned ? container : false,
                             invalidateOnRefresh: true,
                         }
