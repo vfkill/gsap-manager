@@ -1680,12 +1680,19 @@
             if (!isFinite(factor) || factor <= 0) { factor = 0.5; }
             var preload = video.getAttribute('data-gsap-preload') === 'true';
 
-            // Atributos necessários para autoplay silencioso em mobile.
+            // Muted + playsinline são necessários para o decoder liberar o frame em mobile.
+            // autoplay/loop são REMOVIDOS: o scrub controla currentTime — qualquer playback
+            // nativo (autoplay ou loop) compete com o seek e o vídeo "roda sozinho".
             video.muted       = true;
             video.playsInline = true;
+            video.autoplay    = false;
+            video.loop        = false;
             video.setAttribute('muted', '');
             video.setAttribute('playsinline', '');
+            video.removeAttribute('autoplay');
+            video.removeAttribute('loop');
             video.preload = 'auto';
+            try { video.pause(); } catch (e) {}
 
             // Reestrutura o DOM: envolve o <video> em wrapper + sticky.
             var parent = video.parentNode;
@@ -1721,6 +1728,11 @@
             // Congela o play: scrub controla o currentTime.
             var origPlay = video.play.bind(video);
             video.play = function () { return Promise.resolve(); };
+
+            // Rede de segurança: se alguma extensão/script/theme chamar play() direto
+            // no elemento (ou se autoplay escapar por algum motivo), o evento 'play'
+            // dispara mesmo assim — aqui interceptamos e pausamos imediatamente.
+            video.addEventListener('play', function () { video.pause(); });
 
             // iOS só decodifica o vídeo após uma interação — destrava no primeiro toque.
             var iosUnlock = function () {
