@@ -1645,25 +1645,23 @@
     }
 
     // ─── Vídeo em background com scrub por scroll ───────────────────────────
-    // gsap-video-bg       → aplica scrub no <video> conforme a rolagem avança
-    // data-gsap-factor    → altura do trecho de scrub = viewport × factor  (default 0.5)
-    // data-gsap-preload   → "true" baixa o arquivo via fetch + blob (scrub 100% suave)
+    // A classe gsap-video-bg vai NO CONTAINER (ex: seção do Elementor com
+    // background video). O JS:
+    //   1. Aguarda o <video> ser injetado no container (Elementor faz isso via JS).
+    //   2. Remove autoplay/loop e congela o play — scrub controla video.currentTime.
+    //   3. Envolve o container em .gsap-video-bg-wrapper > .gsap-video-bg-sticky.
+    //   4. A altura do wrapper = 100vh + (duration × factor × 100vh) — vídeo
+    //      mais longo exige mais scroll.
     //
-    // Estrutura criada em runtime:
-    //   <wrapper class="gsap-video-bg-wrapper">          ← altura (1 + factor) * 100vh
-    //       <sticky class="gsap-video-bg-sticky">        ← position: sticky; 100vh
-    //           <video class="gsap-video-bg">            ← preenche o sticky
-    //       </sticky>
-    //   </wrapper>
+    // Se houver múltiplos <video> no container (Elementor faz crossfade com 2),
+    // só o primeiro é controlado; os demais são pausados e escondidos.
     //
-    // O overflow fica por conta do sticky, sem pin do ScrollTrigger — evita
-    // conflito com ScrollSmoother. A progressão é calculada manualmente e
-    // escrita em video.currentTime dentro de um requestAnimationFrame.
+    // data-gsap-factor    → fator de duração do scrub (default 0.5)
+    // data-gsap-preload   → "true" baixa o vídeo via fetch + blob (scrub suave)
     function initVideoBgScrub() {
-        var videos = document.querySelectorAll('.gsap-video-bg');
-        if (!videos.length) { return; }
+        var containers = document.querySelectorAll('.gsap-video-bg');
+        if (!containers.length) { return; }
 
-        // Lê a posição do scroll respeitando ScrollSmoother quando ativo.
         function getScrollTop() {
             if (typeof ScrollSmoother !== 'undefined') {
                 var sm = ScrollSmoother.get();
@@ -1672,122 +1670,180 @@
             return window.pageYOffset || document.documentElement.scrollTop || 0;
         }
 
-        videos.forEach(function (video) {
-            if (video.dataset.gsapVideoBgInit === '1') { return; }
-            video.dataset.gsapVideoBgInit = '1';
+        containers.forEach(function (container) {
+            if (container.dataset.gsapVideoBgInit === '1') { return; }
 
-            var factor  = num(video, 'factor', 0.5);
-            if (!isFinite(factor) || factor <= 0) { factor = 0.5; }
-            var preload = video.getAttribute('data-gsap-preload') === 'true';
-
-            // Muted + playsinline são necessários para o decoder liberar o frame em mobile.
-            // autoplay/loop são REMOVIDOS: o scrub controla currentTime — qualquer playback
-            // nativo (autoplay ou loop) compete com o seek e o vídeo "roda sozinho".
-            video.muted       = true;
-            video.playsInline = true;
-            video.autoplay    = false;
-            video.loop        = false;
-            video.setAttribute('muted', '');
-            video.setAttribute('playsinline', '');
-            video.removeAttribute('autoplay');
-            video.removeAttribute('loop');
-            video.preload = 'auto';
-            try { video.pause(); } catch (e) {}
-
-            // Reestrutura o DOM: envolve o <video> em wrapper + sticky.
-            var parent = video.parentNode;
-            if (!parent) { return; }
-
-            var wrapper = document.createElement('div');
-            wrapper.className = 'gsap-video-bg-wrapper';
-
-            var sticky = document.createElement('div');
-            sticky.className = 'gsap-video-bg-sticky';
-
-            parent.insertBefore(wrapper, video);
-            wrapper.appendChild(sticky);
-            sticky.appendChild(video);
-
-            // Trecho de scroll = viewport × factor (ajustado em resize).
-            function applyWrapperHeight() {
-                wrapper.style.height = ((1 + factor) * window.innerHeight) + 'px';
-            }
-            applyWrapperHeight();
-
-            // Blob preload (opt-in): fetch + createObjectURL garante que o
-            // arquivo inteiro esteja em memória antes do scrub começar.
-            if (preload && video.currentSrc) {
-                fetch(video.currentSrc)
-                    .then(function (r) { return r.blob(); })
-                    .then(function (blob) {
-                        video.src = URL.createObjectURL(blob);
-                    })
-                    .catch(function () { /* falha silenciosa — usa src original */ });
+            // Acha o <video>. Se o próprio container é <video>, usa ele.
+            // Senão, procura descendente (Elementor injeta via JS — pode demorar).
+            function findVideo() {
+                if (container.tagName === 'VIDEO') { return container; }
+                return container.querySelector('video');
             }
 
-            // Congela o play: scrub controla o currentTime.
-            var origPlay = video.play.bind(video);
-            video.play = function () { return Promise.resolve(); };
+            var tries = 0;
+            (function wait() {
+                var v = findVideo();
+                // Só prossegue quando o vídeo existe E tem src resolvido
+                // (Elementor seta src depois de criar a tag).
+                if (v && (v.currentSrc || v.getAttribute('src'))) {
+                    setup(v);
+                    return;
+                }
+                if (++tries < 80) { setTimeout(wait, 100); }
+            })();
 
-            // Rede de segurança: se alguma extensão/script/theme chamar play() direto
-            // no elemento (ou se autoplay escapar por algum motivo), o evento 'play'
-            // dispara mesmo assim — aqui interceptamos e pausamos imediatamente.
-            video.addEventListener('play', function () { video.pause(); });
+            function setup(video) {
+                if (container.dataset.gsapVideoBgInit === '1') { return; }
+                container.dataset.gsapVideoBgInit = '1';
 
-            // iOS só decodifica o vídeo após uma interação — destrava no primeiro toque.
-            var iosUnlock = function () {
-                origPlay().then(function () { video.pause(); }).catch(function () {});
-                window.removeEventListener('touchstart', iosUnlock);
-            };
-            window.addEventListener('touchstart', iosUnlock, { once: true, passive: true });
+                var factor  = num(container, 'factor', 0.5);
+                if (!isFinite(factor) || factor <= 0) { factor = 0.5; }
+                var preload = container.getAttribute('data-gsap-preload') === 'true';
 
-            var duration = 0;
-            var ready    = false;
+                // ── Congela o vídeo controlado ─────────────────────────────────
+                video.removeAttribute('autoplay');
+                video.removeAttribute('loop');
+                video.autoplay = false;
+                video.loop     = false;
+                video.pause();
 
-            function onMeta() {
-                duration = video.duration || 0;
-                ready    = duration > 0;
-                update();
-            }
-            if (video.readyState >= 1 && video.duration) {
-                onMeta();
-            } else {
-                video.addEventListener('loadedmetadata', onMeta);
-            }
+                // Override do play: só chamadas internas via ctrlPlay() passam.
+                var _native = HTMLMediaElement.prototype.play.bind(video);
+                var _ok     = false;
+                video.play = function () {
+                    if (_ok) { return _native(); }
+                    return Promise.resolve();
+                };
+                function ctrlPlay() {
+                    _ok = true;
+                    var p = _native();
+                    _ok = false;
+                    return p;
+                }
 
-            // rAF throttle: só atualiza o currentTime uma vez por frame.
-            var ticking = false;
-            function update() {
-                if (!ready) { return; }
-                var rect = wrapper.getBoundingClientRect();
-                var scrollTop = getScrollTop();
-                var wrapperTop = rect.top + scrollTop;
-                var total      = wrapper.offsetHeight - window.innerHeight;
-                if (total <= 0) { return; }
-                var progress = (scrollTop - wrapperTop) / total;
-                if (progress < 0) { progress = 0; }
-                if (progress > 1) { progress = 1; }
-                video.currentTime = progress * duration;
-            }
-            function onScroll() {
-                if (ticking) { return; }
-                ticking = true;
-                requestAnimationFrame(function () {
-                    update();
-                    ticking = false;
+                // Rede de segurança: se o navegador disparar 'play' (autoplay
+                // residual, extensão, script externo), pausa imediatamente —
+                // exceto quando o play é nosso (ctrlPlay).
+                video.addEventListener('play', function () {
+                    if (!_ok) { video.pause(); }
                 });
-            }
-            function onResize() {
-                applyWrapperHeight();
-                onScroll();
-            }
 
-            window.addEventListener('scroll',  onScroll, { passive: true });
-            window.addEventListener('resize',  onResize);
-            // ScrollSmoother dispara scroll via seu próprio loop — o listener
-            // global do window já captura, mas reforçamos no refresh:
-            if (typeof ScrollTrigger !== 'undefined') {
-                ScrollTrigger.addEventListener('refresh', onResize);
+                // ── Outros <video> no container (Elementor crossfade) ──────────
+                // Pausa e esconde — o scrub precisa de um único frame-source.
+                var all = container.querySelectorAll('video');
+                all.forEach(function (other) {
+                    if (other === video) { return; }
+                    other.removeAttribute('autoplay');
+                    other.removeAttribute('loop');
+                    other.autoplay = false;
+                    other.loop     = false;
+                    try { other.pause(); } catch (e) {}
+                    other.style.display = 'none';
+                });
+
+                // ── Reestrutura: wrapper + sticky envolvem o CONTAINER ─────────
+                var parent = container.parentNode;
+                if (!parent) { return; }
+
+                var wrapper = document.createElement('div');
+                wrapper.className = 'gsap-video-bg-wrapper';
+
+                var sticky = document.createElement('div');
+                sticky.className = 'gsap-video-bg-sticky';
+
+                parent.insertBefore(wrapper, container);
+                wrapper.appendChild(sticky);
+                sticky.appendChild(container);
+
+                // ── Altura do wrapper = 100vh + duration × factor × 100vh ──────
+                // Vídeo de 10s com factor 0.5 = 1vh + 5vh extras de scroll.
+                var duration = 0;
+                var ready    = false;
+
+                function applyWrapperHeight() {
+                    var h    = window.innerHeight;
+                    var dur  = duration > 0 ? duration : 1;
+                    var total = h + (h * dur * factor);
+                    wrapper.style.height = total + 'px';
+                }
+
+                function onMeta() {
+                    duration = video.duration || 0;
+                    ready    = duration > 0;
+                    applyWrapperHeight();
+                    // Primeiro seek pra pintar o frame inicial (0 em alguns
+                    // browsers fica preto — 0.001 garante o primeiro frame).
+                    try { video.currentTime = 0.001; } catch (e) {}
+                    if (typeof ScrollTrigger !== 'undefined') { ScrollTrigger.refresh(); }
+                    onScroll();
+                }
+
+                if (video.readyState >= 1 && video.duration) {
+                    onMeta();
+                } else {
+                    video.addEventListener('loadedmetadata', onMeta, { once: true });
+                }
+
+                // ── Scroll → seek ──────────────────────────────────────────────
+                var ticking = false;
+                function update() {
+                    if (!ready) { return; }
+                    var rect       = wrapper.getBoundingClientRect();
+                    var scrollTop  = getScrollTop();
+                    var wrapperTop = rect.top + scrollTop;
+                    var scrollable = wrapper.offsetHeight - window.innerHeight;
+                    if (scrollable <= 0) { return; }
+                    var scrolled = scrollTop - wrapperTop;
+                    if (scrolled < 0) { scrolled = 0; }
+                    if (scrolled > scrollable) { scrolled = scrollable; }
+                    var target = (scrolled / scrollable) * duration;
+                    if (Math.abs(video.currentTime - target) > 0.01) {
+                        video.currentTime = target;
+                    }
+                }
+                function onScroll() {
+                    if (ticking) { return; }
+                    ticking = true;
+                    requestAnimationFrame(function () {
+                        update();
+                        ticking = false;
+                    });
+                }
+                function onResize() {
+                    applyWrapperHeight();
+                    if (typeof ScrollTrigger !== 'undefined') { ScrollTrigger.refresh(); }
+                    onScroll();
+                }
+
+                window.addEventListener('scroll', onScroll, { passive: true });
+                window.addEventListener('resize', onResize);
+                if (typeof ScrollTrigger !== 'undefined') {
+                    ScrollTrigger.addEventListener('refresh', onScroll);
+                }
+
+                // ── Blob preload (opt-in) ──────────────────────────────────────
+                if (preload) {
+                    var src = video.currentSrc || video.src;
+                    if (src && src.indexOf('blob:') === -1) {
+                        fetch(src)
+                            .then(function (r) { return r.blob(); })
+                            .then(function (blob) {
+                                var t = video.currentTime;
+                                video.src = URL.createObjectURL(blob);
+                                video.load();
+                                video.addEventListener('loadedmetadata', function () {
+                                    video.currentTime = t || 0.001;
+                                    onScroll();
+                                }, { once: true });
+                            })
+                            .catch(function () { /* falha silenciosa */ });
+                    }
+                }
+
+                // ── iOS unlock: toque destrava o decoder ───────────────────────
+                document.documentElement.addEventListener('touchstart', function () {
+                    ctrlPlay().then(function () { video.pause(); }).catch(function () {});
+                }, { once: true, passive: true });
             }
         });
     }
