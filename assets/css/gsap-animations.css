@@ -41,18 +41,6 @@ html.gsap-loading .gsap-text-focus {
     visibility: hidden;
 }
 
-/* ── .gsap-pin ── garante que o pin via transform não seja clipado ────────
-   Elementor aplica overflow:hidden em .e-parent/.e-con por padrão (evita
-   "vazamento" de background/shadow). Quando um filho é pinado via
-   ScrollTrigger.pin (transform), ele precisa permanecer visualmente fixo
-   enquanto o documento rola — transformando-se pra fora dos limites do
-   parent. Sem overflow:visible no ancestral, o elemento pinado é clipado e
-   "some" ao rolar. :has() cobre Chrome/Firefox/Safari modernos. */
-.e-parent:has(> .gsap-pin),
-.e-con:has(> .gsap-pin),
-.elementor-section:has(> .gsap-pin) {
-    overflow: visible !important;
-}
 
 /* ── gsap-img-reveal / gsap-clip-* ─── clip-path precisa de will-change ── */
 .gsap-img-reveal,

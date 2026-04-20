@@ -235,14 +235,12 @@ class GSAP_Enqueue {
 })();";
             wp_add_inline_script( 'gsap-scrollsmoother', $init );
 
-            // CSS crítico para ScrollSmoother funcionar corretamente
-            wp_add_inline_style( 'gsap-animations',
-                // Garante que nenhum CSS de tema/Bootstrap reintroduza scroll-behavior:smooth
-                'html,body{scroll-behavior:auto!important;}' .
-                // Previne margin-collapse no primeiro filho do smooth-content,
-                // que faz o ScrollSmoother calcular altura errada e cortar o final da página
-                $content . '{border-top:1px solid transparent;}'
-            );
+            // scroll-behavior:auto já está no gsap-animations.css (html { ... }).
+            // O border-top:1px solid transparent no #smooth-content era um
+            // workaround pra margin-collapse, mas introduzia layout shift sutil
+            // que interferia nas medições do ScrollTrigger em pin + scrub.
+            // Removido — se margin-collapse reaparecer, aplicar no conteúdo
+            // específico, não globalmente.
         }
 
         // ── Animações por classe (gsap-animations.js) ───────────────────────

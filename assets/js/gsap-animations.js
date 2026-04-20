@@ -214,6 +214,8 @@
     function initPin() {
         if (typeof ScrollTrigger === 'undefined') { return; }
 
+        var hasSmoother = typeof ScrollSmoother !== 'undefined' && ScrollSmoother.get();
+
         document.querySelectorAll('.gsap-pin').forEach(function (el) {
             var config = {
                 trigger:             el,
@@ -225,6 +227,12 @@
                 anticipatePin:       num(el, 'anticipate', 0),
                 invalidateOnRefresh: true,
                 refreshPriority:     -1,
+                // Explícito pra garantir: dentro do #smooth-content (que tem
+                // transform aplicado pelo ScrollSmoother), pinType:"fixed" não
+                // funciona — o fixed resolve relativo ao wrapper transformado,
+                // não ao viewport. Docs dizem que a auto-detecção cobre isso,
+                // mas explicitar é defensivo contra edge cases.
+                pinType:             hasSmoother ? 'transform' : 'fixed',
             };
 
             var endSelector = str(el, 'end-trigger', null);
