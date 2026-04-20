@@ -104,6 +104,16 @@ class GSAP_Enqueue {
         $footer  = (bool) $s['load_in_footer'];
         $version = sanitize_text_field( $s['gsap_version'] );
 
+        // Registra o handle de CSS logo de cara — wp_add_inline_style() falha
+        // silenciosamente se o handle não existir, e vários blocos abaixo
+        // (ScrollSmoother critical CSS, variáveis de cor) injetam via esse handle.
+        wp_enqueue_style(
+            'gsap-animations',
+            GSAP_MANAGER_URL . 'assets/css/gsap-animations.css',
+            [],
+            GSAP_MANAGER_VERSION
+        );
+
         // ── Core GSAP ───────────────────────────────────────────────────────
         if ( $s['source'] === 'cdn' ) {
             $gsap_url = self::CDN_BASE . $version . '/gsap.min.js';
@@ -245,13 +255,6 @@ class GSAP_Enqueue {
             if ( ! empty( $s['plugins']['ScrollSmoother'] ) ) {
                 $anim_deps[] = 'gsap-scrollsmoother';
             }
-
-            wp_enqueue_style(
-                'gsap-animations',
-                GSAP_MANAGER_URL . 'assets/css/gsap-animations.css',
-                [],
-                GSAP_MANAGER_VERSION
-            );
 
             wp_enqueue_script(
                 'gsap-animations',
