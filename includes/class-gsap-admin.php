@@ -473,283 +473,611 @@ ScrollTrigger.defaults({
             <!-- TAB: Animações por Classe (fora do form — apenas conteúdo de referência) -->
             <?php if ( true ) : // sempre renderiza — visibilidade via CSS
 
+            // Atributos globais — aceitos (quase) por toda classe de scroll/trigger.
+            $anim_global_attrs = [
+                [ 'name' => 'data-gsap-duration', 'desc' => 'Duração da animação em segundos',           'ex' => '1.2' ],
+                [ 'name' => 'data-gsap-delay',    'desc' => 'Atraso antes de começar (segundos)',         'ex' => '0.3' ],
+                [ 'name' => 'data-gsap-ease',     'desc' => 'Curva de easing do GSAP',                    'ex' => 'elastic.out(1,0.5)' ],
+                [ 'name' => 'data-gsap-distance', 'desc' => 'Distância do movimento em px',               'ex' => '80' ],
+                [ 'name' => 'data-gsap-stagger',  'desc' => 'Intervalo entre filhos (segundos)',          'ex' => '0.15' ],
+                [ 'name' => 'data-gsap-start',    'desc' => 'Posição de início do ScrollTrigger',         'ex' => 'top 70%' ],
+                [ 'name' => 'data-gsap-end',      'desc' => 'Posição de fim do ScrollTrigger',            'ex' => 'bottom 20%' ],
+                [ 'name' => 'data-gsap-scrub',    'desc' => 'Suavização do scrub (segundos)',             'ex' => '1' ],
+            ];
+
+            // Referência completa: cada item tem class/short/req/attrs/example (+more opcional pra HTML extra).
             $anim_ref = [
                 'Texto' => [
-                    [ 'class' => 'gsap-char-reveal',     'desc' => 'Cada caractere sobe do clip, revelando o texto.',          'req' => 'ScrollTrigger', 'ex' => '<h2 class="gsap-char-reveal">Título Incrível</h2>' ],
-                    [ 'class' => 'gsap-char-color',      'desc' => 'Char-a-char muda da cor inicial para a cor final do Elementor conforme o scroll. <code>data-gsap-from-color="#616161"</code> · <code>data-gsap-to-color</code> sobrescreve a cor final.', 'req' => 'ScrollTrigger', 'ex' => '<p class="gsap-char-color">Texto que ilumina ao rolar</p>' ],
-                    [ 'class' => 'gsap-word-reveal',     'desc' => 'Cada palavra sobe do clip individualmente.',               'req' => 'ScrollTrigger', 'ex' => '<h3 class="gsap-word-reveal">Frase por palavras</h3>' ],
-                    [ 'class' => 'gsap-word-blur',       'desc' => 'Palavras entram em foco com blur + slide + opacity. Mobile mantém blur por padrão — use <code>data-gsap-mobile-blur="off"</code> para desligar em dispositivos fracos. <code>data-gsap-blur="8"</code> · aceita <code>gsap-word-scrub</code> para scrub.', 'req' => 'ScrollTrigger', 'ex' => '<p class="gsap-word-blur">Palavras entrando em foco</p>' ],
-                    [ 'class' => 'gsap-text-focus',      'desc' => 'Foco gaussiano: letras do meio de cada palavra entram maiores, mais baixas, rotacionadas em leque e desfocadas — reorganizam-se pro estado final com stagger do centro pra fora. Inspirado em enumeramolecular.com. Ajuste: <code>data-gsap-scale-peak="2.1"</code> · <code>data-gsap-y-peak="60"</code> · <code>data-gsap-rotation="4"</code> · <code>data-gsap-blur="12"</code> · <code>data-gsap-mobile-blur="off"</code> para desligar blur em mobile fraco.', 'req' => '', 'ex' => '<h1 class="gsap-text-focus">Clinical omics, simplified</h1>' ],
-                    [ 'class' => 'gsap-text-fade',       'desc' => 'Texto completo faz fade + sobe suavemente.',               'req' => 'ScrollTrigger', 'ex' => '<p class="gsap-text-fade">Parágrafo de texto</p>' ],
-                    [ 'class' => 'gsap-typewriter',      'desc' => 'Digita o conteúdo do elemento como uma máquina de escrever.','req' => '',             'ex' => '<span class="gsap-typewriter">Texto digitado...</span>' ],
-                    [ 'class' => 'gsap-text-blur',       'desc' => 'Começa borrado e vai nitidificando.',                      'req' => 'ScrollTrigger', 'ex' => '<h2 class="gsap-text-blur">Título desfocado</h2>' ],
-                    [ 'class' => 'gsap-text-highlight',  'desc' => 'Sublinhado colorido varre o texto (use em &lt;span&gt;).',  'req' => 'ScrollTrigger', 'ex' => '<h2>Nosso <span class="gsap-text-highlight">diferencial</span></h2>' ],
-                    [ 'class' => 'gsap-scramble',        'desc' => 'Texto embaralha com caracteres aleatórios até revelar. <code>data-gsap-chars="01"</code> para charset customizado.', 'req' => 'ScrambleTextPlugin', 'ex' => '<span class="gsap-scramble">Texto secreto</span>' ],
+                    [
+                        'class'   => 'gsap-char-reveal',
+                        'short'   => 'Cada caractere sobe do clip, revelando o texto.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [],
+                        'combine' => [ 'gsap-char-scrub — revela char-a-char vinculado ao scroll' ],
+                        'example' => '<h2 class="gsap-char-reveal">Título Incrível</h2>',
+                    ],
+                    [
+                        'class'   => 'gsap-char-color',
+                        'short'   => 'Char-a-char muda da cor inicial para a cor final do Elementor conforme o scroll.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-from-color', 'desc' => 'Cor inicial "apagada"',                 'ex' => '#616161' ],
+                            [ 'name' => 'data-gsap-to-color',   'desc' => 'Sobrescreve a cor final (padrão: cor do Elementor)', 'ex' => '#FFFFFF' ],
+                        ],
+                        'example' => '<p class="gsap-char-color">Texto que ilumina ao rolar</p>',
+                    ],
+                    [
+                        'class'   => 'gsap-word-reveal',
+                        'short'   => 'Cada palavra sobe do clip individualmente.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [],
+                        'combine' => [ 'gsap-word-scrub — revela palavra-a-palavra vinculado ao scroll' ],
+                        'example' => '<h3 class="gsap-word-reveal">Frase por palavras</h3>',
+                    ],
+                    [
+                        'class'   => 'gsap-word-blur',
+                        'short'   => 'Palavras entram em foco com blur + slide + opacity. Mobile mantém blur por padrão.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-blur',        'desc' => 'Intensidade inicial do blur em px (padrão: 8)', 'ex' => '14' ],
+                            [ 'name' => 'data-gsap-mobile-blur', 'desc' => '"off" desliga blur em telas <1024px',           'ex' => 'off' ],
+                        ],
+                        'combine' => [ 'gsap-word-scrub — vinculado ao scroll' ],
+                        'example' => '<p class="gsap-word-blur">Palavras entrando em foco</p>',
+                    ],
+                    [
+                        'class'   => 'gsap-text-focus',
+                        'short'   => 'Foco gaussiano: letras do meio de cada palavra entram maiores, rotacionadas e desfocadas — stagger do centro pra fora. Inspirado em enumeramolecular.com.',
+                        'req'     => '',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-scale-peak',  'desc' => 'Escala máxima no centro (padrão: 2.1)', 'ex' => '2.1' ],
+                            [ 'name' => 'data-gsap-y-peak',      'desc' => 'Deslocamento Y máximo em px (padrão: 60)', 'ex' => '60' ],
+                            [ 'name' => 'data-gsap-rotation',    'desc' => 'Ângulo do leque em graus (padrão: 4)', 'ex' => '4' ],
+                            [ 'name' => 'data-gsap-blur',        'desc' => 'Blur inicial em px (padrão: 12)', 'ex' => '12' ],
+                            [ 'name' => 'data-gsap-mobile-blur', 'desc' => '"off" desliga blur em <1024px', 'ex' => 'off' ],
+                        ],
+                        'example' => '<h1 class="gsap-text-focus">Clinical omics, simplified</h1>',
+                    ],
+                    [
+                        'class'   => 'gsap-text-fade',
+                        'short'   => 'Texto completo faz fade + sobe suavemente.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [],
+                        'combine' => [ 'gsap-scrub — progresso vinculado ao scroll' ],
+                        'example' => '<p class="gsap-text-fade">Parágrafo de texto</p>',
+                    ],
+                    [
+                        'class'   => 'gsap-typewriter',
+                        'short'   => 'Digita o conteúdo do elemento como uma máquina de escrever.',
+                        'req'     => '',
+                        'attrs'   => [],
+                        'example' => '<span class="gsap-typewriter">Texto digitado...</span>',
+                    ],
+                    [
+                        'class'   => 'gsap-text-blur',
+                        'short'   => 'Começa borrado e vai nitidificando.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [],
+                        'combine' => [ 'gsap-scrub — progresso vinculado ao scroll' ],
+                        'example' => '<h2 class="gsap-text-blur">Título desfocado</h2>',
+                    ],
+                    [
+                        'class'   => 'gsap-text-highlight',
+                        'short'   => 'Sublinhado colorido varre o texto (use em &lt;span&gt;).',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [],
+                        'combine' => [ 'gsap-scrub — progresso vinculado ao scroll' ],
+                        'example' => '<h2>Nosso <span class="gsap-text-highlight">diferencial</span></h2>',
+                    ],
+                    [
+                        'class'   => 'gsap-scramble',
+                        'short'   => 'Texto embaralha com caracteres aleatórios até revelar.',
+                        'req'     => 'ScrambleTextPlugin',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-chars', 'desc' => 'Charset customizado ou "upperCase"/"lowerCase"', 'ex' => '01' ],
+                        ],
+                        'example' => '<span class="gsap-scramble">Texto secreto</span>',
+                    ],
                 ],
                 'Imagens' => [
-                    [ 'class' => 'gsap-img-reveal',      'desc' => 'Clip-path abre a imagem (padrão: da esquerda). <code>data-gsap-dir="right|top|bottom"</code>', 'req' => 'ScrollTrigger', 'ex' => '<img class="gsap-img-reveal" src="foto.jpg">' ],
-                    [ 'class' => 'gsap-img-zoom',        'desc' => 'Entra com zoom + fade.',                                   'req' => 'ScrollTrigger', 'ex' => '<img class="gsap-img-zoom" src="foto.jpg">' ],
-                    [ 'class' => 'gsap-img-fade',        'desc' => 'Fade simples na imagem.',                                  'req' => 'ScrollTrigger', 'ex' => '<img class="gsap-img-fade" src="foto.jpg">' ],
-                    [ 'class' => 'gsap-img-parallax',    'desc' => 'Parallax no scroll. O elemento pai vira o container.',     'req' => 'ScrollTrigger', 'ex' => '<div style="overflow:hidden"><img class="gsap-img-parallax" src="foto.jpg"></div>' ],
-                    [ 'class' => 'gsap-zoom-reveal',     'desc' => 'Pina a seção e escala o filho (img/vídeo) de pequeno até fullscreen enquanto o usuário scrolla. <code>data-gsap-from="0.15"</code> escala inicial · <code>data-gsap-end="+=150%"</code> distância de scroll · <code>data-gsap-scrub="1"</code>.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-zoom-reveal" style="height:100vh"><img src="foto.jpg"></div>' ],
-                    [ 'class' => 'gsap-img-scroll-scale', 'desc' => 'Imagem voa de uma posição offset e escala até preencher o container (réplica exata do dsgngroup.it — sem pin). <strong>Container deve ter <code>gsap-scale-container</code></strong>. A imagem deve estar em <code>width:100%; height:100%; object-fit:cover</code> — o tamanho reduzido inicial vem do <code>data-gsap-from-scale</code>, não da largura CSS.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-scale-container" style="height:100vh"><img class="gsap-img-scroll-scale" src="foto.jpg" data-gsap-x="222" data-gsap-y="-123" data-gsap-from-scale="0.578" style="width:100%;height:100%;object-fit:cover"></div>' ],
-                    [ 'class' => 'gsap-img-scroll-scale-pin', 'desc' => 'Igual ao <code>gsap-img-scroll-scale</code>, mas pina o container no topo do viewport até a animação terminar (estilo dsgngroup.it). Atributos: <code>data-gsap-x="222"</code> offset X inicial em px · <code>data-gsap-y="-123"</code> offset Y · <code>data-gsap-from-scale="0.578"</code> escala inicial · <code>data-gsap-to-scale="1"</code> escala final · <code>data-gsap-end="bottom+=100% top"</code> duração · <code>data-gsap-scrub="true"</code> (default) · <code>data-gsap-min-width="1200"</code> gate por largura · <code>data-gsap-debug="1"</code> log.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-scale-container" style="height:100vh"><img class="gsap-img-scroll-scale-pin" src="foto.jpg" data-gsap-x="222" data-gsap-y="-123" data-gsap-from-scale="0.578" style="width:100%;height:100%;object-fit:cover"></div>' ],
+                    [
+                        'class'   => 'gsap-img-reveal',
+                        'short'   => 'Clip-path abre a imagem (padrão: da esquerda).',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-dir', 'desc' => 'Direção da abertura', 'ex' => 'right|top|bottom' ],
+                        ],
+                        'example' => '<img class="gsap-img-reveal" src="foto.jpg">',
+                    ],
+                    [
+                        'class'   => 'gsap-img-zoom',
+                        'short'   => 'Entra com zoom + fade.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [],
+                        'example' => '<img class="gsap-img-zoom" src="foto.jpg">',
+                    ],
+                    [
+                        'class'   => 'gsap-img-fade',
+                        'short'   => 'Fade simples na imagem.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [],
+                        'example' => '<img class="gsap-img-fade" src="foto.jpg">',
+                    ],
+                    [
+                        'class'   => 'gsap-img-parallax',
+                        'short'   => 'Parallax no scroll. O elemento pai vira o container.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [],
+                        'example' => '<div style="overflow:hidden"><img class="gsap-img-parallax" src="foto.jpg"></div>',
+                    ],
+                    [
+                        'class'   => 'gsap-zoom-reveal',
+                        'short'   => 'Pina a seção e escala o filho (img/vídeo) de pequeno até fullscreen enquanto o usuário scrolla.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-from',  'desc' => 'Escala inicial',           'ex' => '0.15' ],
+                            [ 'name' => 'data-gsap-end',   'desc' => 'Distância de scroll',      'ex' => '+=150%' ],
+                            [ 'name' => 'data-gsap-scrub', 'desc' => 'Suavização do scrub',      'ex' => '1' ],
+                        ],
+                        'example' => '<div class="gsap-zoom-reveal" style="height:100vh"><img src="foto.jpg"></div>',
+                    ],
+                    [
+                        'class'   => 'gsap-img-scroll-scale',
+                        'short'   => 'Imagem voa de uma posição offset e escala até preencher o container (sem pin). Container deve ter <code>gsap-scale-container</code>; imagem com <code>width:100%;height:100%;object-fit:cover</code>.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-x',          'desc' => 'Offset X inicial em px (ou % com sufixo)', 'ex' => '222' ],
+                            [ 'name' => 'data-gsap-y',          'desc' => 'Offset Y inicial em px (ou % com sufixo)', 'ex' => '-123' ],
+                            [ 'name' => 'data-gsap-from-scale', 'desc' => 'Escala inicial da imagem (padrão: 0.578)', 'ex' => '0.578' ],
+                            [ 'name' => 'data-gsap-to-scale',   'desc' => 'Escala final (padrão: 1)',                 'ex' => '1' ],
+                            [ 'name' => 'data-gsap-container',  'desc' => 'Seletor CSS do container (override)',      'ex' => '.hero' ],
+                            [ 'name' => 'data-gsap-scrub',      'desc' => 'Suavização (padrão: true, tight)',         'ex' => '1' ],
+                            [ 'name' => 'data-gsap-min-width',  'desc' => 'Largura mínima pra rodar (padrão: 0)',     'ex' => '1200' ],
+                            [ 'name' => 'data-gsap-debug',      'desc' => '"1" loga o container detectado',           'ex' => '1' ],
+                        ],
+                        'example' => '<div class="gsap-scale-container" style="height:100vh"><img class="gsap-img-scroll-scale" src="foto.jpg" data-gsap-x="222" data-gsap-y="-123" data-gsap-from-scale="0.578" style="width:100%;height:100%;object-fit:cover"></div>',
+                    ],
+                    [
+                        'class'   => 'gsap-img-scroll-scale-pin',
+                        'short'   => 'Igual ao <code>gsap-img-scroll-scale</code>, mas pina o container no topo do viewport até a animação terminar (estilo dsgngroup.it).',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-x',          'desc' => 'Offset X inicial em px',               'ex' => '222' ],
+                            [ 'name' => 'data-gsap-y',          'desc' => 'Offset Y inicial em px',               'ex' => '-123' ],
+                            [ 'name' => 'data-gsap-from-scale', 'desc' => 'Escala inicial',                       'ex' => '0.578' ],
+                            [ 'name' => 'data-gsap-to-scale',   'desc' => 'Escala final',                         'ex' => '1' ],
+                            [ 'name' => 'data-gsap-end',        'desc' => 'Duração do pin',                       'ex' => 'bottom+=100% top' ],
+                            [ 'name' => 'data-gsap-min-width',  'desc' => 'Gate por largura',                     'ex' => '1200' ],
+                            [ 'name' => 'data-gsap-debug',      'desc' => '"1" loga o container detectado',       'ex' => '1' ],
+                        ],
+                        'example' => '<div class="gsap-scale-container" style="height:100vh"><img class="gsap-img-scroll-scale-pin" src="foto.jpg" data-gsap-x="222" data-gsap-y="-123" data-gsap-from-scale="0.578" style="width:100%;height:100%;object-fit:cover"></div>',
+                    ],
                 ],
                 'Elementos' => [
-                    [ 'class' => 'gsap-fade-up',         'desc' => 'Fade + sobe para a posição original.',                    'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-fade-up">Conteúdo</div>' ],
-                    [ 'class' => 'gsap-fade-down',       'desc' => 'Fade + desce para a posição original.',                   'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-fade-down">Conteúdo</div>' ],
-                    [ 'class' => 'gsap-fade-left',       'desc' => 'Fade + vem da direita para posição.',                     'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-fade-left">Conteúdo</div>' ],
-                    [ 'class' => 'gsap-fade-right',      'desc' => 'Fade + vem da esquerda para posição.',                    'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-fade-right">Conteúdo</div>' ],
-                    [ 'class' => 'gsap-fade-in',         'desc' => 'Fade simples, sem movimento.',                             'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-fade-in">Conteúdo</div>' ],
-                    [ 'class' => 'gsap-scale-in',        'desc' => 'Cresce de ~82% até o tamanho real.',                      'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-scale-in">Card</div>' ],
-                    [ 'class' => 'gsap-scale-out',       'desc' => 'Encolhe de ~118% até o tamanho real.',                    'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-scale-out">Card</div>' ],
-                    [ 'class' => 'gsap-rotate-in',       'desc' => 'Leve rotação + fade.',                                    'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-rotate-in">Elemento</div>' ],
-                    [ 'class' => 'gsap-flip-in',         'desc' => 'Rotação 3D no eixo X (virar página).',                    'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-flip-in">Card 3D</div>' ],
-                    [ 'class' => 'gsap-clip-left',       'desc' => 'Clip-path revela da esquerda para direita.',               'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-clip-left">Div revelada</div>' ],
-                    [ 'class' => 'gsap-clip-right',      'desc' => 'Clip-path revela da direita para esquerda.',               'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-clip-right">Div revelada</div>' ],
-                    [ 'class' => 'gsap-clip-top',        'desc' => 'Clip-path revela de cima para baixo.',                    'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-clip-top">Div revelada</div>' ],
-                    [ 'class' => 'gsap-clip-bottom',     'desc' => 'Clip-path revela de baixo para cima.',                    'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-clip-bottom">Div revelada</div>' ],
+                    [ 'class' => 'gsap-fade-up',    'short' => 'Fade + sobe para a posição original.',     'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-fade-up">Conteúdo</div>' ],
+                    [ 'class' => 'gsap-fade-down',  'short' => 'Fade + desce para a posição original.',    'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-fade-down">Conteúdo</div>' ],
+                    [ 'class' => 'gsap-fade-left',  'short' => 'Fade + vem da direita para posição.',      'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-fade-left">Conteúdo</div>' ],
+                    [ 'class' => 'gsap-fade-right', 'short' => 'Fade + vem da esquerda para posição.',     'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-fade-right">Conteúdo</div>' ],
+                    [ 'class' => 'gsap-fade-in',    'short' => 'Fade simples, sem movimento.',             'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-fade-in">Conteúdo</div>' ],
+                    [ 'class' => 'gsap-scale-in',   'short' => 'Cresce de ~82% até o tamanho real.',        'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-scale-in">Card</div>' ],
+                    [ 'class' => 'gsap-scale-out',  'short' => 'Encolhe de ~118% até o tamanho real.',      'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-scale-out">Card</div>' ],
+                    [ 'class' => 'gsap-rotate-in',  'short' => 'Leve rotação + fade.',                      'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-rotate-in">Elemento</div>' ],
+                    [ 'class' => 'gsap-flip-in',    'short' => 'Rotação 3D no eixo X (virar página).',      'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-flip-in">Card 3D</div>' ],
+                    [ 'class' => 'gsap-clip-left',  'short' => 'Clip-path revela da esquerda para direita.', 'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-clip-left">Div revelada</div>' ],
+                    [ 'class' => 'gsap-clip-right', 'short' => 'Clip-path revela da direita para esquerda.', 'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-clip-right">Div revelada</div>' ],
+                    [ 'class' => 'gsap-clip-top',   'short' => 'Clip-path revela de cima para baixo.',       'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-clip-top">Div revelada</div>' ],
+                    [ 'class' => 'gsap-clip-bottom','short' => 'Clip-path revela de baixo para cima.',       'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-clip-bottom">Div revelada</div>' ],
                 ],
                 'Grupos (Stagger)' => [
-                    [ 'class' => 'gsap-stagger',         'desc' => 'Filhos entram em cascata: fade + sobe.',                  'req' => 'ScrollTrigger', 'ex' => '<ul class="gsap-stagger"><li>Item 1</li><li>Item 2</li></ul>' ],
-                    [ 'class' => 'gsap-stagger-left',    'desc' => 'Filhos entram em cascata da direita.',                    'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-stagger-left">...</div>' ],
-                    [ 'class' => 'gsap-stagger-right',   'desc' => 'Filhos entram em cascata da esquerda.',                   'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-stagger-right">...</div>' ],
-                    [ 'class' => 'gsap-stagger-scale',   'desc' => 'Filhos entram em cascata com escala.',                    'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-stagger-scale">...</div>' ],
-                    [ 'class' => 'gsap-stagger-fade',    'desc' => 'Filhos entram em cascata com fade simples.',              'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-stagger-fade">...</div>' ],
-                    [ 'class' => 'gsap-stagger-rotate',  'desc' => 'Filhos entram em cascata com rotação.',                   'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-stagger-rotate">...</div>' ],
-                    [ 'class' => 'gsap-stagger-center',  'desc' => 'Filhos entram em cascata a partir do centro — expande para fora simultaneamente. <code>data-gsap-stagger="0.1"</code> para intervalo customizado.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-stagger-center">...</div>' ],
+                    [ 'class' => 'gsap-stagger',        'short' => 'Filhos entram em cascata: fade + sobe.',         'req' => 'ScrollTrigger', 'attrs' => [ [ 'name' => 'data-gsap-stagger', 'desc' => 'Intervalo entre filhos', 'ex' => '0.15' ] ], 'example' => '<ul class="gsap-stagger"><li>Item 1</li><li>Item 2</li></ul>' ],
+                    [ 'class' => 'gsap-stagger-left',   'short' => 'Filhos entram em cascata da direita.',           'req' => 'ScrollTrigger', 'attrs' => [ [ 'name' => 'data-gsap-stagger', 'desc' => 'Intervalo entre filhos', 'ex' => '0.1' ] ], 'example' => '<div class="gsap-stagger-left">...</div>' ],
+                    [ 'class' => 'gsap-stagger-right',  'short' => 'Filhos entram em cascata da esquerda.',          'req' => 'ScrollTrigger', 'attrs' => [ [ 'name' => 'data-gsap-stagger', 'desc' => 'Intervalo entre filhos', 'ex' => '0.1' ] ], 'example' => '<div class="gsap-stagger-right">...</div>' ],
+                    [ 'class' => 'gsap-stagger-scale', 'short' => 'Filhos entram em cascata com escala.',            'req' => 'ScrollTrigger', 'attrs' => [ [ 'name' => 'data-gsap-stagger', 'desc' => 'Intervalo entre filhos', 'ex' => '0.1' ] ], 'example' => '<div class="gsap-stagger-scale">...</div>' ],
+                    [ 'class' => 'gsap-stagger-fade',  'short' => 'Filhos entram em cascata com fade simples.',      'req' => 'ScrollTrigger', 'attrs' => [ [ 'name' => 'data-gsap-stagger', 'desc' => 'Intervalo entre filhos', 'ex' => '0.1' ] ], 'example' => '<div class="gsap-stagger-fade">...</div>' ],
+                    [ 'class' => 'gsap-stagger-rotate','short' => 'Filhos entram em cascata com rotação.',           'req' => 'ScrollTrigger', 'attrs' => [ [ 'name' => 'data-gsap-stagger', 'desc' => 'Intervalo entre filhos', 'ex' => '0.1' ] ], 'example' => '<div class="gsap-stagger-rotate">...</div>' ],
+                    [ 'class' => 'gsap-stagger-center','short' => 'Filhos entram em cascata a partir do centro — expande para fora simultaneamente.', 'req' => 'ScrollTrigger', 'attrs' => [ [ 'name' => 'data-gsap-stagger', 'desc' => 'Intervalo entre filhos', 'ex' => '0.1' ] ], 'example' => '<div class="gsap-stagger-center">...</div>' ],
                 ],
                 'Especiais' => [
-                    [ 'class' => 'gsap-counter',         'desc' => 'Anima um número do zero até o valor. Suporta <code>data-gsap-prefix</code>, <code>data-gsap-suffix</code>, <code>data-gsap-from</code>, <code>data-gsap-separator=","</code> (separador de milhar).', 'req' => 'ScrollTrigger', 'ex' => '<span class="gsap-counter" data-gsap-suffix=" mil" data-gsap-separator=".">1500</span>' ],
-                    [ 'class' => 'gsap-marquee',         'desc' => 'Faixa de conteúdo em loop horizontal. Use <code>data-gsap-speed</code> e <code>data-gsap-dir="right"</code>.', 'req' => '', 'ex' => '<div class="gsap-marquee" data-gsap-speed="50"><span>Item</span><span>Item</span></div>' ],
-                    [ 'class' => 'gsap-parallax',        'desc' => 'Parallax genérico (não-imagem). O pai deve ter overflow:hidden.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-parallax">Elemento flutuante</div>' ],
-                    [ 'class' => 'gsap-reveal-line',     'desc' => 'Linha cresce de largura zero. Perfeito para divisores.   <code>data-gsap-axis="height"</code> para vertical.', 'req' => 'ScrollTrigger', 'ex' => '<hr class="gsap-reveal-line">' ],
-                    [ 'class' => 'gsap-progress',        'desc' => 'Barra de progresso animada. Define a largura alvo no estilo.', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-progress" style="width:80%"></div>' ],
-                    [ 'class' => 'gsap-mask-reveal',     'desc' => 'Hero com logo-máscara crescente + parallax interno + overlay branco (inspirado em dropedition.com). Use num widget HTML: requer <code>data-gsap-logo</code> (SVG) e <code>data-gsap-image</code> (imagem). A JS gera toda a estrutura interna. Ajuste fino: <code>data-gsap-mask-from="80"</code>, <code>data-gsap-mask-to="110"</code>, <code>data-gsap-overlay-opacity="0.8"</code>, <code>data-gsap-parallax="20"</code>, <code>data-gsap-distance="300"</code> (vh do scroller).', 'req' => 'ScrollTrigger', 'ex' => '<div class="gsap-mask-reveal" data-gsap-logo="URL_LOGO.svg" data-gsap-image="URL_HERO.jpg"></div>' ],
+                    [
+                        'class'   => 'gsap-counter',
+                        'short'   => 'Anima um número do zero até o valor alvo.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-prefix',    'desc' => 'Texto antes do número',     'ex' => 'R$ ' ],
+                            [ 'name' => 'data-gsap-suffix',    'desc' => 'Texto depois do número',    'ex' => ' mil' ],
+                            [ 'name' => 'data-gsap-from',      'desc' => 'Valor inicial (padrão: 0)', 'ex' => '0' ],
+                            [ 'name' => 'data-gsap-separator', 'desc' => 'Separador de milhar',       'ex' => '.' ],
+                        ],
+                        'example' => '<span class="gsap-counter" data-gsap-suffix=" mil" data-gsap-separator=".">1500</span>',
+                    ],
+                    [
+                        'class'   => 'gsap-marquee',
+                        'short'   => 'Faixa de conteúdo em loop horizontal.',
+                        'req'     => '',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-speed', 'desc' => 'Velocidade do loop',              'ex' => '50' ],
+                            [ 'name' => 'data-gsap-dir',   'desc' => 'Direção do loop',                  'ex' => 'right' ],
+                        ],
+                        'example' => '<div class="gsap-marquee" data-gsap-speed="50"><span>Item</span><span>Item</span></div>',
+                    ],
+                    [
+                        'class'   => 'gsap-parallax',
+                        'short'   => 'Parallax genérico (não-imagem). O pai deve ter <code>overflow:hidden</code>.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [],
+                        'example' => '<div class="gsap-parallax">Elemento flutuante</div>',
+                    ],
+                    [
+                        'class'   => 'gsap-reveal-line',
+                        'short'   => 'Linha cresce de largura zero. Perfeito para divisores.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-axis', 'desc' => 'Eixo da linha',  'ex' => 'height' ],
+                        ],
+                        'example' => '<hr class="gsap-reveal-line">',
+                    ],
+                    [
+                        'class'   => 'gsap-progress',
+                        'short'   => 'Barra de progresso animada. Define a largura alvo no estilo.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [],
+                        'example' => '<div class="gsap-progress" style="width:80%"></div>',
+                    ],
+                    [
+                        'class'   => 'gsap-mask-reveal',
+                        'short'   => 'Hero com logo-máscara crescente + parallax interno + overlay (estilo dropedition.com). Use num widget <strong>HTML</strong> do Elementor — a JS gera toda a estrutura interna.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-logo',             'desc' => 'URL do SVG usado como máscara (obrigatório)',                       'ex' => '/wp-content/uploads/logo.svg' ],
+                            [ 'name' => 'data-gsap-image',            'desc' => 'URL da imagem de fundo (obrigatório)',                              'ex' => '/wp-content/uploads/hero.jpg' ],
+                            [ 'name' => 'data-gsap-distance',         'desc' => 'Altura total da section em vh (padrão: 100)',                       'ex' => '200' ],
+                            [ 'name' => 'data-gsap-mask-from',        'desc' => 'Tamanho inicial da máscara em % (padrão: 80)',                      'ex' => '80' ],
+                            [ 'name' => 'data-gsap-mask-to',          'desc' => 'Tamanho final da máscara em % (padrão: 110)',                       'ex' => '110' ],
+                            [ 'name' => 'data-gsap-mask-mobile-from', 'desc' => 'Override do mask-from em telas ≤768px',                              'ex' => '50' ],
+                            [ 'name' => 'data-gsap-mask-mobile-to',   'desc' => 'Override do mask-to em telas ≤768px',                                'ex' => '100' ],
+                            [ 'name' => 'data-gsap-overlay-opacity',  'desc' => 'Opacidade final do overlay (padrão: 0.8)',                           'ex' => '0.8' ],
+                            [ 'name' => 'data-gsap-overlay-color',    'desc' => 'Cor do overlay (padrão: #ffffff)',                                    'ex' => '#ffffff' ],
+                            [ 'name' => 'data-gsap-parallax',         'desc' => 'Desloc. Y interno da imagem em % (padrão: 20)',                      'ex' => '20' ],
+                        ],
+                        'example' => '<div class="gsap-mask-reveal"
+     data-gsap-logo="https://seusite.com/wp-content/uploads/logo.svg"
+     data-gsap-image="https://seusite.com/wp-content/uploads/hero.jpg"></div>',
+                        'howto'   => [
+                            'Upload no WP → <strong>Mídia</strong>: logo em SVG (silhueta preta, fundo transparente) + imagem hero (jpg/webp ≥1920px). Copie as URLs.',
+                            'No Elementor, arraste o widget <strong>HTML</strong> para a posição desejada (geralmente topo da página, sem container ao redor).',
+                            'Cole o snippet acima e troque as duas URLs.',
+                            'Publique e role a página — a logo cresce, a imagem faz parallax interno e o fundo desvanece pra branco enquanto a section sai da viewport.',
+                        ],
+                        'tip'     => '<strong>Duração:</strong> o padrão <code>data-gsap-distance="100"</code> consome 1 viewport de scroll. Use <code>"200"</code> ou <code>"300"</code> para efeito mais longo (estilo dropedition.com) — a section fica pinada por mais tempo.',
+                    ],
                 ],
                 'SVG' => [
-                    [ 'class' => 'gsap-draw-svg',  'desc' => 'Anima o stroke de um path/shape SVG de 0% a 100%, como se estivesse sendo desenhado. Suporta <code>gsap-scrub</code> para vincular ao scroll.', 'req' => 'DrawSVGPlugin', 'ex' => '<path class="gsap-draw-svg" d="M10 80 Q 95 10 180 80">' ],
-                    [ 'class' => 'gsap-morph-svg', 'desc' => 'Transição suave de uma forma SVG para outra ao entrar na viewport. Requer <code>data-gsap-target="#seletor"</code> apontando para o shape alvo.', 'req' => 'MorphSVGPlugin', 'ex' => '<path class="gsap-morph-svg" data-gsap-target="#shape-b" d="...">' ],
+                    [
+                        'class'   => 'gsap-draw-svg',
+                        'short'   => 'Anima o stroke de um path/shape SVG de 0% a 100%, como se estivesse sendo desenhado.',
+                        'req'     => 'DrawSVGPlugin',
+                        'attrs'   => [],
+                        'combine' => [ 'gsap-scrub — vincula o desenho ao scroll' ],
+                        'example' => '<path class="gsap-draw-svg" d="M10 80 Q 95 10 180 80">',
+                    ],
+                    [
+                        'class'   => 'gsap-morph-svg',
+                        'short'   => 'Transição suave de uma forma SVG para outra ao entrar na viewport.',
+                        'req'     => 'MorphSVGPlugin',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-target', 'desc' => 'Seletor do shape alvo (obrigatório)', 'ex' => '#shape-b' ],
+                        ],
+                        'example' => '<path class="gsap-morph-svg" data-gsap-target="#shape-b" d="...">',
+                    ],
                 ],
                 'ScrollSmoother — Parallax' => [
-                    [ 'class' => 'gsap-speed-slow', 'desc' => 'Parallax lento: move a 0.5× do scroll — efeito de fundo/profundidade. Use <code>data-gsap-speed="0.3"</code> para valor customizado.', 'req' => 'ScrollSmoother', 'ex' => '' ],
-                    [ 'class' => 'gsap-speed-fast', 'desc' => 'Parallax rápido: move a 1.5× do scroll — efeito de primeiro plano. Use <code>data-gsap-speed="2"</code> para valor customizado.', 'req' => 'ScrollSmoother', 'ex' => '' ],
+                    [
+                        'class'   => 'gsap-speed-slow',
+                        'short'   => 'Parallax lento: move a 0.5× do scroll — efeito de fundo/profundidade.',
+                        'req'     => 'ScrollSmoother',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-speed', 'desc' => 'Velocidade customizada (override)', 'ex' => '0.3' ],
+                        ],
+                        'example' => '<div class="gsap-speed-slow">Elemento distante</div>',
+                    ],
+                    [
+                        'class'   => 'gsap-speed-fast',
+                        'short'   => 'Parallax rápido: move a 1.5× do scroll — efeito de primeiro plano.',
+                        'req'     => 'ScrollSmoother',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-speed', 'desc' => 'Velocidade customizada (override)', 'ex' => '2' ],
+                        ],
+                        'example' => '<div class="gsap-speed-fast">Elemento próximo</div>',
+                    ],
                 ],
                 'Hover' => [
-                    [ 'class' => 'gsap-magnetic',        'desc' => 'O elemento atrai o cursor como um ímã. Ideal para botões.  <code>data-gsap-strength="0.4"</code>', 'req' => '', 'ex' => '<button class="gsap-magnetic">Clique aqui</button>' ],
-                    [ 'class' => 'gsap-tilt',            'desc' => 'Inclinação 3D ao passar o mouse. <code>data-gsap-strength="14"</code>', 'req' => '', 'ex' => '<div class="gsap-tilt">Card 3D</div>' ],
-                    [ 'class' => 'gsap-hover-lift',      'desc' => 'Levita suavemente ao hover. <code>data-gsap-distance="-8"</code>', 'req' => '', 'ex' => '<div class="gsap-hover-lift">Card flutuante</div>' ],
-                    [ 'class' => 'gsap-char-stretch-hover', 'desc' => 'Cada caractere estica em Y conforme o mouse passa, com decay nos vizinhos. Fica incrível em fonts condensed (Six Caps, Bebas Neue, Anton, Oswald). <code>data-gsap-scale="0.2"</code> amplitude · <code>data-gsap-neighbors="1"</code> vizinhos afetados · <code>data-gsap-duration="0.4"</code>.', 'req' => '', 'ex' => '<h1 class="gsap-char-stretch-hover" style="font-family:\'Bebas Neue\'">TYPOGRAPHY</h1>' ],
+                    [
+                        'class'   => 'gsap-magnetic',
+                        'short'   => 'O elemento atrai o cursor como um ímã. Ideal para botões.',
+                        'req'     => '',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-strength', 'desc' => 'Força do ímã (padrão: 0.3)', 'ex' => '0.4' ],
+                        ],
+                        'example' => '<button class="gsap-magnetic">Clique aqui</button>',
+                    ],
+                    [
+                        'class'   => 'gsap-tilt',
+                        'short'   => 'Inclinação 3D ao passar o mouse.',
+                        'req'     => '',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-strength', 'desc' => 'Amplitude do tilt em graus', 'ex' => '14' ],
+                        ],
+                        'example' => '<div class="gsap-tilt">Card 3D</div>',
+                    ],
+                    [
+                        'class'   => 'gsap-hover-lift',
+                        'short'   => 'Levita suavemente ao hover.',
+                        'req'     => '',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-distance', 'desc' => 'Distância do lift em px (negativo = sobe)', 'ex' => '-8' ],
+                        ],
+                        'example' => '<div class="gsap-hover-lift">Card flutuante</div>',
+                    ],
+                    [
+                        'class'   => 'gsap-char-stretch-hover',
+                        'short'   => 'Cada caractere estica em Y conforme o mouse passa, com decay nos vizinhos. Incrível em fonts condensed (Six Caps, Bebas Neue, Anton, Oswald).',
+                        'req'     => '',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-scale',     'desc' => 'Amplitude do scaleY (padrão: 0.2)',       'ex' => '0.2' ],
+                            [ 'name' => 'data-gsap-neighbors', 'desc' => 'Vizinhos afetados (padrão: 1)',           'ex' => '1' ],
+                            [ 'name' => 'data-gsap-duration',  'desc' => 'Duração por caractere em s (padrão: 0.4)', 'ex' => '0.4' ],
+                        ],
+                        'example' => '<h1 class="gsap-char-stretch-hover" style="font-family:\'Bebas Neue\'">TYPOGRAPHY</h1>',
+                    ],
                 ],
             ];
+
+            // Helper: monta string de busca (nome + descrição + atributos) pra filtro client-side.
+            $gsap_make_search = function ( array $item ): string {
+                $parts = [ $item['class'], $item['short'] ];
+                foreach ( $item['attrs'] ?? [] as $a ) {
+                    $parts[] = $a['name'] . ' ' . ( $a['desc'] ?? '' );
+                }
+                return strtolower( wp_strip_all_tags( implode( ' ', $parts ) ) );
+            };
+
+            // Grupos abertos por padrão — mais usados.
+            $open_by_default = [ 'Texto', 'Elementos' ];
             ?>
             <div class="gsap-tab-panel <?php echo $tab === 'animacoes' ? 'is-active' : ''; ?>">
             <div class="gsap-card">
-                <h2 class="gsap-card__title">Animações por Classe — Referência Completa</h2>
-                <p class="gsap-card__desc">Adicione as classes diretamente no campo <strong>CSS class</strong> do bloco ou widget. Nenhum HTML customizado necessário.</p>
+                <h2 class="gsap-card__title">Animações por Classe — Referência</h2>
+                <p class="gsap-card__desc">Adicione as classes diretamente no campo <strong>CSS class</strong> do bloco ou widget. Nenhum HTML customizado necessário — exceto <code>gsap-mask-reveal</code>, que pede widget HTML.</p>
 
-                <div class="gsap-attrs-box gsap-attrs-box--trigger">
-                    <h3>Classes de gatilho — <em>quando</em> a animação dispara</h3>
-                    <div class="gsap-trigger-grid">
-                        <div class="gsap-trigger-item gsap-trigger-item--muted">
-                            <code>(nenhuma)</code>
-                            <span>Comportamento padrão: aguarda o elemento entrar na viewport para animar.</span>
-                        </div>
-                        <div class="gsap-trigger-item gsap-trigger-item--deprecated">
-                            <code>gsap-on-scroll</code>
-                            <span class="gsap-badge gsap-badge--deprecated">legado</span>
-                            <span>Idêntico ao comportamento padrão — mantido por compatibilidade. Não é necessário adicionar esta classe.</span>
-                        </div>
-                        <div class="gsap-trigger-item">
-                            <code>gsap-on-load</code>
-                            <span>Anima imediatamente ao carregar a página, sem aguardar o scroll. Ideal para elementos da hero.</span>
-                        </div>
-                        <div class="gsap-trigger-item">
-                            <code>gsap-scrub</code>
-                            <span>Modifica <code>gsap-text-fade</code>, <code>gsap-text-blur</code> e <code>gsap-text-highlight</code>: progresso vinculado ao scroll. Requer ScrollTrigger.</span>
-                        </div>
-                        <div class="gsap-trigger-item">
-                            <code>gsap-char-scrub</code>
-                            <span>Modifica <code>gsap-char-reveal</code>: revela/esconde caractere a caractere com o scroll. Requer ScrollTrigger.</span>
-                        </div>
-                        <div class="gsap-trigger-item">
-                            <code>gsap-word-scrub</code>
-                            <span>Modifica <code>gsap-word-reveal</code>: revela/esconde palavra a palavra com o scroll. Requer ScrollTrigger.</span>
-                        </div>
+                <!-- Barra sticky: busca + chips de atalho pra cada grupo -->
+                <div class="gsap-ref-nav" id="gsap-ref-nav">
+                    <div class="gsap-ref-search">
+                        <svg class="gsap-ref-search__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <input type="text" id="gsap-ref-search-input" placeholder="Buscar classe, descrição ou atributo..." autocomplete="off">
+                        <button type="button" id="gsap-ref-search-clear" class="gsap-ref-search__clear" aria-label="Limpar busca">×</button>
                     </div>
-                    <p class="gsap-trigger-example">
-                        Exemplo: <code>gsap-char-reveal</code> → anima ao entrar na viewport &nbsp;|&nbsp;
-                        <code>gsap-char-reveal gsap-on-load</code> → anima ao carregar &nbsp;|&nbsp;
-                        <code>gsap-text-fade gsap-scrub</code> → fade vinculado ao scroll &nbsp;|&nbsp;
-                        <code>gsap-char-reveal gsap-char-scrub</code> → chars vinculados ao scroll
-                    </p>
-                </div>
-
-                <div class="gsap-attrs-box gsap-attrs-box--modifiers">
-                    <h3>Classes modificadoras — <em>como</em> a animação se comporta</h3>
-                    <div class="gsap-attrs-grid">
-                        <div><code>gsap-delay-1</code> — atraso de 0.1s</div>
-                        <div><code>gsap-delay-2</code> — atraso de 0.2s</div>
-                        <div><code>gsap-delay-3</code> — atraso de 0.3s</div>
-                        <div><code>gsap-delay-4</code> — atraso de 0.4s</div>
-                        <div><code>gsap-delay-5</code> — atraso de 0.5s</div>
-                        <div><code>gsap-slow</code> — duração 1.8× mais lenta</div>
-                        <div><code>gsap-fast</code> — duração 2× mais rápida</div>
-                        <div><code>gsap-repeat</code> — re-dispara ao entrar/sair da viewport</div>
-                    </div>
-                    <p class="gsap-trigger-example">
-                        Exemplo: <code>gsap-fade-up gsap-on-scroll gsap-delay-2 gsap-slow</code> &nbsp;|&nbsp;
-                        <code>gsap-scale-in gsap-repeat</code> — anima toda vez que o elemento aparece na tela
-                    </p>
-                </div>
-
-                <div class="gsap-attrs-box">
-                    <h3>Atributos avançados (opcional — para controle preciso)</h3>
-                    <div class="gsap-attrs-grid">
-                        <div><code>data-gsap-duration</code> — duração exata em segundos <span>ex: <em>1.2</em></span></div>
-                        <div><code>data-gsap-delay</code> — atraso exato em segundos <span>ex: <em>0.3</em></span></div>
-                        <div><code>data-gsap-ease</code> — curva de easing <span>ex: <em>"elastic.out(1,0.5)"</em></span></div>
-                        <div><code>data-gsap-distance</code> — distância em px <span>ex: <em>80</em></span></div>
-                        <div><code>data-gsap-stagger</code> — intervalo entre filhos <span>ex: <em>0.15</em></span></div>
-                        <div><code>data-gsap-start</code> — posição do gatilho scroll <span>ex: <em>"top 70%"</em></span></div>
-                        <div><code>data-gsap-chars</code> — charset do scramble <span>ex: <em>"01"</em>, <em>"upperCase"</em></span></div>
-                        <div><code>data-gsap-target</code> — seletor do shape SVG alvo <span>ex: <em>"#shape-b"</em></span></div>
-                        <div><code>data-gsap-separator</code> — separador de milhar no counter <span>ex: <em>"."</em>, <em>","</em></span></div>
-                        <div><code>data-gsap-speed</code> — velocidade parallax no ScrollSmoother <span>ex: <em>0.5</em>, <em>1.8</em></span></div>
-                        <div><code>data-gsap-from-color</code> — cor inicial em <code>gsap-char-color</code> <span>ex: <em>"#616161"</em></span></div>
-                        <div><code>data-gsap-to-color</code> — cor final em <code>gsap-char-color</code> <span>ex: <em>"#FFFFFF"</em> (padrão: cor do Elementor)</span></div>
-                        <div><code>data-gsap-blur</code> — intensidade inicial do blur em <code>gsap-word-blur</code> <span>ex: <em>8</em>, <em>14</em> (padrão: 8 · desktop)</span></div>
-                        <div><code>data-gsap-logo</code> — URL do SVG usado como máscara em <code>gsap-mask-reveal</code> <span>ex: <em>"/wp-content/uploads/logo.svg"</em></span></div>
-                        <div><code>data-gsap-image</code> — URL da imagem de fundo em <code>gsap-mask-reveal</code> <span>ex: <em>"/wp-content/uploads/hero.jpg"</em></span></div>
-                        <div><code>data-gsap-distance</code> — altura total da section em vh (<code>gsap-mask-reveal</code>) <span>ex: <em>100</em> (padrão, 1 viewport)</span></div>
-                        <div><code>data-gsap-scale</code> — amplitude do scaleY em <code>gsap-char-stretch-hover</code> <span>ex: <em>0.2</em> (padrão)</span></div>
-                        <div><code>data-gsap-neighbors</code> — número de vizinhos afetados em <code>gsap-char-stretch-hover</code> <span>ex: <em>1</em> (padrão)</span></div>
-                        <div><code>data-gsap-mask-from</code> / <code>data-gsap-mask-to</code> — tamanho inicial/final da máscara em % <span>ex: <em>80</em> → <em>110</em> (padrão)</span></div>
-                        <div><code>data-gsap-overlay-opacity</code> — opacidade final do overlay em <code>gsap-mask-reveal</code> <span>ex: <em>0.8</em> (padrão)</span></div>
-                        <div><code>data-gsap-overlay-color</code> — cor do overlay em <code>gsap-mask-reveal</code> <span>ex: <em>"#ffffff"</em> (padrão)</span></div>
-                        <div><code>data-gsap-parallax</code> — desloc. Y interno da imagem em % (<code>gsap-mask-reveal</code>) <span>ex: <em>20</em> (padrão)</span></div>
-                        <div><code>data-gsap-scale-peak</code> — escala máxima no centro em <code>gsap-text-focus</code> <span>ex: <em>2.1</em> (padrão)</span></div>
-                        <div><code>data-gsap-y-peak</code> — deslocamento Y máximo em px em <code>gsap-text-focus</code> <span>ex: <em>60</em> (padrão)</span></div>
-                        <div><code>data-gsap-rotation</code> — ângulo do leque em graus em <code>gsap-text-focus</code> <span>ex: <em>4</em> (padrão)</span></div>
-                        <div><code>data-gsap-mobile-blur</code> — desliga blur em &lt;1024px em <code>gsap-word-blur</code> / <code>gsap-text-focus</code> <span>ex: <em>"off"</em> (padrão: on)</span></div>
-                    </div>
-                </div>
-
-                <div class="gsap-perf-box">
-                    <h3>⚡ Boas práticas de performance</h3>
-                    <p class="gsap-perf-box__desc">
-                        As animações com <code>filter: blur()</code> são bonitas mas custam GPU — principalmente no mobile.
-                        Use com parcimônia para manter o site fluido em dispositivos fracos.
-                    </p>
-                    <div class="gsap-perf-grid">
-                        <div>
-                            <strong>Classes que usam blur:</strong>
-                            <span><code>gsap-word-blur</code>, <code>gsap-text-focus</code>, <code>gsap-text-blur</code></span>
-                        </div>
-                        <div>
-                            <strong>Recomendado:</strong>
-                            <span>1 animação blur por página, de preferência no hero. O custo de blur depende da área e do raio — H1 com blur 12px é barato; blur grande em imagens é caro.</span>
-                        </div>
-                        <div>
-                            <strong>Se usar em várias seções:</strong>
-                            <span>Considere <code>data-gsap-mobile-blur="off"</code> nas secundárias para manter desktop com o efeito completo e aliviar o mobile.</span>
-                        </div>
-                        <div>
-                            <strong>Teste no dispositivo real:</strong>
-                            <span>DevTools não simula GPU de celular — teste no seu Android/iPhone antes de publicar se a página tiver muitos efeitos.</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="gsap-howto-box">
-                    <h3>Caso especial — <code>gsap-mask-reveal</code> (hero com logo-máscara)</h3>
-                    <p class="gsap-howto-box__desc">
-                        Diferente das outras classes (que você adiciona no campo <strong>CSS Classes</strong> de qualquer widget),
-                        <code>gsap-mask-reveal</code> exige um widget <strong>HTML</strong> do Elementor porque o efeito monta uma estrutura
-                        específica em múltiplas camadas. A JS gera toda a árvore interna a partir do snippet abaixo.
-                    </p>
-
-                    <ol class="gsap-howto-steps">
-                        <li>No WP → <strong>Mídia</strong>, faça upload da <strong>logo em SVG</strong> e da <strong>imagem hero</strong> (jpg/webp grande, ≥1920px). Copie as URLs de cada arquivo.</li>
-                        <li>No Elementor, arraste o widget <strong>HTML</strong> para a posição desejada (geralmente no topo da página, sem container ao redor).</li>
-                        <li>Cole o snippet abaixo e troque as duas URLs pelas suas.</li>
-                        <li>Publique e role a página — a logo cresce, a imagem faz parallax interno e o fundo desvanece pra branco enquanto a section sai da viewport.</li>
-                    </ol>
-
-                    <div class="gsap-howto-code">
-                        <div class="gsap-howto-code__label">
-                            <span>Snippet mínimo</span>
-                            <button class="gsap-copy-btn" data-copy='&lt;div class=&quot;gsap-mask-reveal&quot;
-     data-gsap-logo=&quot;https://seusite.com/wp-content/uploads/logo.svg&quot;
-     data-gsap-image=&quot;https://seusite.com/wp-content/uploads/hero.jpg&quot;&gt;&lt;/div&gt;' title="Copiar">
-                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                                copiar
-                            </button>
-                        </div>
-<pre class="gsap-howto-code__block"><code>&lt;div class="gsap-mask-reveal"
-     data-gsap-logo="https://seusite.com/wp-content/uploads/logo.svg"
-     data-gsap-image="https://seusite.com/wp-content/uploads/hero.jpg"&gt;&lt;/div&gt;</code></pre>
-                    </div>
-
-                    <div class="gsap-howto-code">
-                        <div class="gsap-howto-code__label">
-                            <span>Com customizações (todos opcionais)</span>
-                        </div>
-<pre class="gsap-howto-code__block"><code>&lt;div class="gsap-mask-reveal"
-     data-gsap-logo="https://seusite.com/wp-content/uploads/logo.svg"
-     data-gsap-image="https://seusite.com/wp-content/uploads/hero.jpg"
-     data-gsap-distance="100"
-     data-gsap-mask-from="80"
-     data-gsap-mask-to="110"
-     data-gsap-overlay-opacity="0.8"
-     data-gsap-overlay-color="#ffffff"
-     data-gsap-parallax="20"&gt;&lt;/div&gt;</code></pre>
-                    </div>
-
-                    <div class="gsap-howto-grid">
-                        <div><code>data-gsap-logo</code> <span>URL do SVG — recortará a imagem no formato da logo. Use um SVG com fundo transparente e a silhueta em preto sólido.</span></div>
-                        <div><code>data-gsap-image</code> <span>URL da imagem hero — mesma imagem é usada no fundo e dentro da máscara.</span></div>
-                        <div><code>data-gsap-distance</code> <span>Altura total da section em vh (padrão: <em>100</em> = 1 viewport). Valores maiores (<em>200</em>, <em>300</em>) estendem o efeito — o hero fica pinado por mais tempo durante o scroll.</span></div>
-                        <div><code>data-gsap-mask-from</code> <span>Tamanho inicial da logo em % (padrão: <em>80</em>). Valores menores → logo aparece menor no início.</span></div>
-                        <div><code>data-gsap-mask-to</code> <span>Tamanho final da logo em % (padrão: <em>110</em>). Acima de 100 a logo "engole" toda a tela.</span></div>
-                        <div><code>data-gsap-mask-mobile-from</code> <span>Override do <code>mask-from</code> em telas ≤768px. Útil quando a logo fica desproporcional no mobile.</span></div>
-                        <div><code>data-gsap-mask-mobile-to</code> <span>Override do <code>mask-to</code> em telas ≤768px. Se omitido, usa o valor desktop.</span></div>
-                        <div><code>data-gsap-overlay-opacity</code> <span>Opacidade final do overlay no fim do scroll (padrão: <em>0.8</em>). Use <em>1</em> para cobertura total, <em>0</em> para desligar.</span></div>
-                        <div><code>data-gsap-overlay-color</code> <span>Cor do overlay (padrão: <em>#ffffff</em>). Pode ser preto, cor da marca, etc.</span></div>
-                        <div><code>data-gsap-parallax</code> <span>Desloc. vertical da imagem dentro da máscara em % (padrão: <em>20</em>). <em>0</em> desliga o parallax.</span></div>
-                    </div>
-
-                    <p class="gsap-howto-tip">
-                        <strong>Observação sobre duração:</strong> o padrão <code>data-gsap-distance="100"</code> consome <strong>1 viewport de scroll</strong> para completar o efeito (rápido e sem espaço vazio).
-                        Se quiser um efeito mais longo (estilo dropedition.com), use <code>data-gsap-distance="200"</code> ou <code>"300"</code> — o hero fica pinado no topo por mais tempo enquanto o scrub acontece.
-                    </p>
-                </div>
-
-                <?php foreach ( $anim_ref as $group => $items ) : ?>
-                <div class="gsap-ref-group">
-                    <h3 class="gsap-ref-group__title"><?php echo esc_html( $group ); ?></h3>
-                    <div class="gsap-ref-list">
-                        <?php foreach ( $items as $item ) : ?>
-                        <div class="gsap-ref-item">
-                            <div class="gsap-ref-item__header">
-                                <button class="gsap-copy-btn" data-copy="<?php echo esc_attr( $item['class'] ); ?>" title="Copiar classe">
-                                    <code class="gsap-ref-class">.<?php echo esc_html( $item['class'] ); ?></code>
-                                    <svg class="gsap-copy-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                                </button>
-                                <?php if ( $item['req'] ) : ?>
-                                <span class="gsap-ref-req" title="Requer este plugin ativo">
-                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
-                                    <?php echo esc_html( $item['req'] ); ?>
-                                </span>
-                                <?php endif; ?>
-                            </div>
-                            <p class="gsap-ref-item__desc"><?php echo wp_kses( $item['desc'], [ 'code' => [] ] ); ?></p>
-                        </div>
+                    <div class="gsap-ref-chips">
+                        <?php foreach ( $anim_ref as $group => $items ) :
+                            $slug = sanitize_title( $group ); ?>
+                        <button type="button" class="gsap-ref-chip" data-target="<?php echo esc_attr( $slug ); ?>">
+                            <?php echo esc_html( $group ); ?>
+                            <span class="gsap-ref-chip__count"><?php echo count( $items ); ?></span>
+                        </button>
                         <?php endforeach; ?>
                     </div>
                 </div>
+
+                <!-- Classes auxiliares (gatilhos + modificadores) -->
+                <details class="gsap-ref-accordion gsap-ref-accordion--meta" open>
+                    <summary>
+                        <span class="gsap-ref-accordion__title">Classes de gatilho &amp; modificadores</span>
+                        <span class="gsap-ref-accordion__hint">quando e como a animação acontece</span>
+                    </summary>
+                    <div class="gsap-ref-accordion__body">
+                        <div class="gsap-ref-meta-block">
+                            <h4 class="gsap-ref-meta-block__title">Gatilhos — <em>quando</em> dispara</h4>
+                            <div class="gsap-ref-meta-grid">
+                                <div class="gsap-ref-meta-item gsap-ref-meta-item--muted">
+                                    <code>(nenhuma)</code>
+                                    <span>Padrão: aguarda o elemento entrar na viewport.</span>
+                                </div>
+                                <div class="gsap-ref-meta-item">
+                                    <code>gsap-on-load</code>
+                                    <span>Anima imediatamente ao carregar a página. Ideal pra hero.</span>
+                                </div>
+                                <div class="gsap-ref-meta-item">
+                                    <code>gsap-scrub</code>
+                                    <span>Modifica <code>gsap-text-fade</code>, <code>gsap-text-blur</code>, <code>gsap-text-highlight</code>: progresso vinculado ao scroll.</span>
+                                </div>
+                                <div class="gsap-ref-meta-item">
+                                    <code>gsap-char-scrub</code>
+                                    <span>Modifica <code>gsap-char-reveal</code>: revela/esconde char-a-char com o scroll.</span>
+                                </div>
+                                <div class="gsap-ref-meta-item">
+                                    <code>gsap-word-scrub</code>
+                                    <span>Modifica <code>gsap-word-reveal</code>: revela/esconde palavra-a-palavra com o scroll.</span>
+                                </div>
+                                <div class="gsap-ref-meta-item gsap-ref-meta-item--deprecated">
+                                    <code>gsap-on-scroll</code>
+                                    <span class="gsap-badge gsap-badge--deprecated">legado</span>
+                                    <span>Idêntico ao padrão — mantido por compatibilidade.</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="gsap-ref-meta-block">
+                            <h4 class="gsap-ref-meta-block__title">Modificadores — <em>como</em> se comporta</h4>
+                            <div class="gsap-ref-meta-grid">
+                                <div class="gsap-ref-meta-item"><code>gsap-delay-1</code><span>atraso 0.1s</span></div>
+                                <div class="gsap-ref-meta-item"><code>gsap-delay-2</code><span>atraso 0.2s</span></div>
+                                <div class="gsap-ref-meta-item"><code>gsap-delay-3</code><span>atraso 0.3s</span></div>
+                                <div class="gsap-ref-meta-item"><code>gsap-delay-4</code><span>atraso 0.4s</span></div>
+                                <div class="gsap-ref-meta-item"><code>gsap-delay-5</code><span>atraso 0.5s</span></div>
+                                <div class="gsap-ref-meta-item"><code>gsap-slow</code><span>duração 1.8× mais lenta</span></div>
+                                <div class="gsap-ref-meta-item"><code>gsap-fast</code><span>duração 2× mais rápida</span></div>
+                                <div class="gsap-ref-meta-item"><code>gsap-repeat</code><span>re-dispara ao entrar/sair da viewport</span></div>
+                            </div>
+                        </div>
+
+                        <p class="gsap-ref-meta-example">
+                            <strong>Como combinar:</strong>
+                            <code>gsap-fade-up gsap-delay-2 gsap-slow</code> &nbsp;·&nbsp;
+                            <code>gsap-scale-in gsap-repeat</code> &nbsp;·&nbsp;
+                            <code>gsap-char-reveal gsap-char-scrub</code>
+                        </p>
+                    </div>
+                </details>
+
+                <!-- Atributos globais (aplicáveis na maioria das classes) -->
+                <details class="gsap-ref-accordion gsap-ref-accordion--meta">
+                    <summary>
+                        <span class="gsap-ref-accordion__title">Atributos globais</span>
+                        <span class="gsap-ref-accordion__hint"><?php echo count( $anim_global_attrs ); ?> atributos aplicáveis em quase todas as classes</span>
+                    </summary>
+                    <div class="gsap-ref-accordion__body">
+                        <p class="gsap-ref-meta-desc">Estes <code>data-gsap-*</code> funcionam em praticamente toda classe de scroll/trigger. Override por elemento — quando não informados, os defaults do plugin são usados.</p>
+                        <ul class="gsap-ref-attrs gsap-ref-attrs--wide">
+                            <?php foreach ( $anim_global_attrs as $a ) : ?>
+                            <li>
+                                <code><?php echo esc_html( $a['name'] ); ?></code>
+                                <span class="gsap-ref-attr__desc"><?php echo esc_html( $a['desc'] ); ?></span>
+                                <?php if ( ! empty( $a['ex'] ) ) : ?>
+                                <span class="gsap-ref-attr__ex">ex: <em><?php echo esc_html( $a['ex'] ); ?></em></span>
+                                <?php endif; ?>
+                            </li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- Grupos de classes -->
+                <?php foreach ( $anim_ref as $group => $items ) :
+                    $slug = sanitize_title( $group );
+                    $is_open = in_array( $group, $open_by_default, true );
+                ?>
+                <details class="gsap-ref-accordion" id="gsap-ref-group-<?php echo esc_attr( $slug ); ?>" data-group="<?php echo esc_attr( $slug ); ?>" <?php echo $is_open ? 'open' : ''; ?>>
+                    <summary>
+                        <span class="gsap-ref-accordion__title"><?php echo esc_html( $group ); ?></span>
+                        <span class="gsap-ref-accordion__count"><?php echo count( $items ); ?></span>
+                    </summary>
+                    <div class="gsap-ref-accordion__body">
+                        <div class="gsap-ref-cards">
+                            <?php foreach ( $items as $item ) :
+                                $search_str = $gsap_make_search( $item );
+                            ?>
+                            <article class="gsap-ref-card" data-search="<?php echo esc_attr( $search_str ); ?>">
+                                <header class="gsap-ref-card__head">
+                                    <button class="gsap-copy-btn" data-copy="<?php echo esc_attr( $item['class'] ); ?>" title="Copiar classe">
+                                        <code class="gsap-ref-class">.<?php echo esc_html( $item['class'] ); ?></code>
+                                        <svg class="gsap-copy-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                    </button>
+                                    <?php if ( ! empty( $item['req'] ) ) : ?>
+                                    <span class="gsap-ref-req" title="Requer este plugin GSAP ativo">
+                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <?php echo esc_html( $item['req'] ); ?>
+                                    </span>
+                                    <?php endif; ?>
+                                </header>
+                                <p class="gsap-ref-card__desc"><?php echo wp_kses( $item['short'], [ 'code' => [], 'strong' => [], 'em' => [] ] ); ?></p>
+
+                                <?php if ( ! empty( $item['attrs'] ) ) : ?>
+                                <details class="gsap-ref-card__section">
+                                    <summary>
+                                        <span>Atributos</span>
+                                        <span class="gsap-ref-card__section-count"><?php echo count( $item['attrs'] ); ?></span>
+                                    </summary>
+                                    <ul class="gsap-ref-attrs">
+                                        <?php foreach ( $item['attrs'] as $a ) : ?>
+                                        <li>
+                                            <code><?php echo esc_html( $a['name'] ); ?></code>
+                                            <span class="gsap-ref-attr__desc"><?php echo wp_kses( $a['desc'], [ 'code' => [], 'strong' => [] ] ); ?></span>
+                                            <?php if ( isset( $a['ex'] ) && $a['ex'] !== '' ) : ?>
+                                            <span class="gsap-ref-attr__ex">ex: <em><?php echo esc_html( $a['ex'] ); ?></em></span>
+                                            <?php endif; ?>
+                                        </li>
+                                        <?php endforeach; ?>
+                                    </ul>
+                                </details>
+                                <?php endif; ?>
+
+                                <?php if ( ! empty( $item['combine'] ) ) : ?>
+                                <div class="gsap-ref-card__combine">
+                                    <strong>Combina com:</strong>
+                                    <?php foreach ( $item['combine'] as $c ) : ?>
+                                    <span class="gsap-ref-combine-item"><?php echo wp_kses( $c, [ 'code' => [] ] ); ?></span>
+                                    <?php endforeach; ?>
+                                </div>
+                                <?php endif; ?>
+
+                                <?php if ( ! empty( $item['example'] ) ) : ?>
+                                <details class="gsap-ref-card__section">
+                                    <summary><span>Exemplo</span></summary>
+                                    <div class="gsap-ref-card__example">
+                                        <button class="gsap-copy-btn gsap-ref-card__example-copy" data-copy="<?php echo esc_attr( $item['example'] ); ?>" title="Copiar snippet">
+                                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                            copiar
+                                        </button>
+                                        <pre><code><?php echo esc_html( $item['example'] ); ?></code></pre>
+                                    </div>
+                                </details>
+                                <?php endif; ?>
+
+                                <?php if ( ! empty( $item['howto'] ) ) : ?>
+                                <details class="gsap-ref-card__section">
+                                    <summary><span>Passo a passo</span></summary>
+                                    <ol class="gsap-ref-card__howto">
+                                        <?php foreach ( $item['howto'] as $step ) : ?>
+                                        <li><?php echo wp_kses( $step, [ 'strong' => [], 'code' => [] ] ); ?></li>
+                                        <?php endforeach; ?>
+                                    </ol>
+                                    <?php if ( ! empty( $item['tip'] ) ) : ?>
+                                    <p class="gsap-ref-card__tip"><?php echo wp_kses( $item['tip'], [ 'strong' => [], 'code' => [] ] ); ?></p>
+                                    <?php endif; ?>
+                                </details>
+                                <?php endif; ?>
+                            </article>
+                            <?php endforeach; ?>
+                        </div>
+                        <p class="gsap-ref-empty" hidden>Nenhuma classe casa com a busca neste grupo.</p>
+                    </div>
+                </details>
                 <?php endforeach; ?>
-            </div>
+
+                <!-- Performance (rodapé, fechado por padrão) -->
+                <details class="gsap-ref-accordion gsap-ref-accordion--perf">
+                    <summary>
+                        <span class="gsap-ref-accordion__title">⚡ Performance &amp; blur</span>
+                        <span class="gsap-ref-accordion__hint">boas práticas para GPU/mobile</span>
+                    </summary>
+                    <div class="gsap-ref-accordion__body">
+                        <p class="gsap-ref-meta-desc">
+                            Animações com <code>filter: blur()</code> são bonitas mas custam GPU — principalmente em mobile. Use com parcimônia.
+                        </p>
+                        <div class="gsap-perf-grid">
+                            <div>
+                                <strong>Classes que usam blur:</strong>
+                                <span><code>gsap-word-blur</code>, <code>gsap-text-focus</code>, <code>gsap-text-blur</code></span>
+                            </div>
+                            <div>
+                                <strong>Recomendado:</strong>
+                                <span>1 animação blur por página, de preferência no hero. H1 com blur 12px é barato; blur grande em imagens é caro.</span>
+                            </div>
+                            <div>
+                                <strong>Em várias seções:</strong>
+                                <span>Use <code>data-gsap-mobile-blur="off"</code> nas secundárias — mantém desktop completo e alivia o mobile.</span>
+                            </div>
+                            <div>
+                                <strong>Teste no device real:</strong>
+                                <span>DevTools não simula GPU de celular — teste no Android/iPhone antes de publicar.</span>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Aviso global de busca vazia -->
+                <p class="gsap-ref-no-results" id="gsap-ref-no-results" hidden>
+                    <strong>Nada encontrado.</strong> Tente outro termo ou <a href="#" id="gsap-ref-reset">limpe a busca</a>.
+                </p>
             </div>
             </div><!-- /gsap-tab-panel animacoes -->
             <?php endif; ?>
