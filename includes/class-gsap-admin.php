@@ -870,6 +870,19 @@ ScrollTrigger.defaults({
                         'example' => '<h1 class="gsap-char-stretch-hover" style="font-family:\'Bebas Neue\'">TYPOGRAPHY</h1>',
                     ],
                 ],
+                'Decorativas (CSS puro)' => [
+                    [
+                        'class'   => 'gsap-float',
+                        'short'   => 'Flutuação vertical em loop infinito. 100% CSS — não depende de GSAP. Ideal em imagens decorativas, mockups e ícones. Respeita prefers-reduced-motion.',
+                        'req'     => '',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-duration', 'desc' => 'Duração do ciclo em segundos (1, 1.5, 2, 2.5, 3, 4, 5, 6, 8). Padrão: 4s', 'ex' => '3' ],
+                            [ 'name' => 'class (modificador)', 'desc' => 'Atalhos: .gsap-float--slow (6s) ou .gsap-float--fast (2s)', 'ex' => 'gsap-float gsap-float--fast' ],
+                            [ 'name' => 'style (CSS var)',    'desc' => 'Customização fina: --gsap-float-duration (tempo) e --gsap-float-distance (px, padrão: 12px)', 'ex' => '--gsap-float-duration:2.5s; --gsap-float-distance:20px' ],
+                        ],
+                        'example' => '<img src="mockup.png" class="gsap-float" data-gsap-duration="3">',
+                    ],
+                ],
             ];
 
             // Helper: monta string de busca (nome + descrição + atributos) pra filtro client-side.

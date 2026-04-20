@@ -125,6 +125,36 @@
     will-change: transform;
 }
 
+/* ── gsap-float ─── flutuação vertical em loop (CSS puro, sem GSAP) ─────── */
+/*
+ * Animação decorativa — não depende de GSAP nem de ScrollTrigger.
+ * Controle de velocidade:
+ *   • Modificadores:  .gsap-float--slow (6s)  |  .gsap-float--fast (2s)
+ *   • Atributo:       data-gsap-duration="3" (em segundos)
+ *   • Inline:         style="--gsap-float-duration: 2.5s"
+ * Amplitude (deslocamento vertical) via --gsap-float-distance (padrão: 12px).
+ */
+.gsap-float {
+    animation: gsap-float var(--gsap-float-duration, 4s) ease-in-out infinite;
+    will-change: transform;
+}
+.gsap-float--slow { --gsap-float-duration: 6s; }
+.gsap-float--fast { --gsap-float-duration: 2s; }
+/* Atributo data-gsap-duration="N" → N segundos (só aceita número simples) */
+.gsap-float[data-gsap-duration="1"]   { --gsap-float-duration: 1s; }
+.gsap-float[data-gsap-duration="1.5"] { --gsap-float-duration: 1.5s; }
+.gsap-float[data-gsap-duration="2"]   { --gsap-float-duration: 2s; }
+.gsap-float[data-gsap-duration="2.5"] { --gsap-float-duration: 2.5s; }
+.gsap-float[data-gsap-duration="3"]   { --gsap-float-duration: 3s; }
+.gsap-float[data-gsap-duration="4"]   { --gsap-float-duration: 4s; }
+.gsap-float[data-gsap-duration="5"]   { --gsap-float-duration: 5s; }
+.gsap-float[data-gsap-duration="6"]   { --gsap-float-duration: 6s; }
+.gsap-float[data-gsap-duration="8"]   { --gsap-float-duration: 8s; }
+@keyframes gsap-float {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(calc(var(--gsap-float-distance, 12px) * -1)); }
+}
+
 /* ── gsap-progress ─── barra de progresso ───────────────────────────────── */
 .gsap-progress {
     display: block;
@@ -329,6 +359,11 @@ html {
     }
     /* Marquee: para o loop */
     .gsap-marquee > * {
+        animation: none !important;
+        transform: none !important;
+    }
+    /* Float: cancela a flutuação */
+    .gsap-float {
         animation: none !important;
         transform: none !important;
     }
