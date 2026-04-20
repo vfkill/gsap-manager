@@ -106,6 +106,7 @@
         if (typeof DrawSVGPlugin       !== 'undefined') { gsap.registerPlugin(DrawSVGPlugin); }
         if (typeof MorphSVGPlugin      !== 'undefined') { gsap.registerPlugin(MorphSVGPlugin); }
         initScrollSmootherEffects();
+        initPin();
         initTextAnimations();
         initImageAnimations();
         initZoomReveal();
@@ -181,6 +182,70 @@
             if (target) {
                 smoother.scrollTo(target, true, 'top ' + getHeaderOffset() + 'px');
             }
+        });
+    }
+
+    // ─── .gsap-pin ── sticky compatível com ScrollSmoother (via ScrollTrigger) ──
+    // position:sticky do CSS NÃO funciona dentro de ScrollSmoother: o transform
+    // aplicado no #smooth-content cria um novo containing block, e sticky passa
+    // a ser calculado relativo ao wrapper transformado (que se move) em vez do
+    // viewport — a div "some" em vez de grudar. ScrollTrigger.pin foi desenhado
+    // pra conviver com ScrollSmoother e resolve isso.
+    //
+    // Atributos:
+    //   data-gsap-start        → quando pinar       (padrão: "top top")
+    //   data-gsap-end          → quando soltar       (ex: "+=100%", "bottom top")
+    //   data-gsap-end-trigger  → seletor do elemento que define o fim
+    //                            (padrão: ancestral .e-parent/container Elementor)
+    //   data-gsap-pin-spacing  → "true" reserva espaço no layout (padrão: "false",
+    //                            pra permitir efeito de sobreposição — próxima
+    //                            div passa por cima da pinada)
+    //   data-gsap-anticipate   → anticipatePin em segundos (padrão: 0)
+    //
+    // Uso típico (substituindo sticky_parent do Elementor):
+    //   <div class="e-con gsap-pin">...</div>  — pina até o fim do parent
+    //   <div class="gsap-pin" data-gsap-end="+=600px">...</div>  — pina por 600px
+    function initPin() {
+        if (typeof ScrollTrigger === 'undefined') { return; }
+
+        document.querySelectorAll('.gsap-pin').forEach(function (el) {
+            var start       = str(el, 'start', 'top top');
+            var endAttr     = str(el, 'end', null);
+            var endSelector = str(el, 'end-trigger', null);
+            var pinSpacing  = str(el, 'pin-spacing', 'false') === 'true';
+            var anticipate  = num(el, 'anticipate', 0);
+
+            // Descobre o endTrigger: (a) seletor explícito, (b) ancestral
+            // Elementor, (c) pai direto. Nunca pode ser o próprio el.
+            var endTrigger = null;
+            if (endSelector) {
+                endTrigger = document.querySelector(endSelector);
+            }
+            if (!endTrigger || endTrigger === el) {
+                endTrigger = el.parentElement &&
+                    el.parentElement.closest('.e-parent, .e-con, [data-element_type="container"], section');
+                if (!endTrigger) { endTrigger = el.parentElement; }
+            }
+
+            var config = {
+                trigger:       el,
+                start:         start,
+                pin:           true,
+                pinSpacing:    pinSpacing,
+                anticipatePin: anticipate,
+            };
+
+            if (endAttr) {
+                // end explícito: ignora endTrigger (usuário sabe o que quer)
+                config.end = endAttr;
+            } else if (endTrigger) {
+                config.endTrigger = endTrigger;
+                config.end        = 'bottom bottom';
+            } else {
+                config.end = '+=100%'; // fallback: altura da viewport
+            }
+
+            ScrollTrigger.create(config);
         });
     }
 

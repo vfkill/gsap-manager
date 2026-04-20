@@ -829,6 +829,19 @@ ScrollTrigger.defaults({
                         ],
                         'example' => '<div class="gsap-speed-fast">Elemento próximo</div>',
                     ],
+                    [
+                        'class'   => 'gsap-pin',
+                        'short'   => 'Sticky compatível com ScrollSmoother (usa ScrollTrigger.pin). Use isto em vez do sticky nativo do Elementor quando ScrollSmoother está ativo — position:sticky do CSS quebra dentro do wrapper do smoother. Por padrão, pina até o fim do container Elementor pai e permite sobreposição (próxima div passa por cima).',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-start',       'desc' => 'Quando pinar (padrão: "top top")',                                           'ex' => 'top 80px' ],
+                            [ 'name' => 'data-gsap-end',         'desc' => 'Quando soltar — override manual do endTrigger',                              'ex' => '+=600' ],
+                            [ 'name' => 'data-gsap-end-trigger', 'desc' => 'Seletor do elemento que define o fim (padrão: ancestral container Elementor)', 'ex' => '#fim-da-secao' ],
+                            [ 'name' => 'data-gsap-pin-spacing', 'desc' => '"true" reserva espaço no layout (padrão: "false" — sobreposição)',            'ex' => 'true' ],
+                            [ 'name' => 'data-gsap-anticipate',  'desc' => 'anticipatePin em segundos, suaviza o snap no mobile (padrão: 0)',            'ex' => '0.2' ],
+                        ],
+                        'example' => '<div class="e-con gsap-pin">Fica pinada até o fim do container pai</div>',
+                    ],
                 ],
                 'Hover' => [
                     [
