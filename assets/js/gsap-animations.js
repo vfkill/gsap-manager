@@ -107,6 +107,7 @@
         if (typeof MorphSVGPlugin      !== 'undefined') { gsap.registerPlugin(MorphSVGPlugin); }
         initScrollSmootherEffects();
         initPin();
+        initPinStack();
         initTextAnimations();
         initImageAnimations();
         initZoomReveal();
@@ -242,6 +243,60 @@
             }
 
             ScrollTrigger.create(config);
+        });
+    }
+
+    // ─── .gsap-pin-stack ── efeito "stacking cards" (pilha) ────────────────────
+    // Padrão canônico GSAP para empilhamento de cards ao rolar. Aplicado no
+    // CONTAINER pai; o JS itera pelos filhos diretos (elementos) e cria um
+    // ScrollTrigger.pin pra cada um com:
+    //   - start: "top top+=(i * offset)"   ← stagger pra efeito "peek"
+    //   - endTrigger: o próprio container  ← TODOS soltam juntos no fim do pai
+    //   - pinSpacing: false                ← sem padding; cards sobrepõem
+    //
+    // Com endTrigger apontando pro container, cada card fica pinado até o
+    // container INTEIRO sair do topo — o que cria o efeito de pilha. Sem
+    // endTrigger, cada card pinaria só pela própria altura (fração de segundo).
+    //
+    // IMPORTANTE pro efeito ser visível: o container precisa de altura de
+    // scroll > soma das alturas dos cards. Basta adicionar margin-bottom ou
+    // padding-bottom proporcional (ex: margin-bottom: 20vh em cada card).
+    //
+    // Atributos no container:
+    //   data-gsap-stack-offset  → px do stagger entre cards (default 0)
+    //                             ex: "40" → card 2 para 40px abaixo do topo,
+    //                             card 3 a 80px, etc. (efeito escadinha)
+    //
+    // Funciona dentro do ScrollSmoother (pinType:transform) e fora dele (fixed).
+    // Compatível com layouts flex: ScrollTrigger detecta e aplica pinSpacing:false
+    // automaticamente, mas explicitamos pra garantir.
+    function initPinStack() {
+        if (typeof ScrollTrigger === 'undefined') { return; }
+
+        var hasSmoother = typeof ScrollSmoother !== 'undefined' && ScrollSmoother.get();
+
+        document.querySelectorAll('.gsap-pin-stack').forEach(function (container) {
+            var offset = num(container, 'stack-offset', 0);
+            var cards  = [];
+            for (var i = 0; i < container.children.length; i++) {
+                if (container.children[i].nodeType === 1) {
+                    cards.push(container.children[i]);
+                }
+            }
+
+            cards.forEach(function (card, i) {
+                ScrollTrigger.create({
+                    trigger:             card,
+                    start:               'top top+=' + (i * offset),
+                    endTrigger:          container,
+                    end:                 'bottom top+=' + (i * offset),
+                    pin:                 true,
+                    pinSpacing:          false,
+                    invalidateOnRefresh: true,
+                    refreshPriority:     -1,
+                    pinType:             hasSmoother ? 'transform' : 'fixed',
+                });
+            });
         });
     }
 

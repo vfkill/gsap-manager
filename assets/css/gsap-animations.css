@@ -50,10 +50,19 @@ html.gsap-loading .gsap-text-focus {
    transform preserva outras transitions (hover, cores, opacity) nos filhos.
    Doc GSAP: https://gsap.com/community/forums/topic/40202/ */
 .gsap-pin,
+.gsap-pin-stack,
+.gsap-pin-stack > *,
 .gsap-scale-container,
 .gsap-zoom-reveal {
     transition-property: none !important;
     will-change:         transform;
+}
+
+/* Container de pin-stack precisa permitir overflow pros cards "saírem"
+   visualmente da posição natural ao pinarem. Elementor aplica overflow:hidden
+   em .e-con por default — essa regra garante que não bloqueie o efeito. */
+.gsap-pin-stack {
+    overflow: visible !important;
 }
 
 
