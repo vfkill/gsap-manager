@@ -95,6 +95,7 @@
         initSpecialAnimations();
         initBonusAnimations();
         initHoverAnimations();
+        initVideoBgScrub();
         finalizeScrollSmoother();
     }
 
@@ -1640,6 +1641,142 @@
             el.addEventListener('mouseleave', function () {
                 gsap.to(r.spans, { scaleY: 1, duration: dur, ease: 'power4.out' });
             });
+        });
+    }
+
+    // ─── Vídeo em background com scrub por scroll ───────────────────────────
+    // gsap-video-bg       → aplica scrub no <video> conforme a rolagem avança
+    // data-gsap-factor    → altura do trecho de scrub = viewport × factor  (default 0.5)
+    // data-gsap-preload   → "true" baixa o arquivo via fetch + blob (scrub 100% suave)
+    //
+    // Estrutura criada em runtime:
+    //   <wrapper class="gsap-video-bg-wrapper">          ← altura (1 + factor) * 100vh
+    //       <sticky class="gsap-video-bg-sticky">        ← position: sticky; 100vh
+    //           <video class="gsap-video-bg">            ← preenche o sticky
+    //       </sticky>
+    //   </wrapper>
+    //
+    // O overflow fica por conta do sticky, sem pin do ScrollTrigger — evita
+    // conflito com ScrollSmoother. A progressão é calculada manualmente e
+    // escrita em video.currentTime dentro de um requestAnimationFrame.
+    function initVideoBgScrub() {
+        var videos = document.querySelectorAll('.gsap-video-bg');
+        if (!videos.length) { return; }
+
+        // Lê a posição do scroll respeitando ScrollSmoother quando ativo.
+        function getScrollTop() {
+            if (typeof ScrollSmoother !== 'undefined') {
+                var sm = ScrollSmoother.get();
+                if (sm) { return sm.scrollTop(); }
+            }
+            return window.pageYOffset || document.documentElement.scrollTop || 0;
+        }
+
+        videos.forEach(function (video) {
+            if (video.dataset.gsapVideoBgInit === '1') { return; }
+            video.dataset.gsapVideoBgInit = '1';
+
+            var factor  = num(video, 'factor', 0.5);
+            if (!isFinite(factor) || factor <= 0) { factor = 0.5; }
+            var preload = video.getAttribute('data-gsap-preload') === 'true';
+
+            // Atributos necessários para autoplay silencioso em mobile.
+            video.muted       = true;
+            video.playsInline = true;
+            video.setAttribute('muted', '');
+            video.setAttribute('playsinline', '');
+            video.preload = 'auto';
+
+            // Reestrutura o DOM: envolve o <video> em wrapper + sticky.
+            var parent = video.parentNode;
+            if (!parent) { return; }
+
+            var wrapper = document.createElement('div');
+            wrapper.className = 'gsap-video-bg-wrapper';
+
+            var sticky = document.createElement('div');
+            sticky.className = 'gsap-video-bg-sticky';
+
+            parent.insertBefore(wrapper, video);
+            wrapper.appendChild(sticky);
+            sticky.appendChild(video);
+
+            // Trecho de scroll = viewport × factor (ajustado em resize).
+            function applyWrapperHeight() {
+                wrapper.style.height = ((1 + factor) * window.innerHeight) + 'px';
+            }
+            applyWrapperHeight();
+
+            // Blob preload (opt-in): fetch + createObjectURL garante que o
+            // arquivo inteiro esteja em memória antes do scrub começar.
+            if (preload && video.currentSrc) {
+                fetch(video.currentSrc)
+                    .then(function (r) { return r.blob(); })
+                    .then(function (blob) {
+                        video.src = URL.createObjectURL(blob);
+                    })
+                    .catch(function () { /* falha silenciosa — usa src original */ });
+            }
+
+            // Congela o play: scrub controla o currentTime.
+            var origPlay = video.play.bind(video);
+            video.play = function () { return Promise.resolve(); };
+
+            // iOS só decodifica o vídeo após uma interação — destrava no primeiro toque.
+            var iosUnlock = function () {
+                origPlay().then(function () { video.pause(); }).catch(function () {});
+                window.removeEventListener('touchstart', iosUnlock);
+            };
+            window.addEventListener('touchstart', iosUnlock, { once: true, passive: true });
+
+            var duration = 0;
+            var ready    = false;
+
+            function onMeta() {
+                duration = video.duration || 0;
+                ready    = duration > 0;
+                update();
+            }
+            if (video.readyState >= 1 && video.duration) {
+                onMeta();
+            } else {
+                video.addEventListener('loadedmetadata', onMeta);
+            }
+
+            // rAF throttle: só atualiza o currentTime uma vez por frame.
+            var ticking = false;
+            function update() {
+                if (!ready) { return; }
+                var rect = wrapper.getBoundingClientRect();
+                var scrollTop = getScrollTop();
+                var wrapperTop = rect.top + scrollTop;
+                var total      = wrapper.offsetHeight - window.innerHeight;
+                if (total <= 0) { return; }
+                var progress = (scrollTop - wrapperTop) / total;
+                if (progress < 0) { progress = 0; }
+                if (progress > 1) { progress = 1; }
+                video.currentTime = progress * duration;
+            }
+            function onScroll() {
+                if (ticking) { return; }
+                ticking = true;
+                requestAnimationFrame(function () {
+                    update();
+                    ticking = false;
+                });
+            }
+            function onResize() {
+                applyWrapperHeight();
+                onScroll();
+            }
+
+            window.addEventListener('scroll',  onScroll, { passive: true });
+            window.addEventListener('resize',  onResize);
+            // ScrollSmoother dispara scroll via seu próprio loop — o listener
+            // global do window já captura, mas reforçamos no refresh:
+            if (typeof ScrollTrigger !== 'undefined') {
+                ScrollTrigger.addEventListener('refresh', onResize);
+            }
         });
     }
 

@@ -49,6 +49,30 @@
     will-change: transform;
 }
 
+/* ── gsap-video-bg ─── vídeo em background com scrub por scroll ─────────── */
+/* O wrapper tem altura (1 + factor) × 100vh para definir o trecho de scrub.
+   O sticky fica preso no topo por 100vh enquanto a rolagem avança — o JS
+   escreve em video.currentTime proporcional ao progresso dentro do wrapper. */
+.gsap-video-bg-wrapper {
+    position: relative;
+    width: 100%;
+}
+.gsap-video-bg-sticky {
+    position: sticky;
+    top: 0;
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+}
+.gsap-video-bg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    will-change: contents;
+    pointer-events: none;
+}
+
 /* ── gsap-tilt ─── preserva 3D ──────────────────────────────────────────── */
 .gsap-tilt {
     transform-style: preserve-3d;

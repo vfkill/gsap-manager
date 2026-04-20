@@ -653,6 +653,28 @@ ScrollTrigger.defaults({
                         'example' => '<div class="gsap-scale-container" style="height:100vh"><img class="gsap-img-scroll-scale-pin" src="foto.jpg" data-gsap-x="222" data-gsap-y="-123" data-gsap-from-scale="0.578" style="width:100%;height:100%;object-fit:cover"></div>',
                     ],
                 ],
+                'Vídeo' => [
+                    [
+                        'class'   => 'gsap-video-bg',
+                        'short'   => 'Vídeo em background com scrub pela rolagem — avança/retrocede o <code>currentTime</code> do vídeo conforme o usuário rola. O JS envolve o vídeo em um wrapper <code>sticky</code> que trava no viewport durante o trecho de scrub.',
+                        'req'     => '',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-factor',  'desc' => 'Altura do trecho de scrub como múltiplo da viewport. <code>0.5</code> = meia viewport extra de scroll; valores maiores = scrub mais lento e preciso.', 'ex' => '0.5' ],
+                            [ 'name' => 'data-gsap-preload', 'desc' => 'Se <code>"true"</code>, baixa o arquivo inteiro via fetch + blob antes de iniciar o scrub. Garante fluidez total, mas atrasa a primeira interação. Use só em vídeos curtos (&lt;5MB).', 'ex' => 'true' ],
+                        ],
+                        'combine' => [
+                            '<code>ScrollSmoother</code> — o JS detecta automaticamente e lê a posição do scroll virtual; nenhuma configuração extra necessária.',
+                        ],
+                        'example' => '<video class="gsap-video-bg" src="video.mp4" muted playsinline data-gsap-factor="0.7"></video>',
+                        'howto'   => [
+                            'Coloque um <code>&lt;video&gt;</code> na página com a classe <code>gsap-video-bg</code> e um <code>src</code> válido. O JS garante os atributos <code>muted</code> e <code>playsinline</code> automaticamente.',
+                            'Opcional: ajuste <code>data-gsap-factor</code> para controlar quanto de scroll é necessário para percorrer o vídeo inteiro.',
+                            'O plugin envolve o vídeo em um wrapper <code>sticky</code> em tempo de execução — não é necessário criar nenhuma estrutura HTML adicional.',
+                            'Em iOS, o primeiro toque na tela destrava o decoder do vídeo (requisito da Apple para autoplay sem interação).',
+                        ],
+                        'tip'     => 'Codifique o vídeo com <strong>keyframes a cada 1–2 frames</strong> (ex: <code>ffmpeg -g 1 -keyint_min 1</code>) — sem isso, o navegador precisa decodificar do keyframe anterior a cada pulo no <code>currentTime</code> e o scrub fica engasgado. Em vídeos curtos (&lt;5MB), ative <code>data-gsap-preload="true"</code>.',
+                    ],
+                ],
                 'Elementos' => [
                     [ 'class' => 'gsap-fade-up',    'short' => 'Fade + sobe para a posição original.',     'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-fade-up">Conteúdo</div>' ],
                     [ 'class' => 'gsap-fade-down',  'short' => 'Fade + desce para a posição original.',    'req' => 'ScrollTrigger', 'attrs' => [], 'example' => '<div class="gsap-fade-down">Conteúdo</div>' ],
