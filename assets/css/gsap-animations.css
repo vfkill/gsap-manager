@@ -24,6 +24,20 @@
  * O will-change já é definido inline pelo JS para ativar somente quando necessário.
  */
 
+/* ── gsap-text-focus ─── esconde antes do JS assumir ─────────────────────── */
+/*
+ * playOnScroll() aplica visibility:hidden inline, mas só depois do window.load
+ * + document.fonts.ready + 2×rAF. Nesse intervalo, o H1 (ou qualquer outro
+ * alvo) aparece com opacity:1 e cai bruscamente no estado inicial da animação,
+ * causando flash. A regra abaixo segura o elemento escondido desde o CSS.
+ *
+ * O bloco reduced-motion mais abaixo garante visibility:visible quando o
+ * usuário desabilita animações — senão o texto nunca apareceria.
+ */
+.gsap-text-focus {
+    visibility: hidden;
+}
+
 /* ── gsap-img-reveal / gsap-clip-* ─── clip-path precisa de will-change ── */
 .gsap-img-reveal,
 .gsap-clip-left,
@@ -252,6 +266,7 @@ html {
     .gsap-char-color span,
     .gsap-word-reveal span,
     .gsap-word-blur span,
+    .gsap-text-focus,
     .gsap-text-focus span,
     .gsap-text-fade,
     .gsap-text-blur,

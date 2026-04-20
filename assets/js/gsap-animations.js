@@ -240,8 +240,11 @@
      *   gsap-repeat  → re-anima toda vez que o elemento entra/sai da viewport
      */
     function playOnScroll(el, fn) {
-        // gsap-on-load: executa imediatamente sem esconder
+        // gsap-on-load: executa imediatamente sem esconder.
+        // Limpa visibility inline caso o CSS esteja segurando o elemento
+        // (ex.: .gsap-text-focus tem visibility:hidden pra evitar FOUC).
         if (el.classList.contains('gsap-on-load')) {
+            el.style.visibility = 'visible';
             fn();
             return;
         }
