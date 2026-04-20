@@ -41,6 +41,21 @@ html.gsap-loading .gsap-text-focus {
     visibility: hidden;
 }
 
+/* ── Containers pinados: neutraliza transition:all do Elementor ───────────
+   CAUSA RAIZ do "efeito gelatina/mola" ao pinar: o Elementor aplica
+   `transition: all 0.3s` por padrão em .e-con. Quando ScrollTrigger.pin
+   injeta `transform` a cada frame pra manter o elemento fixo, a CSS
+   transition tenta suavizar CADA mudança em 0.3s — o elemento oscila em
+   volta da posição alvo em vez de grudar. Override apenas da propriedade
+   transform preserva outras transitions (hover, cores, opacity) nos filhos.
+   Doc GSAP: https://gsap.com/community/forums/topic/40202/ */
+.gsap-pin,
+.gsap-scale-container,
+.gsap-zoom-reveal {
+    transition-property: none !important;
+    will-change:         transform;
+}
+
 
 /* ── gsap-img-reveal / gsap-clip-* ─── clip-path precisa de will-change ── */
 .gsap-img-reveal,
