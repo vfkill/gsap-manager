@@ -48,6 +48,26 @@
 (function () {
     'use strict';
 
+    // ─── Anti-FOUC gate: transfere visibility:hidden do CSS pro inline ───────
+    // O PHP injeta .gsap-loading em <html> no wp_head e o CSS esconde
+    // .gsap-text-focus enquanto a classe estiver presente. Antes de remover
+    // a classe, aplicamos visibility:hidden inline em cada .gsap-text-focus
+    // — assim evitamos flash na janela entre a classe sair e o playOnScroll
+    // processar o elemento. O playOnScroll depois trocará pra 'visible' no
+    // momento certo (ou imediato no caso de .gsap-on-load).
+    // Rescue-timeout de 3s no PHP garante segurança mesmo se este JS quebrar
+    // antes de chegar até aqui.
+    (function () {
+        var nodes = document.querySelectorAll('.gsap-text-focus');
+        for (var i = 0; i < nodes.length; i++) {
+            // Não toca em quem tem gsap-on-load — esse case aparece imediatamente.
+            if (!nodes[i].classList.contains('gsap-on-load')) {
+                nodes[i].style.visibility = 'hidden';
+            }
+        }
+        document.documentElement.classList.remove('gsap-loading');
+    })();
+
     // ─── Bootstrap ──────────────────────────────────────────────────────────
     // Setup estrutural do mask-reveal roda no DOMContentLoaded — antes do init()
     // e FORA da guarda reduced-motion, para garantir que a seção renderize

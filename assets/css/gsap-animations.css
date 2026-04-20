@@ -24,17 +24,20 @@
  * O will-change já é definido inline pelo JS para ativar somente quando necessário.
  */
 
-/* ── gsap-text-focus ─── esconde antes do JS assumir ─────────────────────── */
+/* ── gsap-text-focus ─── esconde antes do JS assumir (com fallback) ──────── */
 /*
- * playOnScroll() aplica visibility:hidden inline, mas só depois do window.load
- * + document.fonts.ready + 2×rAF. Nesse intervalo, o H1 (ou qualquer outro
- * alvo) aparece com opacity:1 e cai bruscamente no estado inicial da animação,
- * causando flash. A regra abaixo segura o elemento escondido desde o CSS.
+ * Anti-FOUC gated por classe em <html>. Fluxo:
+ *   1. PHP injeta inline script no wp_head que adiciona .gsap-loading no <html>
+ *      + rescue-timeout de 3s que remove a classe automaticamente.
+ *   2. gsap-animations.js remove a classe assim que inicia (footer, após deps).
+ *   3. Se qualquer coisa quebrar o JS, o timeout garante que em ≤3s a classe
+ *      some e o texto aparece — nunca fica invisível pra sempre.
  *
- * O bloco reduced-motion mais abaixo garante visibility:visible quando o
- * usuário desabilita animações — senão o texto nunca apareceria.
+ * A regra baseia-se em .gsap-loading estar em <html>, não em .gsap-text-focus
+ * sozinho — sem o gate, qualquer falha no JS travava o título invisível
+ * permanentemente (incidente que quebrou o visual em produção na v3.8.7/8.8).
  */
-.gsap-text-focus {
+html.gsap-loading .gsap-text-focus {
     visibility: hidden;
 }
 

@@ -44,12 +44,27 @@ class GSAP_Enqueue {
         $this->settings = gsap_manager_get_settings();
         add_action( 'wp_enqueue_scripts', [ $this, 'enqueue' ] );
 
+        // Anti-FOUC gated — imprime classe `gsap-loading` em <html> com rescue-timeout.
+        // Roda antes de tudo (prioridade 1) e só quando o plugin vai efetivamente carregar.
+        // O CSS só esconde elementos .gsap-text-focus enquanto a classe estiver presente;
+        // o setTimeout de 3s é seguro-contra-tudo: mesmo se o JS do plugin falhar por
+        // completo, a classe some sozinha e o texto aparece (nunca invisível pra sempre).
+        add_action( 'wp_head', [ $this, 'print_loading_gate' ], 1 );
+
         // Injeta smooth-wrapper/smooth-content automaticamente quando ScrollSmoother está ativo.
         // Hello Elementor (e a maioria dos temas modernos) chama wp_body_open() logo após <body>.
         if ( ! empty( $this->settings['plugins']['ScrollSmoother'] ) ) {
             add_action( 'wp_body_open', [ $this, 'smoother_wrapper_open'  ] );
             add_action( 'wp_footer',    [ $this, 'smoother_wrapper_close' ], 999 );
         }
+    }
+
+    public function print_loading_gate(): void {
+        if ( ! $this->should_load() ) {
+            return;
+        }
+        // Minificado: adiciona classe imediatamente; timeout 3s remove como rescue.
+        echo "<script>(function(){var d=document.documentElement;d.classList.add('gsap-loading');setTimeout(function(){d.classList.remove('gsap-loading');},3000);})();</script>\n";
     }
 
     public function smoother_wrapper_open(): void {
