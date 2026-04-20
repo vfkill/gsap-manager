@@ -49,6 +49,15 @@
     will-change: transform;
 }
 
+/* ── gsap-scroll-fade-in / gsap-scroll-fade-out ─── opacidade por scroll ── */
+.gsap-scroll-fade-in {
+    opacity: 0; /* Evita FOUC antes do ScrollTrigger assumir */
+}
+.gsap-scroll-fade-in,
+.gsap-scroll-fade-out {
+    will-change: opacity;
+}
+
 /* ── gsap-video-bg ─── vídeo em background com scrub por scroll ─────────── */
 /* O wrapper tem altura (1 + factor) × 100vh para definir o trecho de scrub.
    O sticky fica preso no topo por 100vh enquanto a rolagem avança — o JS
@@ -298,7 +307,10 @@ html {
     .gsap-zoom-reveal > :first-child,
     /* ScrollSmoother */
     .gsap-speed-slow,
-    .gsap-speed-fast {
+    .gsap-speed-fast,
+    /* Scroll fade */
+    .gsap-scroll-fade-in,
+    .gsap-scroll-fade-out {
         animation: none !important;
         transition: none !important;
         opacity: 1 !important;

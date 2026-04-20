@@ -95,6 +95,7 @@
         initSpecialAnimations();
         initBonusAnimations();
         initHoverAnimations();
+        initScrollFade();
         initVideoBgScrub();
         finalizeScrollSmoother();
     }
@@ -1641,6 +1642,58 @@
             el.addEventListener('mouseleave', function () {
                 gsap.to(r.spans, { scaleY: 1, duration: dur, ease: 'power4.out' });
             });
+        });
+    }
+
+    // ─── Fade de opacidade por scroll (scrub) ───────────────────────────────
+    // gsap-scroll-fade-out → opacidade 1 → 0 conforme o scroll avança
+    // gsap-scroll-fade-in  → opacidade 0 → 1 conforme o scroll avança
+    // data-gsap-factor     → distância de scroll como múltiplo da viewport
+    //                        (default 0.5 — 50vh de scroll completa o fade)
+    //
+    // out: start='top top'    → começa quando o topo do elemento toca o topo do viewport
+    // in : start='top bottom' → começa quando o topo do elemento toca a base do viewport
+    //
+    // Requer ScrollTrigger. Sem ele, o elemento fica em seu estado inicial
+    // (out = visível, in = invisível via CSS).
+    function initScrollFade() {
+        if (typeof ScrollTrigger === 'undefined') { return; }
+        var nodes = document.querySelectorAll('.gsap-scroll-fade-out, .gsap-scroll-fade-in');
+        if (!nodes.length) { return; }
+
+        nodes.forEach(function (el) {
+            if (el.dataset.gsapScrollFadeInit === '1') { return; }
+            el.dataset.gsapScrollFadeInit = '1';
+
+            var isOut  = el.classList.contains('gsap-scroll-fade-out');
+            var factor = num(el, 'factor', 0.5);
+            if (!isFinite(factor) || factor <= 0) { factor = 0.5; }
+
+            var endDistance = '+=' + (factor * 100) + '%';
+
+            if (isOut) {
+                gsap.to(el, {
+                    opacity: 0,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: el,
+                        start: 'top top',
+                        end: endDistance,
+                        scrub: true,
+                    },
+                });
+            } else {
+                gsap.fromTo(el, { opacity: 0 }, {
+                    opacity: 1,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: el,
+                        start: 'top bottom',
+                        end: endDistance,
+                        scrub: true,
+                    },
+                });
+            }
         });
     }
 

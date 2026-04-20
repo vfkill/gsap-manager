@@ -701,6 +701,24 @@ ScrollTrigger.defaults({
                 ],
                 'Especiais' => [
                     [
+                        'class'   => 'gsap-scroll-fade-out',
+                        'short'   => 'Faz o elemento <strong>desaparecer</strong> conforme o scroll avança. Ideal para o texto/CTA do hero que some enquanto o vídeo de fundo continua rolando.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-factor', 'desc' => 'Distância de scroll que completa o fade como múltiplo da viewport. <code>0.3</code> = some em 30vh; <code>1</code> = precisa de 100vh de rolagem. Default <code>0.5</code>.', 'ex' => '0.3' ],
+                        ],
+                        'example' => '<div class="gsap-scroll-fade-out" data-gsap-factor="0.4">Conteúdo do hero</div>',
+                    ],
+                    [
+                        'class'   => 'gsap-scroll-fade-in',
+                        'short'   => 'Faz o elemento <strong>aparecer</strong> conforme o scroll avança (opacidade 0 → 1). O elemento entra no viewport já invisível e ganha opacidade proporcional à rolagem.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-factor', 'desc' => 'Distância de scroll que completa o fade como múltiplo da viewport. Default <code>0.5</code>.', 'ex' => '0.5' ],
+                        ],
+                        'example' => '<div class="gsap-scroll-fade-in">Conteúdo que aparece gradualmente</div>',
+                    ],
+                    [
                         'class'   => 'gsap-counter',
                         'short'   => 'Anima um número do zero até o valor alvo.',
                         'req'     => 'ScrollTrigger',
