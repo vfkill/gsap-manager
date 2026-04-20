@@ -233,6 +233,16 @@
                 pin:           true,
                 pinSpacing:    pinSpacing,
                 anticipatePin: anticipate,
+                // pinType:"transform" é obrigatório quando ScrollSmoother está
+                // ativo — "fixed" (default) aplicaria position:fixed no elemento,
+                // mas dentro do #smooth-content transformado o fixed é resolvido
+                // relativo ao wrapper, não ao viewport, e o pin não gruda.
+                pinType:       (typeof ScrollSmoother !== 'undefined' && ScrollSmoother.get()) ? 'transform' : 'fixed',
+                // pinReparent move o elemento pra <body> durante o pin — isola
+                // de layouts flex/grid do parent (Elementor .e-flex / .e-con)
+                // que introduziam linha/gap entre seções quando o pin-spacer
+                // era inserido como child block dentro de um flex container.
+                pinReparent:   str(el, 'pin-reparent', 'true') === 'true',
             };
 
             if (endAttr) {

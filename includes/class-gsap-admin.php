@@ -839,6 +839,7 @@ ScrollTrigger.defaults({
                             [ 'name' => 'data-gsap-end-trigger', 'desc' => 'Seletor do elemento que define o fim (padrão: ancestral container Elementor)', 'ex' => '#fim-da-secao' ],
                             [ 'name' => 'data-gsap-pin-spacing', 'desc' => '"true" reserva espaço no layout (padrão: "false" — sobreposição)',            'ex' => 'true' ],
                             [ 'name' => 'data-gsap-anticipate',  'desc' => 'anticipatePin em segundos, suaviza o snap no mobile (padrão: 0)',            'ex' => '0.2' ],
+                            [ 'name' => 'data-gsap-pin-reparent', 'desc' => '"false" desabilita o reparent para &lt;body&gt; — padrão: "true" (isola de flex/grid do parent, evita gap/linha entre seções no Elementor)', 'ex' => 'false' ],
                         ],
                         'example' => '<div class="e-con gsap-pin">Fica pinada até o fim do container pai</div>',
                     ],
