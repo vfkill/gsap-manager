@@ -216,9 +216,8 @@
         if (typeof ScrollTrigger === 'undefined') { return; }
 
         var hasSmoother = typeof ScrollSmoother !== 'undefined' && ScrollSmoother.get();
-        var pinNodes    = document.querySelectorAll('.gsap-pin');
 
-        pinNodes.forEach(function (el) {
+        document.querySelectorAll('.gsap-pin').forEach(function (el) {
             var config = {
                 trigger:             el,
                 start:               str(el, 'start', 'top top'),
@@ -226,7 +225,7 @@
                 pin:                 true,
                 pinSpacing:          str(el, 'pin-spacing',  'false') === 'true',
                 pinReparent:         str(el, 'pin-reparent', 'false') === 'true',
-                anticipatePin:       num(el, 'anticipate', 1),
+                anticipatePin:       num(el, 'anticipate', 0),
                 invalidateOnRefresh: true,
                 refreshPriority:     -1,
                 // Explícito pra garantir: dentro do #smooth-content (que tem
@@ -245,21 +244,6 @@
 
             ScrollTrigger.create(config);
         });
-
-        // ── Anti-jitter em mobile ────────────────────────────────────────────
-        // Touch scroll roda em thread async do browser, fora do sincronismo
-        // com JS. Pin via transform (único modo compatível com ScrollSmoother)
-        // fica "atrasado" frame-a-frame → tremedeira/gelatina visível só em
-        // mobile. ScrollTrigger.normalizeScroll(true) é o fix oficial do GSAP:
-        // intercepta o touch e sincroniza com rAF, eliminando o lag.
-        // Só ativa se houver pin E dispositivo touch — em desktop não precisa
-        // e poderia afetar scroll customizado de extensões/trackpads.
-        // Doc: https://gsap.com/docs/v3/Plugins/ScrollTrigger/static.normalizeScroll()
-        var hasPin     = pinNodes.length > 0 || document.querySelector('.gsap-pin-stack');
-        var isTouch    = window.matchMedia && window.matchMedia('(pointer: coarse)').matches;
-        if (hasPin && isTouch && typeof ScrollTrigger.normalizeScroll === 'function') {
-            ScrollTrigger.normalizeScroll(true);
-        }
     }
 
     // ─── .gsap-pin-stack ── efeito "stacking cards" (pilha) ────────────────────
