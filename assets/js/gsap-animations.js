@@ -1003,9 +1003,6 @@
             el.style.willChange      = 'transform';
             container.style.overflow = 'hidden';
 
-            // Estado inicial aplicado imediatamente pra evitar flash
-            el.style.transform = 'translate(' + xStart + xUnit + ', ' + yStart + yUnit + ') scale(' + scaleStart + ')';
-
             var scrubVal = (function () {
                 var v = el.getAttribute('data-gsap-scrub');
                 if (v === null || v === '') { return true; }
@@ -1013,26 +1010,32 @@
                 return isNaN(n) ? true : n;
             })();
 
-            gsap.to({ progress: 0 }, {
-                progress: 1,
-                ease:     'none',
-                scrollTrigger: {
-                    trigger:    container,
-                    start:      str(el, 'start', pinned ? 'top top'           : 'top bottom'),
-                    end:        str(el, 'end',   pinned ? 'bottom+=100% top' : 'bottom top'),
-                    scrub:      scrubVal,
-                    pin:        pinned ? container : false,
-                    pinSpacing: pinned,
-                    invalidateOnRefresh: true,
-                    onUpdate: function (self) {
-                        var p  = self.progress;
-                        var tx = xStart * (1 - p);
-                        var ty = yStart * (1 - p);
-                        var s  = scaleStart + (scaleEnd - scaleStart) * p;
-                        el.style.transform = 'translate(' + tx + xUnit + ', ' + ty + yUnit + ') scale(' + s + ')';
+            // GSAP handling nativo de x/y/scale — mais performático que
+            // setar el.style.transform manualmente em cada frame.
+            gsap.fromTo(el,
+                {
+                    x:       xUnit === '%' ? xStart + '%' : xStart,
+                    y:       yUnit === '%' ? yStart + '%' : yStart,
+                    scale:   scaleStart,
+                    force3D: true,
+                },
+                {
+                    x:       0,
+                    y:       0,
+                    scale:   scaleEnd,
+                    ease:    'none',
+                    force3D: true,
+                    scrollTrigger: {
+                        trigger:    container,
+                        start:      str(el, 'start', pinned ? 'top top'           : 'top bottom'),
+                        end:        str(el, 'end',   pinned ? 'bottom+=100% top' : 'bottom top'),
+                        scrub:      scrubVal,
+                        pin:        pinned ? container : false,
+                        pinSpacing: pinned,
+                        invalidateOnRefresh: true,
                     }
                 }
-            });
+            );
         });
     }
 
