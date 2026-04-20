@@ -906,32 +906,41 @@
         });
 
         // ─── Img Scroll Scale ───────────────────────────────────────────────
-        // Aplica na IMAGEM. Mantém o tamanho atual configurado e escala UP
-        // até preencher o container (cover) com scrub.
+        // Replica exatamente o efeito do dsgngroup.it (tema dreamslab):
+        // a imagem tem translate(x,y) + scale(from) no início e anima de volta
+        // pra translate(0,0) + scale(to) com scrub. O offset + scale inicial
+        // criam a sensação de "imagem voando de um canto" enquanto escala
+        // até preencher o container.
         //
-        // RECOMENDADO: marque o container explicitamente com a classe
-        // .gsap-scale-container — isso garante que o origin seja detectado
-        // corretamente (a auto-detecção pode falhar em estruturas complexas
-        // do Elementor). O JS usa el.closest('.gsap-scale-container').
+        // ESTRUTURA OBRIGATÓRIA:
+        //   <div class="gsap-scale-container" style="height:100vh">
+        //     <img class="gsap-img-scroll-scale-pin"
+        //          data-gsap-x="222"
+        //          data-gsap-y="-123"
+        //          data-gsap-from-scale="0.578"
+        //          src="foto.jpg"
+        //          style="width:100%; height:100%; object-fit:cover">
+        //   </div>
         //
-        // Variantes da imagem:
+        // A imagem DEVE estar em 100% do container (width:100% height:100%
+        // object-fit:cover). O "tamanho inicial reduzido" vem do
+        // data-gsap-from-scale (não da largura CSS).
+        //
+        // Variantes:
         //   .gsap-img-scroll-scale       — sem pin (escala enquanto cruza viewport)
         //   .gsap-img-scroll-scale-pin   — com pin (container trava no topo)
         //
-        // Origin: detectado pela borda mais próxima da imagem dentro do container
-        // (encostada à direita → cresce pra esquerda; centralizada → todos lados).
-        //
-        // Atributos opcionais:
-        //   data-gsap-container → seletor CSS do container (override do auto)
-        //   data-gsap-from      → escala inicial (padrão: 1 = tamanho configurado)
-        //   data-gsap-to        → escala final  (padrão: cover do container)
-        //   data-gsap-origin    → override do transform-origin (ex: "top right")
-        //   data-gsap-start     → start do ScrollTrigger
-        //                          (padrão pin: "top top" · sem pin: "top bottom")
-        //   data-gsap-end       → end do ScrollTrigger
-        //                          (padrão pin: "+=50%" · sem pin: "bottom top")
-        //   data-gsap-scrub     → suavização (padrão: 0.3)
-        //   data-gsap-debug     → "1" pra logar o container detectado no console
+        // Atributos:
+        //   data-gsap-x           → offset X inicial em px (ou "50%" pra %)   (padrão: 0)
+        //   data-gsap-y           → offset Y inicial em px (ou "50%" pra %)   (padrão: 0)
+        //   data-gsap-from-scale  → escala inicial da imagem                  (padrão: 0.578)
+        //   data-gsap-to-scale    → escala final                              (padrão: 1)
+        //   data-gsap-container   → seletor CSS do container (override)
+        //   data-gsap-start       → start do ScrollTrigger                    (padrão pin: "top top")
+        //   data-gsap-end         → end do ScrollTrigger                      (padrão pin: "bottom+=100% top")
+        //   data-gsap-scrub       → suavização                                (padrão: true, tight)
+        //   data-gsap-min-width   → largura mínima em px pra rodar            (padrão: 0, roda sempre)
+        //   data-gsap-debug       → "1" loga o container detectado no console
         function findScaleContainer(el) {
             // 1. Marcação explícita pela classe (preferido — 100% confiável)
             var marked = el.closest('.gsap-scale-container');
@@ -965,76 +974,65 @@
         document.querySelectorAll('.gsap-img-scroll-scale, .gsap-img-scroll-scale-pin').forEach(function (el) {
             if (typeof ScrollTrigger === 'undefined') { return; }
 
+            // Gate opcional por largura mínima (dsgngroup original só roda >1200px)
+            var minW = num(el, 'min-width', 0);
+            if (minW > 0 && window.innerWidth <= minW) { return; }
+
             var pinned = el.classList.contains('gsap-img-scroll-scale-pin');
             var found  = findScaleContainer(el);
             if (!found || !found.node || found.node === el) { return; }
             var container = found.node;
 
-            // Avisa quando a detecção cai no fallback (sem .gsap-scale-container
-            // marcado e auto-detect não achou ancestor apropriado). Nesse caso
-            // o origin pode sair errado — recomenda marcar explicitamente.
             if (found.source === 'fallback' && typeof console !== 'undefined') {
-                console.warn('[gsap-img-scroll-scale] Container não detectado confiavelmente — adicione a classe .gsap-scale-container no container desejado.', el);
+                console.warn('[gsap-img-scroll-scale] Container não detectado — adicione .gsap-scale-container no elemento pai desejado.', el);
             }
             if (str(el, 'debug', '') === '1') {
                 console.log('[gsap-img-scroll-scale]', { image: el, container: container, via: found.source });
             }
 
-            var build = function () {
-                var elRect  = el.getBoundingClientRect();
-                var conRect = container.getBoundingClientRect();
-                if (!elRect.width || !conRect.width) { return; }
+            // Lê parâmetros (matching dsgngroup exatamente)
+            var xRaw = el.getAttribute('data-gsap-x');
+            var yRaw = el.getAttribute('data-gsap-y');
+            var xStart     = xRaw ? parseFloat(xRaw) : 0;
+            var yStart     = yRaw ? parseFloat(yRaw) : 0;
+            var xUnit      = (xRaw && xRaw.indexOf('%') >= 0) ? '%' : 'px';
+            var yUnit      = (yRaw && yRaw.indexOf('%') >= 0) ? '%' : 'px';
+            var scaleStart = num(el, 'from-scale', 0.578);
+            var scaleEnd   = num(el, 'to-scale',   1);
 
-                // Scale alvo (cover): o maior dos inversos garante que a imagem
-                // cubra 100% do container ao terminar. O eixo "menor" precisa
-                // crescer mais — o outro overflowa e é cortado pelo overflow:hidden.
-                var fillScale = Math.max(conRect.width / elRect.width, conRect.height / elRect.height);
-                var fromScale = num(el, 'from', 1);
-                var toScale   = num(el, 'to', fillScale);
+            el.style.willChange      = 'transform';
+            container.style.overflow = 'hidden';
 
-                // Origin: borda mais próxima em cada eixo. Tolera offset/padding
-                // (5% do tamanho do container = "balanceado" → center).
-                var leftGap   = elRect.left   - conRect.left;
-                var rightGap  = conRect.right - elRect.right;
-                var topGap    = elRect.top    - conRect.top;
-                var bottomGap = conRect.bottom - elRect.bottom;
-                var balanceX  = conRect.width  * 0.05;
-                var balanceY  = conRect.height * 0.05;
-                var ox = (Math.abs(leftGap - rightGap) < balanceX) ? 'center' : (leftGap < rightGap ? 'left' : 'right');
-                var oy = (Math.abs(topGap  - bottomGap) < balanceY) ? 'center' : (topGap  < bottomGap ? 'top'  : 'bottom');
-                var origin = str(el, 'origin', oy + ' ' + ox);
+            // Estado inicial aplicado imediatamente pra evitar flash
+            el.style.transform = 'translate(' + xStart + xUnit + ', ' + yStart + yUnit + ') scale(' + scaleStart + ')';
 
-                el.style.transformOrigin = origin;
-                el.style.willChange      = 'transform';
-                // Container precisa cortar o overflow do scale up.
-                container.style.overflow = 'hidden';
+            var scrubVal = (function () {
+                var v = el.getAttribute('data-gsap-scrub');
+                if (v === null || v === '') { return true; }
+                var n = parseFloat(v);
+                return isNaN(n) ? true : n;
+            })();
 
-                gsap.fromTo(el,
-                    { scale: fromScale, force3D: true },
-                    {
-                        scale:    toScale,
-                        force3D:  true,
-                        ease:     'none',
-                        scrollTrigger: {
-                            trigger: container,
-                            start:   str(el, 'start', pinned ? 'top top'  : 'top bottom'),
-                            end:     str(el, 'end',   pinned ? '+=100%'   : 'bottom top'),
-                            // scrub: true por padrão (tight, sem lag, estilo dsgngroup).
-                            // Usuário pode passar um número pra adicionar smoothing.
-                            scrub:   (function () {
-                                var v = el.getAttribute('data-gsap-scrub');
-                                if (v === null || v === '') { return true; }
-                                var n = parseFloat(v);
-                                return isNaN(n) ? true : n;
-                            })(),
-                            pin:     pinned ? container : false,
-                            invalidateOnRefresh: true,
-                        }
+            gsap.to({ progress: 0 }, {
+                progress: 1,
+                ease:     'none',
+                scrollTrigger: {
+                    trigger:    container,
+                    start:      str(el, 'start', pinned ? 'top top'           : 'top bottom'),
+                    end:        str(el, 'end',   pinned ? 'bottom+=100% top' : 'bottom top'),
+                    scrub:      scrubVal,
+                    pin:        pinned ? container : false,
+                    pinSpacing: pinned,
+                    invalidateOnRefresh: true,
+                    onUpdate: function (self) {
+                        var p  = self.progress;
+                        var tx = xStart * (1 - p);
+                        var ty = yStart * (1 - p);
+                        var s  = scaleStart + (scaleEnd - scaleStart) * p;
+                        el.style.transform = 'translate(' + tx + xUnit + ', ' + ty + yUnit + ') scale(' + s + ')';
                     }
-                );
-            };
-
-            build();
+                }
+            });
         });
     }
 
