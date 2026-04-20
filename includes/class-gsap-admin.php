@@ -702,7 +702,7 @@ ScrollTrigger.defaults({
                 'Especiais' => [
                     [
                         'class'   => 'gsap-scroll-fade-out',
-                        'short'   => 'Faz o elemento <strong>desaparecer</strong> conforme o scroll avança. Ideal para o texto/CTA do hero que some enquanto o vídeo de fundo continua rolando.',
+                        'short'   => 'Faz o elemento <strong>desaparecer</strong> conforme o scroll avança. O fade começa no <em>primeiro pixel de rolagem</em> da página — ancorado em <code>scroll=0</code>, não na posição do elemento. Ideal para texto/CTA do hero que some enquanto o vídeo de fundo continua rodando.',
                         'req'     => 'ScrollTrigger',
                         'attrs'   => [
                             [ 'name' => 'data-gsap-factor', 'desc' => 'Distância de scroll que completa o fade como múltiplo da viewport. <code>0.3</code> = some em 30vh; <code>1</code> = precisa de 100vh de rolagem. Default <code>0.5</code>.', 'ex' => '0.3' ],

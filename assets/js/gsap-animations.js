@@ -1651,8 +1651,10 @@
     // data-gsap-factor     → distância de scroll como múltiplo da viewport
     //                        (default 0.5 — 50vh de scroll completa o fade)
     //
-    // out: start='top top'    → começa quando o topo do elemento toca o topo do viewport
-    // in : start='top bottom' → começa quando o topo do elemento toca a base do viewport
+    // out: ancora em scroll=0 (página topo) — o fade começa assim que o usuário
+    //      inicia a rolagem, não quando o elemento se move. Ideal para hero.
+    // in : ancora em 'top bottom' do próprio elemento — começa quando o
+    //      elemento entra no viewport.
     //
     // Requer ScrollTrigger. Sem ele, o elemento fica em seu estado inicial
     // (out = visível, in = invisível via CSS).
@@ -1669,17 +1671,16 @@
             var factor = num(el, 'factor', 0.5);
             if (!isFinite(factor) || factor <= 0) { factor = 0.5; }
 
-            var endDistance = '+=' + (factor * 100) + '%';
-
             if (isOut) {
+                // Ancora no scroll da página — recalcula no refresh (resize).
                 gsap.to(el, {
                     opacity: 0,
                     ease: 'none',
                     scrollTrigger: {
-                        trigger: el,
-                        start: 'top top',
-                        end: endDistance,
+                        start: 0,
+                        end: function () { return factor * window.innerHeight; },
                         scrub: true,
+                        invalidateOnRefresh: true,
                     },
                 });
             } else {
@@ -1689,7 +1690,7 @@
                     scrollTrigger: {
                         trigger: el,
                         start: 'top bottom',
-                        end: endDistance,
+                        end: '+=' + (factor * 100) + '%',
                         scrub: true,
                     },
                 });
