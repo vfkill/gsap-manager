@@ -122,22 +122,15 @@
 
 /* ── Correções globais para compatibilidade com ScrollTrigger/pin ─────────── */
 /*
- * Elementor aplica transition:all nos seus containers — isso conflita com
- * as atualizações de transform que o GSAP faz a 60fps, causando saltos.
- * O JS também aplica transitionProperty:none via inline style, mas o CSS
- * garante cobertura antes do JS carregar.
- */
-.e-con,
-.e-con-inner,
-.elementor-section,
-.elementor-column,
-.elementor-widget-wrap {
-    transition-property: none !important;
-}
-/*
  * scroll-behavior:smooth no <html> quebra as medições do ScrollTrigger.refresh()
  * (Bootstrap 5 e Elementor definem isso por padrão).
  * O JS também sobrescreve via documentElement.style, mas o CSS garante cobertura.
+ *
+ * NOTA: em versões anteriores havia aqui um bloco que desativava transition-property
+ * em todos os containers Elementor (.e-con, .e-con-inner, .elementor-section, etc.).
+ * Era agressivo demais — quebrava hover animations escritas pelo usuário em Custom CSS
+ * do Elementor. Agora o JS aplica transitionProperty:none SÓ nos ancestors de
+ * .gsap-zoom-reveal (onde o conflito com o pin de 60fps realmente acontece).
  */
 html {
     scroll-behavior: auto !important;
