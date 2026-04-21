@@ -507,6 +507,19 @@ ScrollTrigger.defaults({
                         'example' => '<p class="gsap-char-color">Texto que ilumina ao rolar</p>',
                     ],
                     [
+                        'class'   => 'gsap-char-color-2',
+                        'short'   => 'Variação do <code>gsap-char-color</code>: cada char muda de cor <em>e</em> faz um micro-slide horizontal (-5px → 0) conforme o scroll. Efeito sutil de "acomodação" do kerning — inspirado em dsgngroup.it.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-from-color', 'desc' => 'Cor inicial "apagada" (padrão: <code>#616161</code>)',                         'ex' => '#616161' ],
+                            [ 'name' => 'data-gsap-to-color',   'desc' => 'Sobrescreve a cor final (padrão: cor do Elementor)',                          'ex' => '#FFFFFF' ],
+                            [ 'name' => 'data-gsap-shift',      'desc' => 'Deslocamento X inicial de cada char em px — negativo desliza da esquerda (padrão: <code>-5</code>)', 'ex' => '-5' ],
+                            [ 'name' => 'data-gsap-stagger',    'desc' => 'Atraso entre chars em segundos (padrão: <code>0.05</code>)',                  'ex' => '0.05' ],
+                            [ 'name' => 'data-gsap-scrub',      'desc' => 'Suavização do scrub em segundos (padrão: <code>0.7</code>)',                  'ex' => '0.7' ],
+                        ],
+                        'example' => '<p class="gsap-char-color-2" data-gsap-from-color="#616161" data-gsap-shift="-5">Texto que acomoda ao rolar</p>',
+                    ],
+                    [
                         'class'   => 'gsap-word-reveal',
                         'short'   => 'Cada palavra sobe do clip individualmente.',
                         'req'     => 'ScrollTrigger',
@@ -1093,29 +1106,32 @@ ScrollTrigger.defaults({
                                     </div>
 
                                     <?php if ( ! empty( $elementor_attrs ) ) : ?>
-                                    <div class="gsap-elementor-usage__block">
-                                        <div class="gsap-elementor-usage__label">
-                                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
-                                            Atributos customizados
+                                    <details class="gsap-elementor-usage__block gsap-elementor-usage__block--attrs">
+                                        <summary class="gsap-elementor-usage__label">
+                                            <svg class="gsap-elementor-usage__icon" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 7h16M4 12h16M4 17h10"/></svg>
+                                            <span class="gsap-elementor-usage__label-text">Atributos customizados</span>
                                             <span class="gsap-elementor-usage__count"><?php echo count( $elementor_attrs ); ?></span>
+                                            <span class="gsap-elementor-usage__chevron" aria-hidden="true"></span>
+                                        </summary>
+                                        <div class="gsap-elementor-usage__attrs-body">
+                                            <ul class="gsap-elementor-usage__attrs">
+                                                <?php foreach ( $elementor_attrs as $a ) :
+                                                    $pipe_value = $a['name'] . '|' . $gsap_first_ex( $a['ex'] ?? '' );
+                                                ?>
+                                                <li class="gsap-elementor-usage__attr">
+                                                    <button class="gsap-copy-btn gsap-elementor-usage__value gsap-elementor-usage__value--attr" data-copy="<?php echo esc_attr( $pipe_value ); ?>" title="Copiar pro campo Atributos (formato Elementor)">
+                                                        <code><?php echo esc_html( $pipe_value ); ?></code>
+                                                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                                                    </button>
+                                                    <span class="gsap-elementor-usage__desc"><?php echo wp_kses( $a['desc'], [ 'code' => [], 'strong' => [] ] ); ?></span>
+                                                </li>
+                                                <?php endforeach; ?>
+                                            </ul>
+                                            <p class="gsap-elementor-usage__hint">
+                                                <strong>Avançado → Atributos customizados:</strong> cole uma linha por atributo. Troque o valor após o <code>|</code> pelo desejado.
+                                            </p>
                                         </div>
-                                        <ul class="gsap-elementor-usage__attrs">
-                                            <?php foreach ( $elementor_attrs as $a ) :
-                                                $pipe_value = $a['name'] . '|' . $gsap_first_ex( $a['ex'] ?? '' );
-                                            ?>
-                                            <li class="gsap-elementor-usage__attr">
-                                                <button class="gsap-copy-btn gsap-elementor-usage__value gsap-elementor-usage__value--attr" data-copy="<?php echo esc_attr( $pipe_value ); ?>" title="Copiar pro campo Atributos (formato Elementor)">
-                                                    <code><?php echo esc_html( $pipe_value ); ?></code>
-                                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
-                                                </button>
-                                                <span class="gsap-elementor-usage__desc"><?php echo wp_kses( $a['desc'], [ 'code' => [], 'strong' => [] ] ); ?></span>
-                                            </li>
-                                            <?php endforeach; ?>
-                                        </ul>
-                                        <p class="gsap-elementor-usage__hint">
-                                            <strong>Avançado → Atributos customizados:</strong> cole uma linha por atributo. Troque o valor após o <code>|</code> pelo desejado.
-                                        </p>
-                                    </div>
+                                    </details>
                                     <?php endif; ?>
 
                                     <?php if ( ! empty( $item['elementor_note'] ) ) : ?>

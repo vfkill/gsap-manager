@@ -20,8 +20,9 @@
  *   data-gsap-chars      — chars do scramble       (ex: "01", "!@#", "lowerCase")
  *   data-gsap-target     — seletor SVG alvo        (ex: "#shape-final")  ← morph
  *   data-gsap-separator  — separador de milhar     (ex: ".", ",")        ← counter
- *   data-gsap-from-color — cor inicial (char-color) (ex: "#616161")
- *   data-gsap-to-color   — cor final (char-color)   (ex: "#FFFFFF")  ← padrão: cor do Elementor
+ *   data-gsap-from-color — cor inicial (char-color, char-color-2) (ex: "#616161")
+ *   data-gsap-to-color   — cor final (char-color, char-color-2)   (ex: "#FFFFFF")  ← padrão: cor do Elementor
+ *   data-gsap-shift      — deslocamento X inicial em px (char-color-2) (ex: -5)
  *   data-gsap-blur       — intensidade inicial de blur em px (word-blur) (ex: 8)
  *   data-gsap-logo       — URL do SVG usado como máscara (mask-reveal)
  *   data-gsap-image      — URL da imagem de fundo (mask-reveal)
@@ -714,6 +715,53 @@
                 color:    toColor,
                 duration: 0.1,
                 stagger:  num(el, 'stagger', 0.02),
+                ease:     str(el, 'ease', 'none'),
+            });
+        });
+
+        // gsap-char-color-2
+        // Variação do gsap-char-color com micro-slide horizontal por char
+        // (inspirado em dsgngroup.it). Cor + X entram juntos conforme o scroll.
+        //
+        //   data-gsap-from-color → cor inicial "apagada" (padrão: "#616161")
+        //   data-gsap-to-color   → sobrescreve cor final  (padrão: cor original do texto)
+        //   data-gsap-shift      → deslocamento X inicial em px (padrão: -5)
+        //   data-gsap-stagger    → atraso entre chars      (padrão: 0.05)
+        //   data-gsap-start/end  → range do ScrollTrigger  (padrão: "top 70%" / "top 40%")
+        //   data-gsap-scrub      → suavização              (padrão: 0.7)
+        document.querySelectorAll('.gsap-char-color-2').forEach(function (el) {
+            if (typeof ScrollTrigger === 'undefined') {
+                console.warn('[GSAP Manager] gsap-char-color-2 requer ScrollTrigger ativo nas configurações do plugin.');
+                return;
+            }
+            var origColor = window.getComputedStyle(findTextTarget(el)).color;
+            var fromColor = str(el, 'from-color', '#616161');
+            var toColor   = str(el, 'to-color', origColor);
+            var shift     = num(el, 'shift', -5);
+
+            var r = splitChars(el);
+
+            r.spans.forEach(function (span) {
+                if (span.style.color !== 'transparent') {
+                    span.style.webkitTextFillColor = 'currentColor';
+                }
+                span.style.display = 'inline-block';
+            });
+
+            gsap.set(r.spans, { color: fromColor, x: shift });
+
+            gsap.timeline({
+                scrollTrigger: {
+                    trigger: el,
+                    start:   str(el, 'start', 'top 70%'),
+                    end:     str(el, 'end',   'top 40%'),
+                    scrub:   num(el, 'scrub', 0.7),
+                }
+            }).to(r.spans, {
+                color:    toColor,
+                x:        0,
+                duration: 0.1,
+                stagger:  num(el, 'stagger', 0.05),
                 ease:     str(el, 'ease', 'none'),
             });
         });

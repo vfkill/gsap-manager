@@ -1628,7 +1628,44 @@
     text-transform: uppercase;
     letter-spacing: .05em;
 }
-.gsap-elementor-usage__label svg { opacity: .8; }
+.gsap-elementor-usage__label svg,
+.gsap-elementor-usage__icon { opacity: .8; }
+
+/* ── Variante colapsável: "Atributos customizados" como <details> ── */
+.gsap-elementor-usage__block--attrs {
+    /* reset do marker default do <details> */
+}
+.gsap-elementor-usage__block--attrs > summary {
+    list-style: none;
+    cursor: pointer;
+    user-select: none;
+    padding: 2px 0;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: color .15s;
+}
+.gsap-elementor-usage__block--attrs > summary::-webkit-details-marker { display: none; }
+.gsap-elementor-usage__block--attrs > summary::marker { content: ''; }
+.gsap-elementor-usage__block--attrs > summary:hover { color: #6ef58b; }
+.gsap-elementor-usage__label-text { flex: 1 1 auto; }
+.gsap-elementor-usage__chevron {
+    width: 8px;
+    height: 8px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform .2s;
+    flex-shrink: 0;
+    opacity: .6;
+}
+.gsap-elementor-usage__block--attrs[open] > summary .gsap-elementor-usage__chevron {
+    transform: rotate(45deg);
+}
+.gsap-elementor-usage__attrs-body {
+    margin-top: 8px;
+}
 .gsap-elementor-usage__count {
     padding: 1px 6px;
     background: rgba(10,228,72,.16);

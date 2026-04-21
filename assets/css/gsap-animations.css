@@ -322,6 +322,7 @@ html {
     /* Animações de texto */
     .gsap-char-reveal span,
     .gsap-char-color span,
+    .gsap-char-color-2 span,
     .gsap-word-reveal span,
     .gsap-word-blur span,
     .gsap-text-focus,
