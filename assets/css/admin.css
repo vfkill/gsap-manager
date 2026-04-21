@@ -1602,6 +1602,182 @@
     .gsap-ref-accordion__hint { display: none; }
 }
 
+/* ============================================================
+   v3.9.0 — Bloco "No Elementor" nos cards de classe
+   + chips nav compacta na aba "Como Usar"
+   ============================================================ */
+
+/* ── Bloco Elementor-first (primário, sempre visível) ── */
+.gsap-elementor-usage {
+    margin: 10px 0 4px;
+    padding: 10px 12px;
+    background: linear-gradient(180deg, rgba(10,228,72,.05), rgba(10,228,72,.02));
+    border: 1px solid rgba(10,228,72,.22);
+    border-radius: 7px;
+}
+.gsap-elementor-usage__block + .gsap-elementor-usage__block { margin-top: 10px; padding-top: 10px; border-top: 1px dashed rgba(10,228,72,.15); }
+
+.gsap-elementor-usage__label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 5px;
+    color: var(--gsap-green);
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+}
+.gsap-elementor-usage__label svg { opacity: .8; }
+.gsap-elementor-usage__count {
+    padding: 1px 6px;
+    background: rgba(10,228,72,.16);
+    border-radius: 999px;
+    color: var(--gsap-green);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+/* Valor copiável (class ou atributo pipe) */
+.gsap-elementor-usage__value {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    padding: 6px 8px;
+    background: rgba(0,0,0,.28);
+    border: 1px solid rgba(10,228,72,.2);
+    border-radius: 5px;
+    color: var(--gsap-text);
+    cursor: pointer;
+    text-align: left;
+    font-family: 'SFMono-Regular', Menlo, Consolas, monospace;
+    transition: all .15s;
+}
+.gsap-elementor-usage__value code {
+    flex: 1;
+    background: transparent;
+    padding: 0;
+    color: var(--gsap-green);
+    font-size: 12.5px;
+    font-weight: 600;
+    word-break: break-all;
+}
+.gsap-elementor-usage__value svg {
+    flex-shrink: 0;
+    color: var(--gsap-muted);
+    transition: color .15s;
+}
+.gsap-elementor-usage__value:hover {
+    background: rgba(10,228,72,.08);
+    border-color: rgba(10,228,72,.45);
+}
+.gsap-elementor-usage__value:hover svg { color: var(--gsap-green); }
+.gsap-elementor-usage__value.copied {
+    background: rgba(10,228,72,.18);
+    border-color: var(--gsap-green);
+}
+.gsap-elementor-usage__value.copied svg { color: var(--gsap-green); }
+
+/* Lista de atributos pipe-format */
+.gsap-elementor-usage__attrs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.gsap-elementor-usage__attr { display: flex; flex-direction: column; gap: 3px; }
+.gsap-elementor-usage__value--attr code { color: #79c0ff; }
+.gsap-elementor-usage__desc {
+    font-size: 11px;
+    color: var(--gsap-muted);
+    line-height: 1.5;
+    padding-left: 2px;
+}
+.gsap-elementor-usage__desc code {
+    padding: 0 4px;
+    background: rgba(255,255,255,.07);
+    border-radius: 3px;
+    color: var(--gsap-text);
+    font-size: 10.5px;
+}
+
+.gsap-elementor-usage__hint {
+    margin: 8px 0 0;
+    padding: 6px 8px;
+    background: rgba(121,192,255,.06);
+    border-left: 2px solid rgba(121,192,255,.5);
+    border-radius: 3px;
+    font-size: 11px;
+    color: var(--gsap-muted);
+    line-height: 1.55;
+}
+.gsap-elementor-usage__hint strong { color: #79c0ff; }
+.gsap-elementor-usage__hint code {
+    padding: 0 4px;
+    background: rgba(121,192,255,.14);
+    border-radius: 3px;
+    color: #79c0ff;
+    font-size: 10.5px;
+}
+
+/* Nota especial (estrutura pai / parent container) */
+.gsap-elementor-usage__note {
+    display: flex;
+    align-items: flex-start;
+    gap: 7px;
+    margin-top: 10px;
+    padding: 7px 9px;
+    background: rgba(251,191,36,.06);
+    border: 1px solid rgba(251,191,36,.22);
+    border-radius: 5px;
+    font-size: 11.5px;
+    color: var(--gsap-muted);
+    line-height: 1.55;
+}
+.gsap-elementor-usage__note svg {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #fbbf24;
+}
+.gsap-elementor-usage__note strong { color: var(--gsap-text); }
+.gsap-elementor-usage__note code {
+    padding: 1px 5px;
+    background: rgba(251,191,36,.14);
+    border-radius: 3px;
+    color: #fbbf24;
+    font-size: 11px;
+    font-weight: 600;
+}
+.gsap-elementor-usage__note em { font-style: italic; color: var(--gsap-text); }
+
+/* Seção HTML puro ganha um subtle border destacando ser secundária */
+.gsap-ref-card__section--html {
+    opacity: .85;
+}
+.gsap-ref-card__section--html > summary { color: #6b7280; }
+.gsap-ref-card__section--html > summary:hover { color: var(--gsap-muted); }
+
+/* ── Nav compacta (aba Como Usar — só chips, sem busca) ── */
+.gsap-ref-nav--compact {
+    padding: 8px 10px;
+}
+.gsap-ref-nav--compact .gsap-ref-chips {
+    margin: 0;
+}
+
+/* Mobile adjustments */
+@media (max-width: 782px) {
+    .gsap-elementor-usage { padding: 8px 10px; }
+    .gsap-elementor-usage__value code { font-size: 11.5px; }
+    .gsap-elementor-usage__hint { font-size: 10.5px; }
+    .gsap-elementor-usage__note { font-size: 11px; }
+}
+
 /* ── WP overrides ── */
 .gsap-wrap .wp-heading-inline { display: none; }
 #wpadminbar { background: #0d1117 !important; }

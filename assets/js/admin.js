@@ -164,4 +164,28 @@ jQuery(function ($) {
         });
     })();
 
+    // ── Aba "Como Usar": chips navegam entre accordions ─────────────────────
+    (function initUsageNav() {
+        const $nav = $('#gsap-usage-nav');
+        if (!$nav.length) return;
+
+        $nav.on('click', '.gsap-ref-chip', function () {
+            const slug = this.dataset.usageTarget;
+            if (!slug) return;
+            const $target = $('#gsap-usage-' + slug);
+            if (!$target.length) return;
+
+            // Abre o accordion alvo (não mexe nos outros — o usuário pode ter deixado alguns abertos de propósito).
+            $target[0].open = true;
+
+            // Scroll suave com offset pra barra sticky + wp admin bar.
+            const offset = 90;
+            const top    = $target.offset().top - offset;
+            window.scrollTo({ top, behavior: 'smooth' });
+
+            $target.addClass('is-target');
+            setTimeout(function () { $target.removeClass('is-target'); }, 1200);
+        });
+    })();
+
 });
