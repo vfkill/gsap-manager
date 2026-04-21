@@ -193,6 +193,15 @@
     // ScrollTrigger detecta isso automaticamente e usa transform no pin — não
     // precisamos forçar pinType.
     //
+    // COMPORTAMENTO POR DEVICE (v3.8.20+):
+    //   - Desktop (pointer:fine): ScrollSmoother ativo → hasSmoother=true
+    //     → pinType:'transform' (alinha com o transform do #smooth-content).
+    //   - Mobile/tablet (touch): ScrollSmoother NÃO inicializa (gate em
+    //     class-gsap-enqueue.php) → hasSmoother=false → pinType:'fixed'
+    //     → pin fica position:fixed nativo, sincronizado com scroll nativo
+    //     do browser — sem a tremedeira causada pela dessincronização entre
+    //     paint do compositor e RAF do JS.
+    //
     // Default config otimizado pra overlap (seção abaixo sobe cobrindo a
     // pinada), que é o use-case clássico do sticky_parent do Elementor:
     //   start: "top top"        — pina quando topo do elemento encosta no topo

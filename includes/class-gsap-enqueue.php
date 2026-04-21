@@ -196,6 +196,22 @@ class GSAP_Enqueue {
 
             $init = "(function(){
     if(typeof ScrollSmoother==='undefined'||!document.querySelector('{$wrapper}')){return;}
+
+    // ── Gate: só inicializa em dispositivos com pointer fino (desktop) ────────
+    // Em touch (mobile/tablet), o ScrollSmoother default NÃO suaviza o dedo
+    // (smoothTouch:0), mas o wrapper com transform:translateY() no #smooth-content
+    // continua ativo — e esse transform conflita com ScrollTrigger.pin em iOS/Android
+    // porque o paint nativo do scroll (thread do compositor) e o update do pin
+    // (RAF no JS) ficam dessincronizados por 1 frame. Resultado: o container pinado
+    // 'sobe' um frame com o scroll e o pin 'corrige' no próximo → tremedeira.
+    // normalizeScroll:true resolveria, mas trava o touch natural (testado e
+    // revertido em v3.8.18). Recomendação oficial GSAP: não inicializar
+    // ScrollSmoother em dispositivos touch — o scroll nativo + pin em
+    // pinType:'fixed' (auto-detectado quando ScrollSmoother.get() é null)
+    // funciona sem delay nenhum.
+    // https://gsap.com/community/forums/topic/37720
+    if(!window.matchMedia('(pointer:fine)').matches){return;}
+
     gsap.registerPlugin(ScrollTrigger,ScrollSmoother);
 
     // ── 1. Mata scroll-behavior:smooth do tema/Bootstrap ─────────────────────
