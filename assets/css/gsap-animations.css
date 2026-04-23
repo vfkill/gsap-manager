@@ -3,6 +3,31 @@
    Estilos base necessários para as animações por classe.
    ============================================================ */
 
+/* ── gsap-blend-difference ─── "negativo de fotografia" (CSS puro) ──────────
+ * Usa mix-blend-mode: difference para inverter a cor do elemento contra
+ * o que estiver por trás. Texto branco → preto sobre fundo claro, branco
+ * sobre fundo escuro, inverte contra qualquer cor intermediária. O efeito
+ * "acompanha" o movimento de imagens/fundos atrás sem JS.
+ *
+ * Uso:
+ *   <section class="gsap-blend-scope">
+ *     <h2 class="gsap-blend-difference">Texto que inverte</h2>
+ *     <img src="...">
+ *   </section>
+ *
+ * .gsap-blend-scope aplica `isolation: isolate` — contém o blend apenas
+ * dentro daquela seção. Sem isso, ancestrais com transform/filter/will-change
+ * (muito comuns em wrappers do Elementor) podem criar um stacking context
+ * que quebra silenciosamente o blend. Com o scope, o efeito só enxerga o
+ * conteúdo irmão, que é o comportamento esperado. */
+.gsap-blend-difference {
+    color: #fff;
+    mix-blend-mode: difference;
+}
+.gsap-blend-scope {
+    isolation: isolate;
+}
+
 /* ── gsap-text-highlight ── */
 .gsap-text-highlight {
     background-image: linear-gradient(

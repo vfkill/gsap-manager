@@ -909,6 +909,22 @@ ScrollTrigger.defaults({
                 ],
                 'Decorativas (CSS puro)' => [
                     [
+                        'class'   => 'gsap-blend-difference',
+                        'short'   => 'Efeito "negativo de fotografia" — inverte a cor do elemento contra o fundo. 100% CSS (mix-blend-mode: difference). Texto aparece preto sobre fundos claros, branco sobre escuros, inverte contra qualquer cor intermediária. Ideal para títulos sobre imagens com áreas claras e escuras.',
+                        'req'     => '',
+                        'attrs'   => [],
+                        'combine' => [ 'gsap-blend-scope — aplique na seção pai para conter o efeito e evitar quebra por ancestrais com transform/filter' ],
+                        'example' => '<section class="gsap-blend-scope"><h2 class="gsap-blend-difference">From ordinary to extraordinary</h2><img src="produto.jpg"></section>',
+                        'elementor_note' => 'No Elementor, aplique <code>gsap-blend-scope</code> na <strong>Seção/Container</strong> pai (campo CSS Classes) e <code>gsap-blend-difference</code> no widget de texto. O texto precisa ficar <em>sobreposto</em> à imagem (posição absoluta ou z-index) — configure via widget posicionamento. A cor do texto é forçada para branco; para ajustar o tom do "negativo", troque a cor do elemento via Custom CSS.',
+                    ],
+                    [
+                        'class'   => 'gsap-blend-scope',
+                        'short'   => 'Container que isola o mix-blend-mode (isolation: isolate). Use no pai de elementos com gsap-blend-difference para impedir que ancestrais do Elementor quebrem o efeito.',
+                        'req'     => '',
+                        'attrs'   => [],
+                        'example' => '<section class="gsap-blend-scope">...</section>',
+                    ],
+                    [
                         'class'   => 'gsap-float',
                         'short'   => 'Flutuação vertical em loop infinito. 100% CSS — não depende de GSAP. Ideal em imagens decorativas, mockups e ícones. Respeita prefers-reduced-motion.',
                         'req'     => '',
