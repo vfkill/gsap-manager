@@ -670,6 +670,42 @@ ScrollTrigger.defaults({
                         'example' => '<div class="gsap-scale-container" style="height:100vh"><img class="gsap-img-scroll-scale-pin" src="foto.jpg" data-gsap-x="222" data-gsap-y="-123" data-gsap-from-scale="0.578" style="width:100%;height:100%;object-fit:cover"></div>',
                         'elementor_note' => 'Mesma estrutura do <code>gsap-img-scroll-scale</code>: <strong>Container pai</strong> com classe <code>gsap-scale-container</code> + <code>Min Height: 100vh</code>, e dentro um <strong>widget de Imagem</strong> com a classe <code>gsap-img-scroll-scale-pin</code>. A diferença é que aqui a seção fica <em>fixada no topo</em> até o zoom terminar.',
                     ],
+                    [
+                        'class'   => 'gsap-zoom-scrub',
+                        'short'   => 'Texto (ou qualquer elemento) escala de 1.3 → 1.0 amarrado ao scroll. Reproduz o efeito do lyniq.framer.website: título entra grande e "assenta" no tamanho natural conforme a seção cruza o viewport. Detecta <code>.gsap-blend-scope</code> como trigger automaticamente — mantém sincronia com <code>.gsap-rise-scrub</code> na mesma seção.',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-from',  'desc' => 'Escala inicial (padrão: 1.3)',          'ex' => '1.3' ],
+                            [ 'name' => 'data-gsap-to',    'desc' => 'Escala final (padrão: 1)',              'ex' => '1' ],
+                            [ 'name' => 'data-gsap-start', 'desc' => 'Start do ScrollTrigger (padrão: "top bottom")', 'ex' => 'top 80%' ],
+                            [ 'name' => 'data-gsap-end',   'desc' => 'End do ScrollTrigger (padrão: "top 20%")',      'ex' => 'top 30%' ],
+                            [ 'name' => 'data-gsap-scrub', 'desc' => 'Suavização (padrão: true)',             'ex' => '1' ],
+                        ],
+                        'combine' => [
+                            '<code>gsap-blend-scope</code> — aplique no pai pra servir como trigger único do par (texto + imagem).',
+                            '<code>gsap-blend-difference</code> — texto branco inverte contra a imagem atrás (efeito "negativo").',
+                            '<code>gsap-rise-scrub</code> — na imagem/wrapper, pra reproduzir o Lyniq completo.',
+                        ],
+                        'example' => '<section class="gsap-blend-scope"><h2 class="gsap-blend-difference gsap-zoom-scrub">From ordinary to extraordinary</h2><img class="gsap-rise-scrub" src="produto.jpg"></section>',
+                        'elementor_note' => 'Use junto com o par Lyniq: <strong>Seção/Container pai</strong> recebe <code>gsap-blend-scope</code>; o <strong>widget de título</strong> (posicionado em cima da imagem) recebe <code>gsap-blend-difference gsap-zoom-scrub</code>; o <strong>wrapper da imagem</strong> recebe <code>gsap-rise-scrub</code>. Todos detectam o scope como trigger comum e animam em sincronia.',
+                    ],
+                    [
+                        'class'   => 'gsap-rise-scrub',
+                        'short'   => 'Wrapper ou imagem translada verticalmente 15% → 0 amarrado ao scroll. Par direto do <code>gsap-zoom-scrub</code> — quando ambos compartilham o mesmo <code>.gsap-blend-scope</code> como trigger, texto encolhe enquanto imagem sobe (efeito Lyniq).',
+                        'req'     => 'ScrollTrigger',
+                        'attrs'   => [
+                            [ 'name' => 'data-gsap-distance', 'desc' => 'yPercent inicial (padrão: 15). Positivo = começa abaixo e sobe; negativo inverte.', 'ex' => '15' ],
+                            [ 'name' => 'data-gsap-start',    'desc' => 'Start do ScrollTrigger (padrão: "top bottom")', 'ex' => 'top 80%' ],
+                            [ 'name' => 'data-gsap-end',      'desc' => 'End do ScrollTrigger (padrão: "top 20%")',      'ex' => 'top 30%' ],
+                            [ 'name' => 'data-gsap-scrub',    'desc' => 'Suavização (padrão: true)',                     'ex' => '1' ],
+                        ],
+                        'combine' => [
+                            '<code>gsap-blend-scope</code> — no pai, pra servir como trigger único.',
+                            '<code>gsap-zoom-scrub</code> — no texto sobreposto, pra compor o efeito completo.',
+                        ],
+                        'example' => '<section class="gsap-blend-scope"><h2 class="gsap-blend-difference gsap-zoom-scrub">From ordinary to extraordinary</h2><div class="gsap-rise-scrub"><img src="produto.jpg"></div></section>',
+                        'elementor_note' => 'Aplique no <strong>wrapper da imagem</strong> (container que envolve o widget de imagem). Não aplique diretamente na <code>&lt;img&gt;</code> se houver algum widget do Elementor entre eles — o translate vale pro elemento marcado, então o wrapper garante que toda a mídia se mova junto.',
+                    ],
                 ],
                 'Vídeo' => [
                     [

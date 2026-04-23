@@ -112,6 +112,7 @@
         initTextAnimations();
         initImageAnimations();
         initZoomReveal();
+        initScrubScale();
         initMaskReveal();
         initElementAnimations();
         initStaggerAnimations();
@@ -1302,6 +1303,85 @@
                         pinReparent:         true,
                         anticipatePin:       1,
                         scrub:               scrubVal,
+                        invalidateOnRefresh: true,
+                    }
+                }
+            );
+        });
+    }
+
+    // ─── Scrub Scale/Rise ────────────────────────────────────────────────────
+    // Par de classes pra reproduzir o efeito do Lyniq (framer.website/lyniq):
+    // texto escala 1.3 → 1.0 enquanto imagem sobe 15% → 0, ambos amarrados
+    // ao mesmo trecho de scroll pra ficarem em sincronia visual.
+    //
+    // Detecção de trigger:
+    //   1. Se houver ancestral .gsap-blend-scope → usa ele como trigger.
+    //      Garante que ambos os elementos (texto + imagem) compartilhem o
+    //      MESMO scroll, mesmo estando em widgets diferentes do Elementor.
+    //   2. Fallback: o próprio elemento.
+    //
+    // Atributos comuns:
+    //   data-gsap-start   — start do ScrollTrigger   (padrão: "top bottom")
+    //   data-gsap-end     — end do ScrollTrigger     (padrão: "top 20%")
+    //   data-gsap-scrub   — suavização                (padrão: true)
+    //
+    // .gsap-zoom-scrub — escala texto (ou qualquer elemento):
+    //   data-gsap-from   — escala inicial             (padrão: 1.3)
+    //   data-gsap-to     — escala final               (padrão: 1)
+    //
+    // .gsap-rise-scrub — translada imagem/wrapper verticalmente:
+    //   data-gsap-distance — yPercent inicial         (padrão: 15)
+    function initScrubScale() {
+        if (typeof ScrollTrigger === 'undefined') { return; }
+
+        function resolveTrigger(el) {
+            var scope = el.closest('.gsap-blend-scope');
+            return (scope && scope !== el) ? scope : el;
+        }
+
+        function scrubVal(el) {
+            var v = el.getAttribute('data-gsap-scrub');
+            if (v === null || v === '') { return true; }
+            var n = parseFloat(v);
+            return isNaN(n) ? true : n;
+        }
+
+        document.querySelectorAll('.gsap-zoom-scrub').forEach(function (el) {
+            var from    = num(el, 'from', 1.3);
+            var to      = num(el, 'to',   1);
+            var trigger = resolveTrigger(el);
+            gsap.fromTo(el,
+                { scale: from, force3D: true },
+                {
+                    scale:   to,
+                    ease:    'none',
+                    force3D: true,
+                    scrollTrigger: {
+                        trigger: trigger,
+                        start:   str(el, 'start', 'top bottom'),
+                        end:     str(el, 'end',   'top 20%'),
+                        scrub:   scrubVal(el),
+                        invalidateOnRefresh: true,
+                    }
+                }
+            );
+        });
+
+        document.querySelectorAll('.gsap-rise-scrub').forEach(function (el) {
+            var dist    = num(el, 'distance', 15);
+            var trigger = resolveTrigger(el);
+            gsap.fromTo(el,
+                { yPercent: dist, force3D: true },
+                {
+                    yPercent: 0,
+                    ease:     'none',
+                    force3D:  true,
+                    scrollTrigger: {
+                        trigger: trigger,
+                        start:   str(el, 'start', 'top bottom'),
+                        end:     str(el, 'end',   'top 20%'),
+                        scrub:   scrubVal(el),
                         invalidateOnRefresh: true,
                     }
                 }
