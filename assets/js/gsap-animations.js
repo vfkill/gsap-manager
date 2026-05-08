@@ -49,6 +49,9 @@
 (function () {
     'use strict';
 
+    // Calculado uma vez ao carregar o script — usado pelo FOUC IIFE e por mobileStop().
+    var isMob = window.innerWidth < 1024;
+
     // ─── Anti-FOUC gate: transfere visibility:hidden do CSS pro inline ───────
     // O PHP injeta .gsap-loading em <html> no wp_head e o CSS esconde
     // .gsap-text-focus enquanto a classe estiver presente. Antes de remover
@@ -63,6 +66,8 @@
         for (var i = 0; i < nodes.length; i++) {
             // Não toca em quem tem gsap-on-load — esse case aparece imediatamente.
             if (!nodes[i].classList.contains('gsap-on-load')) {
+                // mobile-stop ativo: não esconde — o elemento renderiza normalmente no mobile.
+                if (isMob && nodes[i].hasAttribute('data-gsap-text-focus-mobile-stop')) { continue; }
                 nodes[i].style.visibility = 'hidden';
             }
         }
@@ -229,6 +234,7 @@
         var hasSmoother = typeof ScrollSmoother !== 'undefined' && ScrollSmoother.get();
 
         document.querySelectorAll('.gsap-pin').forEach(function (el) {
+            if (mobileStop(el, 'gsap-pin')) { return; }
             var config = {
                 trigger:             el,
                 start:               str(el, 'start', 'top top'),
@@ -287,6 +293,7 @@
         var hasSmoother = typeof ScrollSmoother !== 'undefined' && ScrollSmoother.get();
 
         document.querySelectorAll('.gsap-pin-stack').forEach(function (container) {
+            if (mobileStop(container, 'gsap-pin-stack')) { return; }
             var offset = num(container, 'stack-offset', 0);
             var cards  = [];
             for (var i = 0; i < container.children.length; i++) {
@@ -349,6 +356,12 @@
             if (el.classList.contains('gsap-delay-' + i)) return i * 0.1;
         }
         return 0;
+    }
+
+    // Retorna true se estivermos em mobile (<1024px) E o elemento tiver o atributo
+    // data-[className]-mobile-stop. Permite parar animações individualmente no mobile.
+    function mobileStop(el, className) {
+        return isMob && el.hasAttribute('data-' + className + '-mobile-stop');
     }
 
     function resolveDuration(el, defaultDuration) {
@@ -636,6 +649,7 @@
         // Sem gsap-char-scrub → dispara uma vez ao entrar na viewport.
         // Com gsap-char-scrub → progresso vinculado à posição do scroll (requer ScrollTrigger).
         document.querySelectorAll('.gsap-char-reveal').forEach(function (el) {
+            if (mobileStop(el, 'gsap-char-reveal')) { return; }
             if (el.classList.contains('gsap-char-scrub')) {
                 if (typeof ScrollTrigger === 'undefined') {
                     console.warn('[GSAP Manager] gsap-char-scrub requer ScrollTrigger ativo nas configurações do plugin.');
@@ -683,6 +697,7 @@
         //   data-gsap-start/end  → range do ScrollTrigger (padrão: "top 80%" / "bottom 50%")
         //   data-gsap-scrub      → suavização             (padrão: 1)
         document.querySelectorAll('.gsap-char-color').forEach(function (el) {
+            if (mobileStop(el, 'gsap-char-color')) { return; }
             if (typeof ScrollTrigger === 'undefined') {
                 console.warn('[GSAP Manager] gsap-char-color requer ScrollTrigger ativo nas configurações do plugin.');
                 return;
@@ -731,6 +746,7 @@
         //   data-gsap-start/end  → range do ScrollTrigger  (padrão: "top 70%" / "top 40%")
         //   data-gsap-scrub      → suavização              (padrão: 0.7)
         document.querySelectorAll('.gsap-char-color-2').forEach(function (el) {
+            if (mobileStop(el, 'gsap-char-color-2')) { return; }
             if (typeof ScrollTrigger === 'undefined') {
                 console.warn('[GSAP Manager] gsap-char-color-2 requer ScrollTrigger ativo nas configurações do plugin.');
                 return;
@@ -771,6 +787,7 @@
         // Sem gsap-word-scrub → dispara uma vez ao entrar na viewport.
         // Com gsap-word-scrub → progresso vinculado à posição do scroll (requer ScrollTrigger).
         document.querySelectorAll('.gsap-word-reveal').forEach(function (el) {
+            if (mobileStop(el, 'gsap-word-reveal')) { return; }
             if (el.classList.contains('gsap-word-scrub')) {
                 if (typeof ScrollTrigger === 'undefined') {
                     console.warn('[GSAP Manager] gsap-word-scrub requer ScrollTrigger ativo nas configurações do plugin.');
@@ -820,6 +837,7 @@
         //   data-gsap-ease         → curva de easing                   (padrão: "power3.out")
         //   data-gsap-mobile-blur  → "off" desabilita blur em <1024px  (padrão: on)
         document.querySelectorAll('.gsap-word-blur').forEach(function (el) {
+            if (mobileStop(el, 'gsap-word-blur')) { return; }
             var isMobile    = window.innerWidth < 1024;
             var mobileBlur  = str(el, 'mobile-blur', 'on') !== 'off';
             var useBlur     = !isMobile || mobileBlur;
@@ -875,6 +893,7 @@
         //   data-gsap-ease          → curva de easing                (padrão: "power2.inOut")
         //   data-gsap-mobile-blur   → "off" desabilita blur em <1024px (padrão: on)
         document.querySelectorAll('.gsap-text-focus').forEach(function (el) {
+            if (mobileStop(el, 'gsap-text-focus')) { return; }
             var isMobile   = window.innerWidth < 1024;
             var mobileBlur = str(el, 'mobile-blur', 'on') !== 'off';
             var useBlur    = !isMobile || mobileBlur;
@@ -938,6 +957,7 @@
         });
 
         document.querySelectorAll('.gsap-text-fade').forEach(function (el) {
+            if (mobileStop(el, 'gsap-text-fade')) { return; }
             if (el.classList.contains('gsap-scrub')) {
                 if (typeof ScrollTrigger === 'undefined') { return; }
                 gsap.timeline({
@@ -966,6 +986,7 @@
         });
 
         document.querySelectorAll('.gsap-typewriter').forEach(function (el) {
+            if (mobileStop(el, 'gsap-typewriter')) { return; }
             var text     = el.textContent;
             el.textContent = '';
             el.style.cssText += ';border-right:2px solid currentColor;white-space:nowrap;overflow:hidden;display:inline-block;';
@@ -991,6 +1012,7 @@
         });
 
         document.querySelectorAll('.gsap-text-blur').forEach(function (el) {
+            if (mobileStop(el, 'gsap-text-blur')) { return; }
             if (el.classList.contains('gsap-scrub')) {
                 if (typeof ScrollTrigger === 'undefined') { return; }
                 gsap.timeline({
@@ -1021,6 +1043,10 @@
         });
 
         document.querySelectorAll('.gsap-text-highlight').forEach(function (el) {
+            if (mobileStop(el, 'gsap-text-highlight')) {
+                el.style.backgroundSize = '100% 35%'; // mostra o sublinhado completo sem animação
+                return;
+            }
             gsap.set(el, { backgroundSize: '0% 40%' });
             if (el.classList.contains('gsap-scrub')) {
                 if (typeof ScrollTrigger === 'undefined') { return; }
@@ -1054,6 +1080,7 @@
     function initImageAnimations() {
 
         document.querySelectorAll('.gsap-img-reveal').forEach(function (el) {
+            if (mobileStop(el, 'gsap-img-reveal')) { return; }
             var dirMap = {
                 left:   'inset(0 100% 0 0)',
                 right:  'inset(0 0 0 100%)',
@@ -1072,6 +1099,7 @@
         });
 
         document.querySelectorAll('.gsap-img-zoom').forEach(function (el) {
+            if (mobileStop(el, 'gsap-img-zoom')) { return; }
             playOnScroll(el, function () {
                 gsap.from(el, {
                     scale:    num(el, 'scale', 1.18),
@@ -1084,6 +1112,7 @@
         });
 
         document.querySelectorAll('.gsap-img-fade').forEach(function (el) {
+            if (mobileStop(el, 'gsap-img-fade')) { return; }
             playOnScroll(el, function () {
                 gsap.from(el, {
                     opacity:  0,
@@ -1095,6 +1124,7 @@
         });
 
         document.querySelectorAll('.gsap-img-parallax').forEach(function (el) {
+            if (mobileStop(el, 'gsap-img-parallax')) { return; }
             if (typeof ScrollTrigger === 'undefined') return;
             var parent = el.parentElement || el;
             parent.style.overflow = 'hidden';
@@ -1178,6 +1208,7 @@
             if (minW > 0 && window.innerWidth <= minW) { return; }
 
             var pinned = el.classList.contains('gsap-img-scroll-scale-pin');
+            if (mobileStop(el, pinned ? 'gsap-img-scroll-scale-pin' : 'gsap-img-scroll-scale')) { return; }
             var found  = findScaleContainer(el);
             if (!found || !found.node || found.node === el) { return; }
             var container = found.node;
@@ -1256,6 +1287,7 @@
         document.documentElement.style.scrollBehavior = 'auto';
 
         document.querySelectorAll('.gsap-zoom-reveal').forEach(function (el) {
+            if (mobileStop(el, 'gsap-zoom-reveal')) { return; }
             // Escala sempre o PRIMEIRO FILHO DIRETO do container.
             // Isso cobre tanto <img> direta quanto wrappers do Elementor/Gutenberg
             // (.elementor-widget-image, .wp-block-image, etc.) que envolvem a imagem
@@ -1348,6 +1380,7 @@
         }
 
         document.querySelectorAll('.gsap-zoom-scrub').forEach(function (el) {
+            if (mobileStop(el, 'gsap-zoom-scrub')) { return; }
             var from    = num(el, 'from', 1.3);
             var to      = num(el, 'to',   1);
             var trigger = resolveTrigger(el);
@@ -1369,6 +1402,7 @@
         });
 
         document.querySelectorAll('.gsap-rise-scrub').forEach(function (el) {
+            if (mobileStop(el, 'gsap-rise-scrub')) { return; }
             var dist    = num(el, 'distance', 15);
             var trigger = resolveTrigger(el);
             gsap.fromTo(el,
@@ -1488,6 +1522,11 @@
         if (typeof ScrollTrigger === 'undefined') { return; }
 
         document.querySelectorAll('.gsap-mask-reveal--init').forEach(function (el) {
+            if (mobileStop(el, 'gsap-mask-reveal')) {
+                var m = el.querySelector('.gsap-mask-reveal__mask');
+                if (m) { gsap.set(m, { maskSize: '200%', webkitMaskSize: '200%' }); }
+                return;
+            }
             var scroller = el.querySelector('.gsap-mask-reveal__scroller');
             var mask     = el.querySelector('.gsap-mask-reveal__mask');
             var maskImg  = el.querySelector('.gsap-mask-reveal__mask-image');
@@ -1557,6 +1596,7 @@
 
         map.forEach(function (item) {
             document.querySelectorAll('.' + item.cls).forEach(function (el) {
+                if (mobileStop(el, item.cls)) { return; }
                 var fromState = item.from(el);
                 playOnScroll(el, function () {
                     gsap.from(el, Object.assign({}, fromState, {
@@ -1586,6 +1626,7 @@
             // Suporte retrocompatível: entradas antigas usam 'from', novas usam 'init'
             var fromFn = item.init || item.from;
             document.querySelectorAll('.' + item.cls).forEach(function (el) {
+                if (mobileStop(el, item.cls)) { return; }
                 var children = Array.from(el.children);
                 if (!children.length) return;
                 var staggerVal = item.staggerFrom
@@ -1627,6 +1668,10 @@
                 return prefix + s + suffix;
             }
 
+            // mobile-stop: bail antes de substituir o texto pelo valor inicial —
+            // o texto original (valor final) permanece visível no mobile.
+            if (mobileStop(el, 'gsap-counter')) { return; }
+
             el.textContent = format(startVal);
             playOnScroll(el, function () {
                 gsap.to(obj, {
@@ -1638,6 +1683,7 @@
         });
 
         document.querySelectorAll('.gsap-marquee').forEach(function (el) {
+            if (mobileStop(el, 'gsap-marquee')) { return; }
             var speed = num(el, 'speed', 45);
             var dir   = str(el, 'dir', 'left') === 'right' ? 1 : -1;
             el.style.overflow   = 'hidden';
@@ -1671,6 +1717,7 @@
         });
 
         document.querySelectorAll('.gsap-parallax').forEach(function (el) {
+            if (mobileStop(el, 'gsap-parallax')) { return; }
             if (typeof ScrollTrigger === 'undefined') return;
             gsap.to(el, {
                 y: num(el, 'distance', -60), ease: 'none',
@@ -1679,6 +1726,7 @@
         });
 
         document.querySelectorAll('.gsap-reveal-line').forEach(function (el) {
+            if (mobileStop(el, 'gsap-reveal-line')) { return; }
             var axis = str(el, 'axis', 'width');
             var fromState = {};
             fromState[axis] = 0;
@@ -1692,6 +1740,7 @@
         });
 
         document.querySelectorAll('.gsap-progress').forEach(function (el) {
+            if (mobileStop(el, 'gsap-progress')) { return; }
             playOnScroll(el, function () {
                 gsap.from(el, {
                     width: '0%', duration: resolveDuration(el, 1.2),
@@ -1709,6 +1758,7 @@
         // Embaralha com caracteres aleatórios enquanto revela o texto original.
         // data-gsap-chars → conjunto de chars (padrão: "upperCase"). Ex: "01", "!@#$%", "lowerCase"
         document.querySelectorAll('.gsap-scramble').forEach(function (el) {
+            if (mobileStop(el, 'gsap-scramble')) { return; }
             if (typeof ScrambleTextPlugin === 'undefined') {
                 console.warn('[GSAP Manager] gsap-scramble requer ScrambleTextPlugin ativo nas configurações do plugin.');
                 return;
@@ -1735,6 +1785,7 @@
         // data-gsap-start  → início do ScrollTrigger (ex: "top 80%")
         // data-gsap-end    → fim do ScrollTrigger    (ex: "bottom 30%")
         document.querySelectorAll('.gsap-draw-svg').forEach(function (el) {
+            if (mobileStop(el, 'gsap-draw-svg')) { return; }
             if (typeof DrawSVGPlugin === 'undefined') {
                 console.warn('[GSAP Manager] gsap-draw-svg requer DrawSVGPlugin ativo nas configurações do plugin.');
                 return;
@@ -1772,6 +1823,7 @@
         // data-gsap-target → seletor CSS do elemento SVG de destino (obrigatório)
         // Exemplo: <path class="gsap-morph-svg" data-gsap-target="#shape-final" d="...">
         document.querySelectorAll('.gsap-morph-svg').forEach(function (el) {
+            if (mobileStop(el, 'gsap-morph-svg')) { return; }
             if (typeof MorphSVGPlugin === 'undefined') {
                 console.warn('[GSAP Manager] gsap-morph-svg requer MorphSVGPlugin ativo nas configurações do plugin.');
                 return;
@@ -1802,6 +1854,7 @@
     function initHoverAnimations() {
 
         document.querySelectorAll('.gsap-magnetic').forEach(function (el) {
+            if (mobileStop(el, 'gsap-magnetic')) { return; }
             var strength = num(el, 'strength', 0.4);
             var rafId    = null;
             el.addEventListener('mousemove', function (e) {
@@ -1824,6 +1877,7 @@
         });
 
         document.querySelectorAll('.gsap-tilt').forEach(function (el) {
+            if (mobileStop(el, 'gsap-tilt')) { return; }
             var strength = num(el, 'strength', 14);
             var rafId    = null;
             el.style.cssText += ';transform-style:preserve-3d;';
@@ -1846,6 +1900,7 @@
         });
 
         document.querySelectorAll('.gsap-hover-lift').forEach(function (el) {
+            if (mobileStop(el, 'gsap-hover-lift')) { return; }
             var dist = num(el, 'distance', -8);
             el.addEventListener('mouseenter', function () {
                 gsap.to(el, { y: dist, duration: 0.35, ease: 'power2.out' });
@@ -1860,6 +1915,7 @@
         // (style-caption-timeline). Fica melhor com fonts condensed (Six Caps,
         // Bebas Neue, Anton, Oswald) que já são alongadas verticalmente.
         document.querySelectorAll('.gsap-char-stretch-hover').forEach(function (el) {
+            if (mobileStop(el, 'gsap-char-stretch-hover')) { return; }
             var r = splitChars(el);
             if (!r.spans.length) { return; }
 
@@ -1944,6 +2000,11 @@
             el.dataset.gsapScrollFadeInit = '1';
 
             var isOut  = el.classList.contains('gsap-scroll-fade-out');
+            if (isOut  && mobileStop(el, 'gsap-scroll-fade-out')) { return; }
+            if (!isOut && mobileStop(el, 'gsap-scroll-fade-in'))  {
+                el.style.opacity = '1'; // reseta o opacity:0 definido no CSS
+                return;
+            }
             var factor = num(el, 'factor', 0.5);
             if (!isFinite(factor) || factor <= 0) { factor = 0.5; }
 
@@ -2001,6 +2062,7 @@
         }
 
         containers.forEach(function (container) {
+            if (mobileStop(container, 'gsap-video-bg')) { return; }
             if (container.dataset.gsapVideoBgInit === '1') { return; }
 
             // Acha o <video>. Se o próprio container é <video>, usa ele.
