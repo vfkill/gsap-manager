@@ -59,20 +59,58 @@
  * O will-change já é definido inline pelo JS para ativar somente quando necessário.
  */
 
-/* ── gsap-text-focus ─── esconde antes do JS assumir (com fallback) ──────── */
-/*
- * Anti-FOUC gated por classe em <html>. Fluxo:
- *   1. PHP injeta inline script no wp_head que adiciona .gsap-loading no <html>
- *      + rescue-timeout de 3s que remove a classe automaticamente.
- *   2. gsap-animations.js remove a classe assim que inicia (footer, após deps).
- *   3. Se qualquer coisa quebrar o JS, o timeout garante que em ≤3s a classe
- *      some e o texto aparece — nunca fica invisível pra sempre.
+/* ── Anti-FOUC gateado por <html class="gsap-loading"> ──────────────────────
+ * Toda animação que entra "do nada" (clip-path/opacity/translate from-state)
+ * precisa começar invisível, senão o usuário vê o estado FINAL pintar antes
+ * do JS rodar — flash que parece "texto aparece, some, depois anima".
  *
- * A regra baseia-se em .gsap-loading estar em <html>, não em .gsap-text-focus
- * sozinho — sem o gate, qualquer falha no JS travava o título invisível
- * permanentemente (incidente que quebrou o visual em produção na v3.8.7/8.8).
+ * Fluxo defensivo (padrão v3.8.9 estendido em v3.9.5):
+ *   1. PHP injeta .gsap-loading em <html> no wp_head prio 1 + rescue-timeout
+ *      de 3s que remove a classe automaticamente.
+ *   2. gsap-animations.js transfere visibility:hidden inline em cada elemento
+ *      afetado ANTES de remover a classe (evita flash na janela entre a
+ *      classe sair e o ScrollTrigger registrar a animação).
+ *   3. playOnScroll() torna o elemento visível no momento certo (entrada na
+ *      viewport, ou imediato no caso de .gsap-on-load).
+ *   4. Se o JS falhar por completo, o rescue-timeout libera tudo em ≤3s —
+ *      elemento nunca fica invisível pra sempre (incidente v3.8.7/8.8).
  */
-html.gsap-loading .gsap-text-focus {
+html.gsap-loading .gsap-char-reveal,
+html.gsap-loading .gsap-word-reveal,
+html.gsap-loading .gsap-word-blur,
+html.gsap-loading .gsap-text-focus,
+html.gsap-loading .gsap-text-fade,
+html.gsap-loading .gsap-text-blur,
+html.gsap-loading .gsap-typewriter,
+html.gsap-loading .gsap-scramble,
+html.gsap-loading .gsap-fade-up,
+html.gsap-loading .gsap-fade-down,
+html.gsap-loading .gsap-fade-left,
+html.gsap-loading .gsap-fade-right,
+html.gsap-loading .gsap-fade-in,
+html.gsap-loading .gsap-scale-in,
+html.gsap-loading .gsap-scale-out,
+html.gsap-loading .gsap-rotate-in,
+html.gsap-loading .gsap-flip-in,
+html.gsap-loading .gsap-clip-left,
+html.gsap-loading .gsap-clip-right,
+html.gsap-loading .gsap-clip-top,
+html.gsap-loading .gsap-clip-bottom,
+html.gsap-loading .gsap-img-reveal,
+html.gsap-loading .gsap-img-zoom,
+html.gsap-loading .gsap-img-fade,
+html.gsap-loading .gsap-stagger,
+html.gsap-loading .gsap-stagger-left,
+html.gsap-loading .gsap-stagger-right,
+html.gsap-loading .gsap-stagger-scale,
+html.gsap-loading .gsap-stagger-fade,
+html.gsap-loading .gsap-stagger-rotate,
+html.gsap-loading .gsap-stagger-center,
+html.gsap-loading .gsap-reveal-line,
+html.gsap-loading .gsap-progress,
+html.gsap-loading .gsap-draw-svg,
+html.gsap-loading .gsap-morph-svg,
+html.gsap-loading .gsap-counter {
     visibility: hidden;
 }
 

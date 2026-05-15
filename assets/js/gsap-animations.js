@@ -53,23 +53,52 @@
     var isMob = window.innerWidth < 1024;
 
     // ─── Anti-FOUC gate: transfere visibility:hidden do CSS pro inline ───────
-    // O PHP injeta .gsap-loading em <html> no wp_head e o CSS esconde
-    // .gsap-text-focus enquanto a classe estiver presente. Antes de remover
-    // a classe, aplicamos visibility:hidden inline em cada .gsap-text-focus
-    // — assim evitamos flash na janela entre a classe sair e o playOnScroll
-    // processar o elemento. O playOnScroll depois trocará pra 'visible' no
-    // momento certo (ou imediato no caso de .gsap-on-load).
-    // Rescue-timeout de 3s no PHP garante segurança mesmo se este JS quebrar
-    // antes de chegar até aqui.
+    // O PHP injeta .gsap-loading em <html> no wp_head e o CSS esconde toda a
+    // lista de classes abaixo enquanto a classe estiver presente. Antes de
+    // remover a classe, aplicamos visibility:hidden inline em cada elemento
+    // afetado — assim evitamos flash na janela entre a classe sair e o
+    // playOnScroll/ScrollTrigger processar o elemento. O playOnScroll depois
+    // trocará pra 'visible' no momento certo (ou imediato no caso de
+    // .gsap-on-load). Rescue-timeout de 3s no PHP garante segurança mesmo se
+    // este JS quebrar antes de chegar até aqui.
+    //
+    // A lista DEVE espelhar exatamente a do CSS em gsap-animations.css —
+    // qualquer classe gateada por html.gsap-loading precisa estar aqui pra
+    // receber o visibility inline antes da classe ser removida.
     (function () {
-        var nodes = document.querySelectorAll('.gsap-text-focus');
+        var FOUC_CLASSES = [
+            'gsap-char-reveal','gsap-word-reveal','gsap-word-blur',
+            'gsap-text-focus','gsap-text-fade','gsap-text-blur',
+            'gsap-typewriter','gsap-scramble',
+            'gsap-fade-up','gsap-fade-down','gsap-fade-left','gsap-fade-right','gsap-fade-in',
+            'gsap-scale-in','gsap-scale-out','gsap-rotate-in','gsap-flip-in',
+            'gsap-clip-left','gsap-clip-right','gsap-clip-top','gsap-clip-bottom',
+            'gsap-img-reveal','gsap-img-zoom','gsap-img-fade',
+            'gsap-stagger','gsap-stagger-left','gsap-stagger-right',
+            'gsap-stagger-scale','gsap-stagger-fade','gsap-stagger-rotate','gsap-stagger-center',
+            'gsap-reveal-line','gsap-progress','gsap-draw-svg','gsap-morph-svg','gsap-counter'
+        ];
+        var nodes = document.querySelectorAll('.' + FOUC_CLASSES.join(',.'));
         for (var i = 0; i < nodes.length; i++) {
-            // Não toca em quem tem gsap-on-load — esse case aparece imediatamente.
-            if (!nodes[i].classList.contains('gsap-on-load')) {
-                // mobile-stop ativo: não esconde — o elemento renderiza normalmente no mobile.
-                if (isMob && nodes[i].hasAttribute('data-gsap-text-focus-mobile-stop')) { continue; }
-                nodes[i].style.visibility = 'hidden';
+            var el = nodes[i];
+            // gsap-on-load aparece imediatamente — não esconder.
+            if (el.classList.contains('gsap-on-load')) { continue; }
+            // mobile-stop ativo: elemento renderiza normal no mobile, sem animação.
+            // O atributo é por-classe (data-gsap-<classe>-mobile-stop), mas no
+            // pré-init não sabemos qual handler vai rodar — então se em mobile o
+            // elemento traz QUALQUER data-gsap-*-mobile-stop, mantém visível.
+            if (isMob) {
+                var skip = false;
+                for (var k = 0; k < el.attributes.length; k++) {
+                    var n = el.attributes[k].name;
+                    if (n.indexOf('data-gsap-') === 0 && n.lastIndexOf('-mobile-stop') === n.length - 12) {
+                        skip = true;
+                        break;
+                    }
+                }
+                if (skip) { continue; }
             }
+            el.style.visibility = 'hidden';
         }
         document.documentElement.classList.remove('gsap-loading');
     })();
