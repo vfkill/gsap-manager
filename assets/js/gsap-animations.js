@@ -113,17 +113,46 @@
         setupMaskRevealDOM();
     }
 
-    window.addEventListener('load', function () {
-        var afterFonts = (document.fonts && document.fonts.ready)
+    // Dispara o init() o quanto antes — em DOMContentLoaded, NÃO em window.load.
+    //
+    // window.load espera TODOS os recursos: imagens, vídeos de fundo, iframes
+    // (YouTube). Em páginas pesadas (hero com vídeo 4K + embed YouTube) o load
+    // mediu ~14s em produção. Como o anti-FOUC tem rescue de 3s que revela o
+    // texto como bloco, o reveal do H1 rodava ~11s depois — tarde demais
+    // (efeito perdido) e intermitente (depende de cache/rede).
+    //
+    // DOMContentLoaded dispara assim que o HTML é parseado e os scripts do
+    // rodapé (gsap + plugins + este arquivo) já executaram — sem esperar mídia.
+    // O ScrollTrigger se auto-refresha no window.load, então as posições dos
+    // triggers se corrigem sozinhas quando as imagens terminam de carregar.
+    function boot() {
+        var fontsReady = (document.fonts && document.fonts.ready)
             ? document.fonts.ready
-            : { then: function (fn) { fn(); } };
+            : Promise.resolve();
 
-        afterFonts.then(function () {
-            requestAnimationFrame(function () {
-                requestAnimationFrame(init);
-            });
+        // Cap de 1.5s no gate de fontes: fonte lenta/instável (host do cliente)
+        // não pode segurar o init além do rescue de 3s que revela o texto como
+        // bloco. Melhor animar com a fonte fallback e deixar o swap reflowar do
+        // que perder o reveal por completo.
+        Promise.race([
+            fontsReady,
+            new Promise(function (resolve) { setTimeout(resolve, 1500); })
+        ]).then(function () {
+            requestAnimationFrame(function () { requestAnimationFrame(init); });
+        }).catch(function (e) {
+            // fonts.ready não rejeita normalmente; se rejeitar, não trava o
+            // init — roda mesmo assim e loga o motivo real (em vez de virar
+            // um "Uncaught (in promise)" sem mensagem).
+            console.error('[GSAP Manager] boot falhou no gate de fontes — iniciando mesmo assim.', e);
+            requestAnimationFrame(function () { requestAnimationFrame(init); });
         });
-    });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', boot);
+    } else {
+        boot();
+    }
 
     function init() {
         if (typeof gsap === 'undefined') {
@@ -140,22 +169,36 @@
         if (typeof ScrambleTextPlugin  !== 'undefined') { gsap.registerPlugin(ScrambleTextPlugin); }
         if (typeof DrawSVGPlugin       !== 'undefined') { gsap.registerPlugin(DrawSVGPlugin); }
         if (typeof MorphSVGPlugin      !== 'undefined') { gsap.registerPlugin(MorphSVGPlugin); }
-        initScrollSmootherEffects();
-        initPin();
-        initPinStack();
-        initTextAnimations();
-        initImageAnimations();
-        initZoomReveal();
-        initScrubScale();
-        initMaskReveal();
-        initElementAnimations();
-        initStaggerAnimations();
-        initSpecialAnimations();
-        initBonusAnimations();
-        initHoverAnimations();
-        initScrollFade();
-        initVideoBgScrub();
-        finalizeScrollSmoother();
+
+        // Cada subsistema roda isolado: se um lançar exceção, logamos o erro
+        // real e seguimos com os demais — um nó problemático não pode abortar
+        // o resto nem virar "Uncaught (in promise)" silencioso. splitChars/
+        // splitWords também são à prova de falha (ver helpers), então o reveal
+        // de um título quebrado não derruba os outros 16 da página.
+        [
+            initScrollSmootherEffects,
+            initPin,
+            initPinStack,
+            initTextAnimations,
+            initImageAnimations,
+            initZoomReveal,
+            initScrubScale,
+            initMaskReveal,
+            initElementAnimations,
+            initStaggerAnimations,
+            initSpecialAnimations,
+            initBonusAnimations,
+            initHoverAnimations,
+            initScrollFade,
+            initVideoBgScrub,
+            finalizeScrollSmoother
+        ].forEach(function (step) {
+            try {
+                step();
+            } catch (e) {
+                console.error('[GSAP Manager] falha em ' + (step.name || 'init step') + ':', e);
+            }
+        });
     }
 
     // ─── ScrollSmoother: efeitos de parallax por classe ─────────────────────
@@ -600,74 +643,95 @@
         }
     }
 
+    // splitChars/splitWords destroem o innerHTML (target.innerHTML = '') antes
+    // de remontar em spans. Se algo lançar no meio, o elemento ficaria visível
+    // porém VAZIO — e o rescue de 3s do PHP não conserta (ele só remove a classe
+    // gsap-loading, não o visibility:hidden inline). Por isso o try/catch:
+    // em falha, restaura o conteúdo original, força visibility:visible e
+    // devolve spans:[] (gsap.from([]) é no-op seguro). O título aparece sem
+    // animação em vez de sumir ou ficar em branco.
     function splitChars(el) {
         var savedHTML = el.innerHTML;
-        var target    = findTextTarget(el);
-        var styles    = captureStyles(target);
-        var text      = target.textContent;
+        try {
+            var target    = findTextTarget(el);
+            var styles    = captureStyles(target);
+            var text      = target.textContent;
 
-        target.innerHTML = '';
-        target.setAttribute('aria-label', text);
+            target.innerHTML = '';
+            target.setAttribute('aria-label', text);
 
-        var spans = [];
+            var spans = [];
 
-        // Divide em palavras e espaços. Cada palavra recebe um wrapper
-        // com white-space: nowrap para impedir que o browser quebre
-        // a linha no meio de uma palavra (entre caracteres individuais).
-        // Os espaços entre palavras ficam como nós de texto normais,
-        // permitindo que a quebra de linha ocorra entre palavras — como
-        // no texto original.
-        text.split(/(\s+)/).forEach(function (token) {
-            if (/^\s+$/.test(token)) {
-                // Espaço entre palavras: nó de texto simples → quebra de linha natural
-                target.appendChild(document.createTextNode(' '));
-            } else if (token.length > 0) {
-                // Wrapper da palavra — inline-block + nowrap evita break dentro da palavra
-                var wordWrap = document.createElement('span');
-                wordWrap.style.display    = 'inline-block';
-                wordWrap.style.whiteSpace = 'nowrap';
+            // Divide em palavras e espaços. Cada palavra recebe um wrapper
+            // com white-space: nowrap para impedir que o browser quebre
+            // a linha no meio de uma palavra (entre caracteres individuais).
+            // Os espaços entre palavras ficam como nós de texto normais,
+            // permitindo que a quebra de linha ocorra entre palavras — como
+            // no texto original.
+            text.split(/(\s+)/).forEach(function (token) {
+                if (/^\s+$/.test(token)) {
+                    // Espaço entre palavras: nó de texto simples → quebra de linha natural
+                    target.appendChild(document.createTextNode(' '));
+                } else if (token.length > 0) {
+                    // Wrapper da palavra — inline-block + nowrap evita break dentro da palavra
+                    var wordWrap = document.createElement('span');
+                    wordWrap.style.display    = 'inline-block';
+                    wordWrap.style.whiteSpace = 'nowrap';
 
-                Array.from(token).forEach(function (ch) {
-                    var span = document.createElement('span');
-                    span.style.display    = 'inline-block';
-                    span.style.willChange = 'clip-path, transform, opacity';
-                    applyStyles(span, styles);
-                    span.textContent = ch;
-                    wordWrap.appendChild(span);
-                    spans.push(span);
-                });
+                    Array.from(token).forEach(function (ch) {
+                        var span = document.createElement('span');
+                        span.style.display    = 'inline-block';
+                        span.style.willChange = 'clip-path, transform, opacity';
+                        applyStyles(span, styles);
+                        span.textContent = ch;
+                        wordWrap.appendChild(span);
+                        spans.push(span);
+                    });
 
-                target.appendChild(wordWrap);
-            }
-        });
+                    target.appendChild(wordWrap);
+                }
+            });
 
-        return { spans: spans, revert: function () { el.innerHTML = savedHTML; } };
+            return { spans: spans, revert: function () { el.innerHTML = savedHTML; } };
+        } catch (e) {
+            console.error('[GSAP Manager] splitChars falhou — texto restaurado sem animação.', e, el);
+            el.innerHTML = savedHTML;
+            el.style.visibility = 'visible';
+            return { spans: [], revert: function () {} };
+        }
     }
 
     function splitWords(el) {
         var savedHTML = el.innerHTML;
-        var target    = findTextTarget(el);
-        var styles    = captureStyles(target);
-        var text      = target.textContent;
+        try {
+            var target    = findTextTarget(el);
+            var styles    = captureStyles(target);
+            var text      = target.textContent;
 
-        target.innerHTML = '';
+            target.innerHTML = '';
 
-        var spans = [];
-        text.trim().split(/(\s+)/).forEach(function (token) {
-            if (/^\s+$/.test(token)) {
-                target.appendChild(document.createTextNode(token));
-            } else {
-                var span = document.createElement('span');
-                span.style.display    = 'inline-block';
-                span.style.willChange = 'clip-path, transform, opacity';
-                applyStyles(span, styles);
-                span.textContent = token;
-                target.appendChild(span);
-                spans.push(span);
-            }
-        });
+            var spans = [];
+            text.trim().split(/(\s+)/).forEach(function (token) {
+                if (/^\s+$/.test(token)) {
+                    target.appendChild(document.createTextNode(token));
+                } else {
+                    var span = document.createElement('span');
+                    span.style.display    = 'inline-block';
+                    span.style.willChange = 'clip-path, transform, opacity';
+                    applyStyles(span, styles);
+                    span.textContent = token;
+                    target.appendChild(span);
+                    spans.push(span);
+                }
+            });
 
-        return { spans: spans, revert: function () { el.innerHTML = savedHTML; } };
+            return { spans: spans, revert: function () { el.innerHTML = savedHTML; } };
+        } catch (e) {
+            console.error('[GSAP Manager] splitWords falhou — texto restaurado sem animação.', e, el);
+            el.innerHTML = savedHTML;
+            el.style.visibility = 'visible';
+            return { spans: [], revert: function () {} };
+        }
     }
 
     // ─── Animações de Texto ─────────────────────────────────────────────────
