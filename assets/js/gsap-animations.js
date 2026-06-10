@@ -464,6 +464,16 @@
         return v !== null && v !== '' ? v : fallback;
     }
 
+    // Caminhos SCRUB não passam pelo playOnScroll — que é quem restaura a
+    // visibility:hidden aplicada pelo gate anti-FOUC. Sem esta chamada no
+    // início de cada branch scrub, o elemento fica invisível pra sempre
+    // (timeline roda por trás do hidden — incidente jcm.app.br, v3.9.5-9.9).
+    // Sem flash: o from()/fromTo() do timeline aplica o estado inicial via
+    // immediateRender no mesmo tick síncrono, antes de qualquer paint.
+    function revealScrub(el) {
+        el.style.visibility = 'visible';
+    }
+
     // Resolve '#hash' → elemento de forma segura. querySelector('#123')
     // lança SyntaxError (ID numérico é seletor CSS inválido, mas é comum em
     // âncoras do Elementor); getElementById aceita qualquer string. O
@@ -798,6 +808,7 @@
         document.querySelectorAll('.gsap-char-reveal').forEach(function (el) {
             if (mobileStop(el, 'gsap-char-reveal')) { return; }
             if (el.classList.contains('gsap-char-scrub')) {
+                revealScrub(el);
                 if (typeof ScrollTrigger === 'undefined') {
                     console.warn('[GSAP Manager] gsap-char-scrub requer ScrollTrigger ativo nas configurações do plugin.');
                     return;
@@ -936,6 +947,7 @@
         document.querySelectorAll('.gsap-word-reveal').forEach(function (el) {
             if (mobileStop(el, 'gsap-word-reveal')) { return; }
             if (el.classList.contains('gsap-word-scrub')) {
+                revealScrub(el);
                 if (typeof ScrollTrigger === 'undefined') {
                     console.warn('[GSAP Manager] gsap-word-scrub requer ScrollTrigger ativo nas configurações do plugin.');
                     return;
@@ -995,6 +1007,7 @@
             if (useBlur) { fromState.filter = 'blur(' + blurPx + 'px)'; }
 
             if (el.classList.contains('gsap-word-scrub')) {
+                revealScrub(el);
                 if (typeof ScrollTrigger === 'undefined') {
                     console.warn('[GSAP Manager] gsap-word-scrub requer ScrollTrigger ativo nas configurações do plugin.');
                     return;
@@ -1106,6 +1119,7 @@
         document.querySelectorAll('.gsap-text-fade').forEach(function (el) {
             if (mobileStop(el, 'gsap-text-fade')) { return; }
             if (el.classList.contains('gsap-scrub')) {
+                revealScrub(el);
                 if (typeof ScrollTrigger === 'undefined') { return; }
                 gsap.timeline({
                     scrollTrigger: {
@@ -1161,6 +1175,7 @@
         document.querySelectorAll('.gsap-text-blur').forEach(function (el) {
             if (mobileStop(el, 'gsap-text-blur')) { return; }
             if (el.classList.contains('gsap-scrub')) {
+                revealScrub(el);
                 if (typeof ScrollTrigger === 'undefined') { return; }
                 gsap.timeline({
                     scrollTrigger: {
@@ -1938,6 +1953,7 @@
                 return;
             }
             if (el.classList.contains('gsap-scrub')) {
+                revealScrub(el);
                 if (typeof ScrollTrigger === 'undefined') {
                     console.warn('[GSAP Manager] gsap-draw-svg + gsap-scrub requer ScrollTrigger ativo.');
                     return;
