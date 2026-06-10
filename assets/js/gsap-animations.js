@@ -62,10 +62,44 @@
     // .gsap-on-load). Rescue-timeout de 3s no PHP garante segurança mesmo se
     // este JS quebrar antes de chegar até aqui.
     //
+    // Cada elemento escondido entra em foucHidden — se o init() abortar
+    // (GSAP core não carregou do CDN, reduced-motion), restoreFoucHidden()
+    // desfaz tudo. O rescue de 3s do PHP NÃO cobre esse cenário: ele só
+    // remove a classe do <html>, não desfaz o inline style já aplicado.
+    //
     // A lista DEVE espelhar exatamente a do CSS em gsap-animations.css —
     // qualquer classe gateada por html.gsap-loading precisa estar aqui pra
-    // receber o visibility inline antes da classe ser removida.
+    // receber o estado inline antes da classe ser removida.
+    var foucHidden = [];
+
     (function () {
+        var docEl = document.documentElement;
+
+        // Reduced-motion: init() dá bail e nenhuma animação revelaria os
+        // elementos — libera o gate sem esconder nada (senão char/word-reveal
+        // e counter ficariam invisíveis pra sempre pra esses usuários).
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            docEl.classList.remove('gsap-loading');
+            return;
+        }
+
+        // gsap-on-load aparece imediatamente — não esconder.
+        // mobile-stop ativo: elemento renderiza normal no mobile, sem animação.
+        // O atributo é por-classe (data-gsap-<classe>-mobile-stop), mas no
+        // pré-init não sabemos qual handler vai rodar — então se em mobile o
+        // elemento traz QUALQUER data-gsap-*-mobile-stop, mantém visível.
+        function shouldSkipHide(el) {
+            if (el.classList.contains('gsap-on-load')) { return true; }
+            if (!isMob) { return false; }
+            for (var k = 0; k < el.attributes.length; k++) {
+                var n = el.attributes[k].name;
+                if (n.indexOf('data-gsap-') === 0 && n.lastIndexOf('-mobile-stop') === n.length - 12) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         var FOUC_CLASSES = [
             'gsap-char-reveal','gsap-word-reveal','gsap-word-blur',
             'gsap-text-focus','gsap-text-fade','gsap-text-blur',
@@ -80,28 +114,31 @@
         ];
         var nodes = document.querySelectorAll('.' + FOUC_CLASSES.join(',.'));
         for (var i = 0; i < nodes.length; i++) {
-            var el = nodes[i];
-            // gsap-on-load aparece imediatamente — não esconder.
-            if (el.classList.contains('gsap-on-load')) { continue; }
-            // mobile-stop ativo: elemento renderiza normal no mobile, sem animação.
-            // O atributo é por-classe (data-gsap-<classe>-mobile-stop), mas no
-            // pré-init não sabemos qual handler vai rodar — então se em mobile o
-            // elemento traz QUALQUER data-gsap-*-mobile-stop, mantém visível.
-            if (isMob) {
-                var skip = false;
-                for (var k = 0; k < el.attributes.length; k++) {
-                    var n = el.attributes[k].name;
-                    if (n.indexOf('data-gsap-') === 0 && n.lastIndexOf('-mobile-stop') === n.length - 12) {
-                        skip = true;
-                        break;
-                    }
-                }
-                if (skip) { continue; }
-            }
-            el.style.visibility = 'hidden';
+            if (shouldSkipHide(nodes[i])) { continue; }
+            nodes[i].style.visibility = 'hidden';
+            foucHidden.push([nodes[i], 'visibility']);
         }
-        document.documentElement.classList.remove('gsap-loading');
+
+        // scroll-fade-in esconde por opacity (estado inicial da animação é
+        // opacity:0, não visibility) — mesma transferência CSS → inline.
+        var fades = document.querySelectorAll('.gsap-scroll-fade-in');
+        for (var j = 0; j < fades.length; j++) {
+            if (shouldSkipHide(fades[j])) { continue; }
+            fades[j].style.opacity = '0';
+            foucHidden.push([fades[j], 'opacity']);
+        }
+
+        docEl.classList.remove('gsap-loading');
     })();
+
+    // Desfaz o estado inline aplicado pelo gate acima — chamado quando o
+    // init() aborta e nenhuma animação vai revelar os elementos.
+    function restoreFoucHidden() {
+        for (var i = 0; i < foucHidden.length; i++) {
+            foucHidden[i][0].style[foucHidden[i][1]] = '';
+        }
+        foucHidden.length = 0;
+    }
 
     // ─── Bootstrap ──────────────────────────────────────────────────────────
     // Setup estrutural do mask-reveal roda no DOMContentLoaded — antes do init()
@@ -156,13 +193,19 @@
 
     function init() {
         if (typeof gsap === 'undefined') {
+            // CDN falhou/bloqueado: o gate anti-FOUC já escondeu elementos
+            // inline e nenhuma animação vai revelá-los — restaura tudo.
             console.warn('[GSAP Manager] GSAP não encontrado.');
+            restoreFoucHidden();
             return;
         }
         // Respeita a preferência do usuário por menos movimento (acessibilidade).
         // Com essa verificação, o GSAP não executa nenhuma animação quando
         // prefers-reduced-motion: reduce está ativo no sistema operacional.
+        // O gate anti-FOUC já não esconde nada nesse caso; o restore cobre a
+        // janela rara em que a preferência mudou entre o load e o init.
         if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            restoreFoucHidden();
             return;
         }
         if (typeof ScrollTrigger       !== 'undefined') { gsap.registerPlugin(ScrollTrigger); }
@@ -2084,9 +2127,16 @@
     // Requer ScrollTrigger. Sem ele, o elemento fica em seu estado inicial
     // (out = visível, in = invisível via CSS).
     function initScrollFade() {
-        if (typeof ScrollTrigger === 'undefined') { return; }
         var nodes = document.querySelectorAll('.gsap-scroll-fade-out, .gsap-scroll-fade-in');
         if (!nodes.length) { return; }
+        // Sem ScrollTrigger não há scrub — devolve a opacidade do fade-in
+        // (o gate anti-FOUC aplicou opacity:0 inline) pra nada ficar invisível.
+        if (typeof ScrollTrigger === 'undefined') {
+            nodes.forEach(function (el) {
+                if (el.classList.contains('gsap-scroll-fade-in')) { el.style.opacity = '1'; }
+            });
+            return;
+        }
 
         nodes.forEach(function (el) {
             if (el.dataset.gsapScrollFadeInit === '1') { return; }

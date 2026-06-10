@@ -165,7 +165,11 @@ html.gsap-loading .gsap-counter {
 }
 
 /* ── gsap-scroll-fade-in / gsap-scroll-fade-out ─── opacidade por scroll ── */
-.gsap-scroll-fade-in {
+/* opacity:0 gateado por html.gsap-loading (regra do incidente v3.8.7/8.8):
+   o JS transfere o estado pra inline antes de remover a classe; se o JS ou
+   o ScrollTrigger falharem, o rescue de 3s libera o gate e o elemento
+   aparece — nunca invisível pra sempre. */
+html.gsap-loading .gsap-scroll-fade-in {
     opacity: 0; /* Evita FOUC antes do ScrollTrigger assumir */
 }
 .gsap-scroll-fade-in,
@@ -392,11 +396,17 @@ html {
  * camada extra de garantia para todos os elementos com classes GSAP.
  */
 @media (prefers-reduced-motion: reduce) {
-    /* Animações de texto */
+    /* Animações de texto
+       Os seletores de ELEMENTO (além dos spans) são obrigatórios: o gate
+       anti-FOUC pode ter escondido o elemento inline antes do init() abortar
+       por reduced-motion — o !important aqui vence o inline style. */
+    .gsap-char-reveal,
     .gsap-char-reveal span,
     .gsap-char-color span,
     .gsap-char-color-2 span,
+    .gsap-word-reveal,
     .gsap-word-reveal span,
+    .gsap-word-blur,
     .gsap-word-blur span,
     .gsap-text-focus,
     .gsap-text-focus span,
@@ -437,6 +447,7 @@ html {
     .gsap-parallax,
     .gsap-reveal-line,
     .gsap-progress,
+    .gsap-counter,
     /* SVG */
     .gsap-draw-svg,
     .gsap-morph-svg,
