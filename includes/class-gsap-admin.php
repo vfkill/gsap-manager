@@ -443,7 +443,7 @@ ScrollTrigger.defaults({
                     <div class="gsap-field gsap-field--toggle">
                         <div class="gsap-field__label">
                             <label>Normalize Scroll</label>
-                            <span class="gsap-field__desc">Normaliza o comportamento do scroll entre dispositivos (mouse, touch, trackpad). Recomendado para experiências altamente customizadas.</span>
+                            <span class="gsap-field__desc"><strong>Use com cautela.</strong> Faz o GSAP assumir o controle total do scroll. Testado em produção e revertido (v3.8.18): em touch trava a suavidade natural do dedo. Hoje o ScrollSmoother só inicializa em desktop (gate <code>pointer:fine</code>), então a opção afeta apenas mouse/trackpad — ainda assim, deixe desligado a menos que precise especificamente.</span>
                         </div>
                         <label class="gsap-toggle">
                             <input type="checkbox" name="<?php echo GSAP_MANAGER_OPTION; ?>[smoother_normalize]" value="1" <?php checked( ! empty( $s['smoother_normalize'] ) ); ?>>

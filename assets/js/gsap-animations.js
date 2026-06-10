@@ -715,7 +715,13 @@
     // devolve spans:[] (gsap.from([]) é no-op seguro). O título aparece sem
     // animação em vez de sumir ou ficar em branco.
     function splitChars(el) {
-        var savedHTML = el.innerHTML;
+        // gsap-repeat pode chamar o split de novo antes do revert (que só
+        // roda no onComplete) — guarda o HTML ORIGINAL na primeira chamada e
+        // restaura antes de re-splitar, senão findTextTarget desce nos spans
+        // do split anterior e fragmenta um único char.
+        if (el.__gsapSplitOrig === undefined) { el.__gsapSplitOrig = el.innerHTML; }
+        var savedHTML = el.__gsapSplitOrig;
+        if (el.__gsapSplitActive) { el.innerHTML = savedHTML; }
         try {
             var target    = findTextTarget(el);
             var styles    = captureStyles(target);
@@ -737,8 +743,11 @@
                     // Espaço entre palavras: nó de texto simples → quebra de linha natural
                     target.appendChild(document.createTextNode(' '));
                 } else if (token.length > 0) {
-                    // Wrapper da palavra — inline-block + nowrap evita break dentro da palavra
+                    // Wrapper da palavra — inline-block + nowrap evita break dentro da palavra.
+                    // aria-hidden: o screen reader lê o aria-label do pai; os spans
+                    // são duplicata visual (sem isso, leitores soletram char a char).
                     var wordWrap = document.createElement('span');
+                    wordWrap.setAttribute('aria-hidden', 'true');
                     wordWrap.style.display    = 'inline-block';
                     wordWrap.style.whiteSpace = 'nowrap';
 
@@ -756,9 +765,11 @@
                 }
             });
 
-            return { spans: spans, revert: function () { el.innerHTML = savedHTML; } };
+            el.__gsapSplitActive = true;
+            return { spans: spans, revert: function () { el.__gsapSplitActive = false; el.innerHTML = savedHTML; } };
         } catch (e) {
             console.error('[GSAP Manager] splitChars falhou — texto restaurado sem animação.', e, el);
+            el.__gsapSplitActive = false;
             el.innerHTML = savedHTML;
             el.style.visibility = 'visible';
             return { spans: [], revert: function () {} };
@@ -766,13 +777,17 @@
     }
 
     function splitWords(el) {
-        var savedHTML = el.innerHTML;
+        // Mesmo guard de re-split do splitChars (gsap-repeat).
+        if (el.__gsapSplitOrig === undefined) { el.__gsapSplitOrig = el.innerHTML; }
+        var savedHTML = el.__gsapSplitOrig;
+        if (el.__gsapSplitActive) { el.innerHTML = savedHTML; }
         try {
             var target    = findTextTarget(el);
             var styles    = captureStyles(target);
             var text      = target.textContent;
 
             target.innerHTML = '';
+            target.setAttribute('aria-label', text);
 
             var spans = [];
             text.trim().split(/(\s+)/).forEach(function (token) {
@@ -780,6 +795,7 @@
                     target.appendChild(document.createTextNode(token));
                 } else {
                     var span = document.createElement('span');
+                    span.setAttribute('aria-hidden', 'true');
                     span.style.display    = 'inline-block';
                     span.style.willChange = 'clip-path, transform, opacity';
                     applyStyles(span, styles);
@@ -789,9 +805,11 @@
                 }
             });
 
-            return { spans: spans, revert: function () { el.innerHTML = savedHTML; } };
+            el.__gsapSplitActive = true;
+            return { spans: spans, revert: function () { el.__gsapSplitActive = false; el.innerHTML = savedHTML; } };
         } catch (e) {
             console.error('[GSAP Manager] splitWords falhou — texto restaurado sem animação.', e, el);
+            el.__gsapSplitActive = false;
             el.innerHTML = savedHTML;
             el.style.visibility = 'visible';
             return { spans: [], revert: function () {} };
@@ -997,9 +1015,8 @@
         //   data-gsap-mobile-blur  → "off" desabilita blur em <1024px  (padrão: on)
         document.querySelectorAll('.gsap-word-blur').forEach(function (el) {
             if (mobileStop(el, 'gsap-word-blur')) { return; }
-            var isMobile    = window.innerWidth < 1024;
             var mobileBlur  = str(el, 'mobile-blur', 'on') !== 'off';
-            var useBlur     = !isMobile || mobileBlur;
+            var useBlur     = !isMob || mobileBlur;
             var blurPx      = num(el, 'blur', 8);
             var distance    = num(el, 'distance', 20);
 
@@ -1054,9 +1071,8 @@
         //   data-gsap-mobile-blur   → "off" desabilita blur em <1024px (padrão: on)
         document.querySelectorAll('.gsap-text-focus').forEach(function (el) {
             if (mobileStop(el, 'gsap-text-focus')) { return; }
-            var isMobile   = window.innerWidth < 1024;
             var mobileBlur = str(el, 'mobile-blur', 'on') !== 'off';
-            var useBlur    = !isMobile || mobileBlur;
+            var useBlur    = !isMob || mobileBlur;
 
             var scalePeak    = num(el, 'scale-peak', 2.1);
             var yPeak        = num(el, 'y-peak',     60);

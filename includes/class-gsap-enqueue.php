@@ -133,17 +133,22 @@ class GSAP_Enqueue {
         // ── Core GSAP ───────────────────────────────────────────────────────
         // Modo local sem o arquivo baixado: serve do CDN em vez de enfileirar
         // um 404 que mataria todas as animações do site.
+        // Cache-buster: arquivo local muda quando o PLUGIN atualiza (vendor
+        // novo no pacote), não quando o campo de versão muda — usa a versão
+        // do plugin. No CDN a versão do GSAP já está na própria URL.
         if ( $s['source'] === 'cdn' || ! file_exists( GSAP_MANAGER_PATH . 'assets/js/vendor/gsap.min.js' ) ) {
             $gsap_url = self::CDN_BASE . $version . '/dist/gsap.min.js';
+            $gsap_ver = $version;
         } else {
             $gsap_url = GSAP_MANAGER_URL . 'assets/js/vendor/gsap.min.js';
+            $gsap_ver = GSAP_MANAGER_VERSION;
         }
 
         wp_enqueue_script(
             'gsap',
             $gsap_url,
             [],
-            $version,
+            $gsap_ver,
             $footer
         );
 
@@ -161,16 +166,18 @@ class GSAP_Enqueue {
             // Mesmo fallback do core: local sem o arquivo → CDN (são plugins
             // públicos, todos disponíveis no jsDelivr).
             if ( $s['source'] === 'cdn' || ! file_exists( GSAP_MANAGER_PATH . 'assets/js/vendor/' . $file ) ) {
-                $url = self::CDN_BASE . $version . '/dist/' . $file;
+                $url     = self::CDN_BASE . $version . '/dist/' . $file;
+                $url_ver = $version;
             } else {
-                $url = GSAP_MANAGER_URL . 'assets/js/vendor/' . $file;
+                $url     = GSAP_MANAGER_URL . 'assets/js/vendor/' . $file;
+                $url_ver = GSAP_MANAGER_VERSION;
             }
 
             wp_enqueue_script(
                 'gsap-' . strtolower( $name ),
                 $url,
                 [ 'gsap' ],
-                $version,
+                $url_ver,
                 $footer
             );
             $last_handle = 'gsap-' . strtolower( $name );
@@ -203,7 +210,7 @@ class GSAP_Enqueue {
                 'gsap-' . strtolower( $name ),
                 GSAP_MANAGER_URL . 'assets/js/vendor/' . $file,
                 $deps,
-                $version,
+                GSAP_MANAGER_VERSION,
                 $footer
             );
             $last_handle = 'gsap-' . strtolower( $name );
