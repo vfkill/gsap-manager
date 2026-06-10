@@ -5,6 +5,11 @@ class GSAP_Enqueue {
 
     private array $settings;
 
+    // Garante que o close só imprime se o open realmente rodou — tema sem
+    // wp_body_open() nunca dispara o open, e '</div></div>' órfão no footer
+    // gera HTML inválido.
+    private bool $smoother_wrapper_opened = false;
+
     // CDN base — GSAP v3 no cdnjs
     const CDN_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/';
 
@@ -63,6 +68,13 @@ class GSAP_Enqueue {
         if ( ! $this->should_load() ) {
             return;
         }
+        // O gate só faz sentido com as animações por classe ativas — é o
+        // gsap-animations.js que remove a classe cedo e revela os elementos.
+        // Sem ele, a classe só sairia pelo rescue de 3s: conteúdo com classes
+        // .gsap-* ficaria escondido 3s em todo pageload, sem animação em troca.
+        if ( empty( $this->settings['auto_animations'] ) ) {
+            return;
+        }
         // Minificado: adiciona classe imediatamente; timeout 3s remove como rescue.
         echo "<script>(function(){var d=document.documentElement;d.classList.add('gsap-loading');setTimeout(function(){d.classList.remove('gsap-loading');},3000);})();</script>\n";
     }
@@ -74,10 +86,11 @@ class GSAP_Enqueue {
         $wrapper = $this->smoother_id( $this->settings['smoother_wrapper'] ?? '#smooth-wrapper', 'smooth-wrapper' );
         $content = $this->smoother_id( $this->settings['smoother_content'] ?? '#smooth-content', 'smooth-content' );
         printf( '<div id="%s"><div id="%s">', esc_attr( $wrapper ), esc_attr( $content ) );
+        $this->smoother_wrapper_opened = true;
     }
 
     public function smoother_wrapper_close(): void {
-        if ( ! $this->should_load_smoother() ) {
+        if ( ! $this->smoother_wrapper_opened ) {
             return;
         }
         echo '</div></div>';
@@ -115,7 +128,9 @@ class GSAP_Enqueue {
         );
 
         // ── Core GSAP ───────────────────────────────────────────────────────
-        if ( $s['source'] === 'cdn' ) {
+        // Modo local sem o arquivo baixado: serve do CDN em vez de enfileirar
+        // um 404 que mataria todas as animações do site.
+        if ( $s['source'] === 'cdn' || ! file_exists( GSAP_MANAGER_PATH . 'assets/js/vendor/gsap.min.js' ) ) {
             $gsap_url = self::CDN_BASE . $version . '/gsap.min.js';
         } else {
             $gsap_url = GSAP_MANAGER_URL . 'assets/js/vendor/gsap.min.js';
@@ -140,7 +155,9 @@ class GSAP_Enqueue {
                 continue;
             }
 
-            if ( $s['source'] === 'cdn' ) {
+            // Mesmo fallback do core: local sem o arquivo → CDN (são plugins
+            // públicos, todos disponíveis no cdnjs).
+            if ( $s['source'] === 'cdn' || ! file_exists( GSAP_MANAGER_PATH . 'assets/js/vendor/' . $file ) ) {
                 $url = self::CDN_BASE . $version . '/' . $file;
             } else {
                 $url = GSAP_MANAGER_URL . 'assets/js/vendor/' . $file;

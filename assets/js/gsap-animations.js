@@ -291,7 +291,7 @@
             // Só intercepta navegação na mesma página
             var pagePart = href.slice(0, hashIndex);
             if (pagePart && pagePart !== window.location.pathname && pagePart !== window.location.href.split('#')[0]) { return; }
-            var target = document.querySelector(id);
+            var target = getHashTarget(id);
             if (!target) { return; }
             e.preventDefault();
             smoother.scrollTo(target, true, 'top ' + getHeaderOffset() + 'px');
@@ -301,7 +301,7 @@
         // ── hashchange: digitação direta de hash na barra de endereços ────────
         window.addEventListener('hashchange', function () {
             if (!window.location.hash) { return; }
-            var target = document.querySelector(window.location.hash);
+            var target = getHashTarget(window.location.hash);
             if (target) {
                 smoother.scrollTo(target, true, 'top ' + getHeaderOffset() + 'px');
             }
@@ -439,7 +439,7 @@
         if (typeof ScrollSmoother === 'undefined') { return; }
         var sm = ScrollSmoother.get();
         if (!sm || !window.location.hash) { return; }
-        var hashTarget = document.querySelector(window.location.hash);
+        var hashTarget = getHashTarget(window.location.hash);
         if (!hashTarget) { return; }
         // Duplo rAF: garante que o ScrollTrigger.refresh() já calculou as posições
         // antes de rolar para o hash inicial da URL.
@@ -462,6 +462,17 @@
     function str(el, attr, fallback) {
         var v = el.getAttribute('data-gsap-' + attr);
         return v !== null && v !== '' ? v : fallback;
+    }
+
+    // Resolve '#hash' → elemento de forma segura. querySelector('#123')
+    // lança SyntaxError (ID numérico é seletor CSS inválido, mas é comum em
+    // âncoras do Elementor); getElementById aceita qualquer string. O
+    // decodeURIComponent cobre hash com acento/espaço vindo da URL.
+    function getHashTarget(hash) {
+        if (!hash || hash.length < 2 || hash.charAt(0) !== '#') { return null; }
+        var id = hash.slice(1);
+        try { id = decodeURIComponent(id); } catch (e) { /* '%' malformado — usa cru */ }
+        return document.getElementById(id);
     }
 
     function resolveDelay(el) {
