@@ -129,6 +129,11 @@ class GSAP_Enqueue {
             $footer
         );
 
+        // Rastreia o último handle enfileirado — o custom_init é anexado a
+        // ele, garantindo que rode depois de TODOS os plugins GSAP ativos
+        // (gsap.registerPlugin(ScrollTrigger) etc. funcionam no custom_init).
+        $last_handle = 'gsap';
+
         // ── Plugins (cdnjs) ─────────────────────────────────────────────────
         foreach ( self::PLUGIN_FILES as $name => $file ) {
             if ( empty( $s['plugins'][ $name ] ) ) {
@@ -148,6 +153,7 @@ class GSAP_Enqueue {
                 $version,
                 $footer
             );
+            $last_handle = 'gsap-' . strtolower( $name );
         }
 
         // ── Plugins bonus (local — assets/js/vendor/) ───────────────────────────
@@ -180,6 +186,7 @@ class GSAP_Enqueue {
                 $version,
                 $footer
             );
+            $last_handle = 'gsap-' . strtolower( $name );
         }
 
         // ── ScrollSmoother: inicialização automática ─────────────────────────
@@ -277,6 +284,7 @@ class GSAP_Enqueue {
                 GSAP_MANAGER_VERSION,
                 true // sempre no rodapé
             );
+            $last_handle = 'gsap-animations';
 
             // Injeta variáveis CSS de personalização visual
             $css_vars = [];
@@ -295,8 +303,14 @@ class GSAP_Enqueue {
         }
 
         // ── Init customizado ────────────────────────────────────────────────
+        // Anexado ao último handle: roda depois de todos os plugins GSAP, mas
+        // antes do DOMContentLoaded (script clássico no rodapé) — ou seja,
+        // antes do init() do gsap-animations.js disparar as animações.
+        // Sem wp_unslash: o options.php já unslashou antes de salvar —
+        // desfazer de novo removia barras legítimas do JS (\d em regex,
+        // \n em strings).
         if ( ! empty( $s['custom_init'] ) ) {
-            wp_add_inline_script( 'gsap', wp_unslash( $s['custom_init'] ) );
+            wp_add_inline_script( $last_handle, $s['custom_init'] );
         }
     }
 

@@ -61,7 +61,18 @@ class GSAP_Admin {
         $out['load_in_footer'] = ! empty( $input['load_in_footer'] );
         $out['load_on']        = in_array( $input['load_on'] ?? '', [ 'all', 'front', 'selected' ], true ) ? $input['load_on'] : 'all';
         $out['selected_ids']   = preg_replace( '/[^0-9,\s]/', '', $input['selected_ids'] ?? '' );
-        $out['custom_init']      = wp_kses( $input['custom_init'] ?? '', [] );
+        // custom_init é JS intencional — wp_kses corrompia o código salvo:
+        // normalizava entidades ("a && b" virava "a &amp;&amp; b") e removia
+        // trechos que parecem tag ("a<b"). Padrão do WP pra código custom:
+        // salvar raw, gateado na capability unfiltered_html (single-site:
+        // admins têm; multisite: só super admin). Sem a capability, preserva
+        // o valor já salvo em vez de aceitar o novo.
+        if ( current_user_can( 'unfiltered_html' ) ) {
+            $out['custom_init'] = (string) ( $input['custom_init'] ?? '' );
+        } else {
+            $previous           = get_option( GSAP_MANAGER_OPTION, [] );
+            $out['custom_init'] = $previous['custom_init'] ?? '';
+        }
         $out['auto_animations']  = ! empty( $input['auto_animations'] );
 
         $out['plugins'] = [];
@@ -314,7 +325,7 @@ class GSAP_Admin {
 
                 <div class="gsap-card">
                     <h2 class="gsap-card__title">JavaScript de Inicialização</h2>
-                    <p class="gsap-card__desc">Código executado após o carregamento do GSAP. Ideal para configurações globais como <code>gsap.defaults()</code> ou registro de plugins.</p>
+                    <p class="gsap-card__desc">Código executado após o carregamento do GSAP <strong>e de todos os plugins ativos</strong> — <code>gsap.registerPlugin(ScrollTrigger)</code> e afins funcionam aqui. Ideal para configurações globais como <code>gsap.defaults()</code>.</p>
                     <div class="gsap-field">
                         <textarea name="<?php echo GSAP_MANAGER_OPTION; ?>[custom_init]"
                                   id="gsap_custom_init"
