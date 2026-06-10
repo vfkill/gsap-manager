@@ -3,7 +3,7 @@
  * Plugin Name: GSAP Manager
  * Plugin URI:  https://github.com/vfkill/gsap-manager
  * Description: Carrega o GSAP e seus plugins no WordPress com configurações flexíveis via painel administrativo.
- * Version:     3.9.10
+ * Version:     3.9.11
  * Author:      Victor Kill
  * License:     GPL-2.0-or-later
  * Text Domain: gsap-manager
@@ -64,12 +64,12 @@ function gsap_manager_defaults(): array {
     return [
         'enabled'          => true,
         'source'           => 'cdn',         // cdn | local
-        'gsap_version'     => '3.12.5',
+        'gsap_version'     => '3.14.2',
         'load_in_footer'   => true,
         'load_on'          => 'all',          // all | front | selected
         'selected_ids'     => '',
         'plugins'          => [
-            // Plugins públicos (cdnjs)
+            // Plugins públicos (CDN ou local)
             'ScrollTrigger'      => true,
             'ScrollToPlugin'     => false,
             'Draggable'          => false,
@@ -111,6 +111,15 @@ function gsap_manager_defaults(): array {
 function gsap_manager_get_settings(): array {
     $saved    = get_option( GSAP_MANAGER_OPTION, [] );
     $defaults = gsap_manager_defaults();
+
+    // Migração leve: 3.12.5 era o default antigo — nenhum site a escolheu de
+    // propósito. Remapeia pro default atual pra eliminar o skew de versão com
+    // os plugins bonus locais (vendor 3.14.2), que gerava warnings do GSAP e
+    // risco de API divergente. Se um dia precisar cravar exatamente a 3.12.5,
+    // remova este bloco.
+    if ( ( $saved['gsap_version'] ?? '' ) === '3.12.5' ) {
+        $saved['gsap_version'] = '3.14.2';
+    }
 
     // Merge profundo para a chave 'plugins'
     if ( isset( $saved['plugins'] ) && is_array( $saved['plugins'] ) ) {

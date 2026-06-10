@@ -57,7 +57,7 @@ class GSAP_Admin {
 
         $out['enabled']        = ! empty( $input['enabled'] );
         $out['source']         = in_array( $input['source'] ?? '', [ 'cdn', 'local' ], true ) ? $input['source'] : 'cdn';
-        $out['gsap_version']   = preg_replace( '/[^0-9\.]/', '', $input['gsap_version'] ?? '3.12.5' ) ?: '3.12.5';
+        $out['gsap_version']   = preg_replace( '/[^0-9\.]/', '', $input['gsap_version'] ?? '3.14.2' ) ?: '3.14.2';
         $out['load_in_footer'] = ! empty( $input['load_in_footer'] );
         $out['load_on']        = in_array( $input['load_on'] ?? '', [ 'all', 'front', 'selected' ], true ) ? $input['load_on'] : 'all';
         $out['selected_ids']   = preg_replace( '/[^0-9,\s]/', '', $input['selected_ids'] ?? '' );
@@ -216,7 +216,7 @@ class GSAP_Admin {
                                 <input type="radio" name="<?php echo GSAP_MANAGER_OPTION; ?>[source]" value="cdn" <?php checked( $s['source'], 'cdn' ); ?>>
                                 <span class="gsap-radio__box">
                                     <span class="gsap-radio__title">CDN (Recomendado)</span>
-                                    <span class="gsap-radio__desc">Carrega do cdnjs.cloudflare.com — cache do browser entre sites</span>
+                                    <span class="gsap-radio__desc">Carrega do cdn.jsdelivr.net (espelho oficial do npm) — qualquer versão do GSAP disponível</span>
                                 </span>
                             </label>
                             <label class="gsap-radio">
@@ -235,8 +235,8 @@ class GSAP_Admin {
                                name="<?php echo GSAP_MANAGER_OPTION; ?>[gsap_version]"
                                value="<?php echo esc_attr( $s['gsap_version'] ); ?>"
                                class="gsap-input"
-                               placeholder="3.12.5">
-                        <span class="gsap-field__desc">Versão atual estável: <strong>3.12.5</strong>. Veja todas em <a href="https://cdnjs.com/libraries/gsap" target="_blank" rel="noopener">cdnjs.com</a>.</span>
+                               placeholder="3.14.2">
+                        <span class="gsap-field__desc">Versão atual estável: <strong>3.14.2</strong> — a mesma dos plugins bonus locais do plugin (manter igual evita conflito de versão). Veja todas em <a href="https://www.jsdelivr.com/package/npm/gsap" target="_blank" rel="noopener">jsdelivr.com</a>.</span>
                     </div>
 
                     <div class="gsap-field gsap-field--toggle">

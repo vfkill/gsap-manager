@@ -10,10 +10,13 @@ class GSAP_Enqueue {
     // gera HTML inválido.
     private bool $smoother_wrapper_opened = false;
 
-    // CDN base — GSAP v3 no cdnjs
-    const CDN_BASE = 'https://cdnjs.cloudflare.com/ajax/libs/gsap/';
+    // CDN base — jsDelivr (espelho oficial do npm). O cdnjs parou de publicar
+    // o GSAP na 3.13.0 (verificado 2026-06-10); o jsDelivr tem todas as
+    // versões — inclusive a que iguala os arquivos vendor locais — com os
+    // mesmos nomes de arquivo em dist/. URL: {CDN_BASE}{versão}/dist/{arquivo}
+    const CDN_BASE = 'https://cdn.jsdelivr.net/npm/gsap@';
 
-    // Plugins disponíveis no cdnjs (carregam via CDN ou local conforme configuração)
+    // Plugins públicos (carregam via CDN ou local conforme configuração)
     const PLUGIN_FILES = [
         'ScrollTrigger'    => 'ScrollTrigger.min.js',
         'ScrollToPlugin'   => 'ScrollToPlugin.min.js',
@@ -131,7 +134,7 @@ class GSAP_Enqueue {
         // Modo local sem o arquivo baixado: serve do CDN em vez de enfileirar
         // um 404 que mataria todas as animações do site.
         if ( $s['source'] === 'cdn' || ! file_exists( GSAP_MANAGER_PATH . 'assets/js/vendor/gsap.min.js' ) ) {
-            $gsap_url = self::CDN_BASE . $version . '/gsap.min.js';
+            $gsap_url = self::CDN_BASE . $version . '/dist/gsap.min.js';
         } else {
             $gsap_url = GSAP_MANAGER_URL . 'assets/js/vendor/gsap.min.js';
         }
@@ -149,16 +152,16 @@ class GSAP_Enqueue {
         // (gsap.registerPlugin(ScrollTrigger) etc. funcionam no custom_init).
         $last_handle = 'gsap';
 
-        // ── Plugins (cdnjs) ─────────────────────────────────────────────────
+        // ── Plugins públicos (CDN) ──────────────────────────────────────────
         foreach ( self::PLUGIN_FILES as $name => $file ) {
             if ( empty( $s['plugins'][ $name ] ) ) {
                 continue;
             }
 
             // Mesmo fallback do core: local sem o arquivo → CDN (são plugins
-            // públicos, todos disponíveis no cdnjs).
+            // públicos, todos disponíveis no jsDelivr).
             if ( $s['source'] === 'cdn' || ! file_exists( GSAP_MANAGER_PATH . 'assets/js/vendor/' . $file ) ) {
-                $url = self::CDN_BASE . $version . '/' . $file;
+                $url = self::CDN_BASE . $version . '/dist/' . $file;
             } else {
                 $url = GSAP_MANAGER_URL . 'assets/js/vendor/' . $file;
             }
